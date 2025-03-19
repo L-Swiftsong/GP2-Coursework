@@ -1,0 +1,16 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(534,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Lab1.vcxproj, Lab2.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Audio.cpp
+  Display.cpp
+  main.cpp
+  MainGame.cpp
+E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\GP2-Coursework\MainGame.cpp(13,9): warning C4930: 'Shader fogShader(void)': prototyped function not called (was a variable definition intended?)
+E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\GP2-Coursework\MainGame.cpp(14,9): warning C4930: 'Shader rimLightingShader(void)': prototyped function not called (was a variable definition intended?)
+  Mesh.cpp
+E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\GP2-Coursework\Mesh.cpp(62,9): warning C4930: 'Sphere meshSphere(void)': prototyped function not called (was a variable definition intended?)
+  obj_loader.cpp
+E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\GP2-Coursework\obj_loader.cpp(378,16): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  Shader.cpp
+  Texture.cpp
+  Generating Code...
+  stb_image.c
+  GP2-Coursework.vcxproj -> E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\Debug\GP2-Coursework.exe
