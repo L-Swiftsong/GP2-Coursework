@@ -3,12 +3,17 @@
 #include <GL/glew.h>
 #include "Display.h" 
 #include "Shader.h"
+#include "GameObject.h"
 #include "Mesh.h"
 #include "Texture.h"
 #include "transform.h"
 #include "Audio.h"
 
 enum class GameState {kPlay, kExit};
+
+
+#define SUSANNE_1_INITIAL_POSITION glm::vec3(0.0f, 1.0f, 0.0f)
+
 
 class MainGame
 {
@@ -31,8 +36,8 @@ private:
 
 	Display game_display_;
 	GameState game_state_;
-	Mesh mesh_1_;
-	Mesh mesh_2_;
+	GameObject suzanne_;
+	GameObject suzanne_2_;
 	Camera* main_camera_;
 
 

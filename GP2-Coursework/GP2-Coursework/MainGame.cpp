@@ -11,8 +11,8 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	main_camera_(new Camera(glm::vec3(0, 0, -5), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
 	fog_shader_(Shader("..\\res\\fogShader.vert", "..\\res\\fogShader.frag")),
 	rim_lighting_shader_(Shader("..\\res\\rimLighting.vert", "..\\res\\rimLighting.frag")),
-	mesh_1_(Mesh("..\\res\\monkey3.obj")),
-	mesh_2_(Mesh("..\\res\\monkey3.obj")),
+	suzanne_(GameObject("..\\res\\monkey3.obj", "..\\res\\water.jpg", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
+	suzanne_2_(GameObject("..\\res\\monkey3.obj", "..\\res\\bricks.jpg", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
 	counter_(1.0f)
 {
 	active_shader_ = &rim_lighting_shader_;
@@ -34,7 +34,7 @@ void MainGame::GameLoop()
 	{
 		ProcessInput();
 		DrawGame();
-		Collision(mesh_1_.get_sphere_pos(), mesh_1_.get_sphere_radius(), mesh_2_.get_sphere_pos(), mesh_2_.get_sphere_radius());
+		Collision(suzanne_.get_mesh()->get_sphere_pos(), suzanne_.get_mesh()->get_sphere_radius(), suzanne_2_.get_mesh()->get_sphere_pos(), suzanne_2_.get_mesh()->get_sphere_radius());
 		//playAudio(backGroundMusic, glm::vec3(0.0f,0.0f,0.0f));
 	}
 }
@@ -116,28 +116,25 @@ void MainGame::DrawGame()
 	//linkFogShader();
 	LinkRimShader();
 
-	Texture texture("..\\res\\bricks.jpg"); //load texture
-	Texture texture1("..\\res\\water.jpg"); //load texture
 	
-	transform.set_pos(glm::vec3(0.0, 2.0, 0.0));
-	transform.SetRot(glm::vec3(0.0, counter_ * 5, 0.0));
-	transform.SetScale(glm::vec3(0.6, 0.6, 0.6));
+	// Update Transform.
+	suzanne_.get_transform()->set_rot(glm::vec3(0.0, counter_ * 5, 0.0));
+	suzanne_.get_transform()->set_scale(glm::vec3(0.6, 0.6, 0.6));
 
-	active_shader_->Bind();
-	texture.Bind(0);
-	active_shader_->Update(transform, *main_camera_);
-	mesh_1_.Draw();
-	mesh_1_.UpdateSphereData(*transform.get_pos(), 0.62f);
+	// Draw the GameObject.
+	suzanne_.Draw(*main_camera_, active_shader_);
 	
 
-	//transform.SetPos(glm::vec3(-sinf(counter), -0.5, 10.0 +(-sinf(counter)*8)));
-	transform.set_pos(glm::vec3(0.0, 0.0, 0.0));
-	transform.SetRot(glm::vec3(0.0, 0.0, counter_ * 5));
-	transform.SetScale(glm::vec3(0.6, 0.6, 0.6));
+	// Update Transform.
+	suzanne_2_.get_transform()->set_pos(glm::vec3(0.0, 0.0, 0.0));
+	suzanne_2_.get_transform()->set_rot(glm::vec3(0.0, 0.0, counter_ * 5));
+	suzanne_2_.get_transform()->set_scale(glm::vec3(0.6, 0.6, 0.6));
 
-	active_shader_->Update(transform, *main_camera_);
-	mesh_2_.Draw();
-	mesh_2_.UpdateSphereData(*transform.get_pos(), 0.62f);
+	// Draw the GameObject.
+	suzanne_2_.Draw(*main_camera_, active_shader_);
+
+
+	// Increment the Counter.
 	counter_ = counter_ + 0.02f;
 
 				

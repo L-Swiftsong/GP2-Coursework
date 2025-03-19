@@ -12,7 +12,7 @@ public:
 	Shader(const std::string& vertex_file, const std::string& fragment_file);
 
 	void Bind(); //Set gpu to use our shaders
-	void Update(const Transform& transform, Camera& camera);
+	void Update(const Transform& transform, const Camera& camera);
 
 	std::string Shader::LoadShader(const std::string& fileName);
 	void Shader::CheckShaderError(GLuint shader, GLuint flag, bool is_program, const std::string& error_message);

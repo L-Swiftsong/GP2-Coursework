@@ -434,10 +434,10 @@ static float h2l_gamma_i=1.0f/2.2f, h2l_scale_i=1.0f;
 static float l2h_gamma=2.2f, l2h_scale=1.0f;
 
 void   stbi_hdr_to_ldr_gamma(float gamma) { h2l_gamma_i = 1/gamma; }
-void   stbi_hdr_to_ldr_scale(float scale) { h2l_scale_i = 1/scale; }
+void   stbi_hdr_to_ldr_scale(float scale_) { h2l_scale_i = 1/scale_; }
 
 void   stbi_ldr_to_hdr_gamma(float gamma) { l2h_gamma = gamma; }
-void   stbi_ldr_to_hdr_scale(float scale) { l2h_scale = scale; }
+void   stbi_ldr_to_hdr_scale(float scale_) { l2h_scale = scale_; }
 #endif
 
 

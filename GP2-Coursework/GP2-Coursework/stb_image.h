@@ -178,10 +178,10 @@ extern stbi_uc *stbi_load_from_callbacks  (stbi_io_callbacks const *clbk, void *
    extern float *stbi_loadf_from_callbacks  (stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
 
    extern void   stbi_hdr_to_ldr_gamma(float gamma);
-   extern void   stbi_hdr_to_ldr_scale(float scale);
+   extern void   stbi_hdr_to_ldr_scale(float scale_);
 
    extern void   stbi_ldr_to_hdr_gamma(float gamma);
-   extern void   stbi_ldr_to_hdr_scale(float scale);
+   extern void   stbi_ldr_to_hdr_scale(float scale_);
 #endif // STBI_NO_HDR
 
 // stbi_is_hdr is always defined
