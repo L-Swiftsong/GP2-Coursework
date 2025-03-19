@@ -1,5 +1,0 @@
-﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Lab2.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  MainGame.cpp
-C:\Users\acarey300\Documents\Lab7\Lab1\MainGame.cpp(13,9): warning C4930: 'Shader fogShader(void)': prototyped function not called (was a variable definition intended?)
-C:\Users\acarey300\Documents\Lab7\Lab1\MainGame.cpp(14,9): warning C4930: 'Shader rimLightingShader(void)': prototyped function not called (was a variable definition intended?)
-  Lab1.vcxproj -> C:\Users\acarey300\Documents\Lab7\Debug\Lab1.exe

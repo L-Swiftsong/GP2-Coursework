@@ -7,82 +7,89 @@
 struct Vertex
 {
 public:
-	Vertex(const glm::vec3& pos, const glm::vec2& texCoord)
+	Vertex(const glm::vec3& pos, const glm::vec2& tex_coord, const glm::vec3& normal)
 	{
-		this->pos = pos;
-		this->texCoord = texCoord;
-		this->normal = normal;
+		this->pos_ = pos;
+		this->tex_coord_ = tex_coord;
+		this->normal_ = normal;
 	}
 
-	glm::vec3* GetPos() { return &pos; }
-	glm::vec2* GetTexCoord() { return &texCoord; }
-	glm::vec3* GetNormal() { return &normal; }
+	glm::vec3* get_pos()  { return &pos_; }
+	glm::vec2* get_tex_coord() { return &tex_coord_; }
+	glm::vec3* get_normal() { return &normal_; }
 
 private:
-	glm::vec3 pos;
-	glm::vec2 texCoord;
-	glm::vec3 normal;
+	glm::vec3 pos_;
+	glm::vec2 tex_coord_;
+	glm::vec3 normal_;
 };
 
 struct Sphere
 {
 public:
 
-	Sphere() {}
+	Sphere() : pos_(glm::vec3(0.0f, 0.0f, 0.0f)), radius_(0.0f) {}
 
 	Sphere(glm::vec3& pos, float radius)
 	{
-		this->pos = pos;
+		this->pos_ = pos;
+		this->radius_ = radius;
 	}
 
-	glm::vec3 GetPos() { return pos; }
-	float GetRadius() { return radius; }
+	glm::vec3 get_pos() const { return pos_; }
+	float get_radius() const { return radius_; }
 
-	void SetPos(glm::vec3 pos)
+	void set_pos(glm::vec3 pos)
 	{
-		this->pos = pos;
+		this->pos_ = pos;
 	}
 
-	void SetRadius(float radius)
+	void set_radius(float radius)
 	{
-		this->radius = radius;
+		this->radius_ = radius;
 	}
 
 private:
-	glm::vec3 pos;
-	float radius;
+	glm::vec3 pos_;
+	float radius_;
 };
 
 class Mesh
 {
 public:
-	Mesh();
+	Mesh(const std::string& file_name);
+	Mesh(Vertex* vertices, unsigned int num_vertices, unsigned int* indices, unsigned int num_indices);
 	~Mesh();
 
 
-	void draw();
-	void init(Vertex* vertices, unsigned int numVertices, unsigned int* indices, unsigned int numIndices);
-	void loadModel(const std::string& filename);
-	void initModel(const IndexedModel& model);
-	void updateSphereData(glm::vec3 pos, float radius);
-	glm::vec3 getSpherePos() { return meshSphere.GetPos(); }
-	float getSphereRadius() { return meshSphere.GetRadius(); }
+	void Draw();
+	void UpdateSphereData(glm::vec3 pos, float radius);
+
+	glm::vec3 get_sphere_pos() const { return mesh_sphere_.get_pos(); }
+	float get_sphere_radius() const { return mesh_sphere_.get_radius(); }
 
 private:
-
+	Mesh() = delete;
+	void InitModel(const IndexedModel& model);
 
 
 	enum
 	{
-		POSITION_VERTEXBUFFER,
-		TEXCOORD_VB,
-		NORMAL_VB,
-		INDEX_VB,
-		NUM_BUFFERS
+		kPositionVertexBuffer,
+		kTexCoordVertexBuffer,
+		kNormalVertexBuffer,
+		kIndexVertexBuffer,
+
+		kNumBuffers
 	};
 
-	Sphere meshSphere;
-	GLuint vertexArrayObject;
-	GLuint vertexArrayBuffers[NUM_BUFFERS]; // create our array of buffers
-	unsigned int drawCount; //how much of the vertexArrayObject do we want to draw
+
+	Sphere mesh_sphere_;
+	GLuint vertex_array_object_;
+
+	// Create our array of buffers.
+	GLuint vertex_array_buffers_[kNumBuffers];
+
+	// How much of the vertexArrayObject do we want to draw.
+	unsigned int draw_count_;
 };

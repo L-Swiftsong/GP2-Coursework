@@ -65,11 +65,11 @@ void IndexedModel::CalcNormals()
         glm::vec3 v1 = positions[i1] - positions[i0];
         glm::vec3 v2 = positions[i2] - positions[i0];
         
-        glm::vec3 normal = glm::normalize(glm::cross(v1, v2));
+        glm::vec3 normal_ = glm::normalize(glm::cross(v1, v2));
             
-        normals[i0] += normal;
-        normals[i1] += normal;
-        normals[i2] += normal;
+        normals[i0] += normal_;
+        normals[i1] += normal_;
+        normals[i2] += normal_;
     }
     
     for(unsigned int i = 0; i < positions.size(); i++)

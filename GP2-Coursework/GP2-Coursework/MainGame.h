@@ -8,7 +8,7 @@
 #include "transform.h"
 #include "Audio.h"
 
-enum class GameState{PLAY, EXIT};
+enum class GameState {kPlay, kExit};
 
 class MainGame
 {
@@ -16,33 +16,31 @@ public:
 	MainGame();
 	~MainGame();
 
-	void run();
+	void Run();
 
 private:
+	void ProcessInput();
+	void GameLoop();
+	void DrawGame();
 
-	void initSystems();
-	void processInput();
-	void gameLoop();
-	void drawGame();
-	void linkFogShader();
-	void linkRimShader();
-	bool collision(glm::vec3 m1Pos, float m1Rad, glm::vec3 m2Pos, float m2Rad);
+	void LinkFogShader();
+	void LinkRimShader();
+
+	bool Collision(glm::vec3 m1Pos, float m1Rad, glm::vec3 m2Pos, float m2Rad);
 	//void playAudio(unsigned int Source, glm::vec3 pos);
 
-	Display _gameDisplay;
-	GameState _gameState;
-	Mesh mesh1;
-	Mesh mesh2;
-	Camera myCamera;
+	Display game_display_;
+	GameState game_state_;
+	Mesh mesh_1_;
+	Mesh mesh_2_;
+	Camera* main_camera_;
 
 
-	Shader* activeShader;
-	Shader fogShader;
-	Shader rimLightingShader;
+	Shader* active_shader_;
+	Shader fog_shader_;
+	Shader rim_lighting_shader_;
 	//Audio audioDevice;
 
-	float counter;
-	unsigned int whistle;
-	unsigned int backGroundMusic;
+	float counter_;
 };
 

@@ -3,73 +3,90 @@
 
 Display::Display()
 {
-	sdlWindow = nullptr; //initialise to generate null access violation for debugging. 
-	screenWidth = 1024.0f;
-	screenHeight = 768.0f; 
+	// Initialise to generate null access violation for debugging. 
+	sdl_window_ = nullptr;
+	gl_context_ = nullptr;
+
+	screen_width_ = 1024.0f;
+	screen_height_ = 768.0f;
+
+	InitDisplay();
 }
 
 Display::~Display()
 {
-	SDL_GL_DeleteContext(glContext); // delete context
-	SDL_DestroyWindow(sdlWindow); // detete window (make sure to delete the context and the window in the opposite order of creation in initDisplay())
+	SDL_GL_DeleteContext(gl_context_); // delete context
+	SDL_DestroyWindow(sdl_window_); // detete window (make sure to delete the context and the window in the opposite order of creation in initDisplay())
 	SDL_Quit();
 }
 
-float Display::getWidth() { return screenWidth; } //getters
-float Display::getHeight() { return screenHeight; }
-
-void Display::returnError(std::string errorString)
+void Display::ReturnError(std::string error_string)
 {
-	std::cout << errorString << std::endl;
+	std::cout << error_string << std::endl;
 	std::cout << "press any  key to quit...";
 	int in;
 	std::cin >> in;
 	SDL_Quit();
 }
 
-void Display::swapBuffer()
+void Display::SwapBuffer()
 {
-	SDL_GL_SwapWindow(sdlWindow); //swap buffers
+	// Swap buffers.
+	SDL_GL_SwapWindow(sdl_window_);
 }
 
-void Display::clearDisplay(float r, float g, float b, float a)
+void Display::ClearDisplay(float r, float g, float b, float a)
 {
+	// Clear colour and depth buffer - set colour to colour defined in glClearColor.
 	glClearColor(r, g, b, a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear colour and depth buffer - set colour to colour defined in glClearColor
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Display::initDisplay()
+void Display::InitDisplay()
 {
-	SDL_Init(SDL_INIT_EVERYTHING); //initalise everything
+	// Initalise everything.
+	SDL_Init(SDL_INIT_EVERYTHING);
 
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8); //Min no of bits used to diplay colour
+	// Min no of bits used to diplay colour.
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);// set up z-buffer
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1); // set up double buffer   
+	// Set up z-buffer.
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+	// Set up double buffer.
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	sdlWindow = SDL_CreateWindow("Game Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (int)screenWidth, (int)screenHeight, SDL_WINDOW_OPENGL); // create window
+	// Create window.
+	sdl_window_ = SDL_CreateWindow("Game Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (int)screen_width_, (int)screen_height_, SDL_WINDOW_OPENGL);
 
-	if (sdlWindow == nullptr)
+	if (sdl_window_ == nullptr)
 	{
-		returnError("window failed to create");
+		ReturnError("window failed to create");
 	}
 
-	glContext = SDL_GL_CreateContext(sdlWindow);
+	// Initialise the context.
+	gl_context_ = SDL_GL_CreateContext(sdl_window_);
 
-	if (glContext == nullptr)
+	if (gl_context_ == nullptr)
 	{
-		returnError("SDL_GL context failed to create");
+		ReturnError("SDL_GL context failed to create");
 	}
 
+	// Initialise GLEW.
 	GLenum error = glewInit();
 	if (error != GLEW_OK)
 	{
-		returnError("GLEW failed to initialise");
+		ReturnError("GLEW failed to initialise");
 	}
 
-	glEnable(GL_DEPTH_TEST); //enable z-buffering 
-	glEnable(GL_CULL_FACE); //dont draw faces that are not pointing at the camera
+	// Enable z-buffering.
+	glEnable(GL_DEPTH_TEST);
+	// Dont draw faces that are not pointing at the camera.
+	glEnable(GL_CULL_FACE);
 
 	glClearColor(0.0f, 1.0f, 1.0f, 1.0f);
 }
+
+
+float Display::get_screen_width() { return screen_width_; }
+float Display::get_screen_height() { return screen_height_; }

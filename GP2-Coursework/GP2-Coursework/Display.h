@@ -11,20 +11,19 @@ class Display
 public:
 	Display();
 	~Display();
-	void initDisplay();
-	void swapBuffer();
-	void clearDisplay(float r, float g, float b, float a);
+	void SwapBuffer();
+	void ClearDisplay(float r, float g, float b, float a);
 
-	float getWidth();
-	float getHeight();
+	float get_screen_width();
+	float get_screen_height();
 
 private:
-
-	void returnError(std::string errorString);
+	void ReturnError(std::string error_string);
+	void InitDisplay();
 	
-	SDL_GLContext glContext; //global variable to hold the context
-	SDL_Window* sdlWindow; //holds pointer to out window
-	float screenWidth;
-	float screenHeight;
+	SDL_GLContext gl_context_; //global variable to hold the context
+	SDL_Window* sdl_window_; //holds pointer to out window
+	float screen_width_;
+	float screen_height_;
 };
 

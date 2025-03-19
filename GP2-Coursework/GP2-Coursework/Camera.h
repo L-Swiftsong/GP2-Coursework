@@ -6,76 +6,77 @@
 struct Camera
 {
 public:
-	Camera()
+	Camera(const glm::vec3& pos_, float fov, float aspect, float near_clip, float far_clip)
 	{
+		this->pos_ = pos_;
+		this->forward_ = glm::vec3(0.0f, 0.0f, 1.0f);
+		this->up_ = glm::vec3(0.0f, 1.0f, 0.0f);
+		this->projection_ = glm::perspective(fov, aspect, near_clip, far_clip);
 	}
 
-	void initCamera(const glm::vec3& pos, float fov, float aspect, float nearClip, float farClip)
+	glm::vec3 get_pos()
 	{
-		this->pos = pos;
-		this->forward = glm::vec3(0.0f, 0.0f, 1.0f);
-		this->up = glm::vec3(0.0f, 1.0f, 0.0f);
-		this->projection = glm::perspective(fov, aspect, nearClip, farClip);
+		return this->pos_;
+	}
+	glm::vec3 get_forward()
+	{
+		return this->forward_;
 	}
 
-	glm::vec3 getPos()
+	inline glm::mat4 get_view_projection() const
 	{
-		return this->pos;
-	}
-	glm::vec3 getForward()
-	{
-		return this->forward;
+		return projection_ * glm::lookAt(pos_, pos_ + forward_, up_);
 	}
 
-	inline glm::mat4 getViewProjection() const
+	inline glm::mat4 get_projection() const
 	{
-		return projection * glm::lookAt(pos, pos + forward, up);
+		return projection_;
 	}
 
-	inline glm::mat4 getProjection() const
+	inline glm::mat4 get_view() const
 	{
-		return projection;
-	}
-
-	inline glm::mat4 getView() const
-	{
-		return glm::lookAt(pos, pos + forward, up);
+		return glm::lookAt(pos_, pos_ + forward_, up_);
 	}
 
 	//void MoveForward(float amt)
 	//{
-	//	pos += forward * amt;
+	//	pos_ += forward_ * amt;
 	//}
 
 	//void MoveRight(float amt)
 	//{
-	//	pos += glm::cross(up, forward) * amt;
+	//	pos_ += glm::cross(up_, forward) * amt;
 	//}
 
 	//void Pitch(float angle)
 	//{
-	//	glm::vec3 right = glm::normalize(glm::cross(up, forward));
+	//	glm::vec3 right = glm::normalize(glm::cross(up_, forward_));
 
-	//	forward = glm::vec3(glm::normalize(glm::rotate(angle, right) * glm::vec4(forward, 0.0)));
-	//	up = glm::normalize(glm::cross(forward, right));
+	//	forward_ = glm::vec3(glm::normalize(glm::rotate(angle, right) * glm::vec4(forward_, 0.0)));
+	//	up_ = glm::normalize(glm::cross(forward_, right));
 	//}
 
 	void RotateY(float angle)
 	{
-		static const glm::vec3 UP(0.0f, 1.0f, 0.0f);
+		static const glm::vec3 kUp(0.0f, 1.0f, 0.0f);
 
-		glm::mat4 rotation = glm::rotate(angle, UP);
+		glm::mat4 rotation = glm::rotate(angle, kUp);
 
-		forward = glm::vec3(glm::normalize(rotation * glm::vec4(forward, 0.0)));
-		up = glm::vec3(glm::normalize(rotation * glm::vec4(up, 0.0)));
+		forward_ = glm::vec3(glm::normalize(rotation * glm::vec4(forward_, 0.0)));
+		up_ = glm::vec3(glm::normalize(rotation * glm::vec4(up_, 0.0)));
 	}
 
 protected:
 private:
-	glm::mat4 projection;
-	glm::vec3 pos;
-	glm::vec3 forward;
-	glm::vec3 up;
+	Camera() : pos_(glm::vec3(0, 0, 0)), forward_(glm::vec3(0.0f, 0.0f, 1.0f)), up_(glm::vec3(0.0f, 1.0f, 0.0f))
+	{
+		this->projection_ = glm::perspective(70.0f, 1.778f, 0.01f, 1000.0f);
+	}
+
+	glm::mat4 projection_;
+	glm::vec3 pos_;
+	glm::vec3 forward_;
+	glm::vec3 up_;
 };
 
 

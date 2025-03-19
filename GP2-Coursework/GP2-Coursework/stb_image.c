@@ -4302,10 +4302,10 @@ int stbi_info_from_file(FILE *f, int *x, int *y, int *comp)
 {
    int r;
    stbi s;
-   long pos = ftell(f);
+   long pos_ = ftell(f);
    start_file(&s, f);
    r = stbi_info_main(&s,x,y,comp);
-   fseek(f,pos,SEEK_SET);
+   fseek(f,pos_,SEEK_SET);
    return r;
 }
 #endif // !STBI_NO_STDIO
