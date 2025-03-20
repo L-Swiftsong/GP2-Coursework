@@ -82,16 +82,28 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\res\fogShader.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\fogShader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <Object Include="..\res\monkey3.obj">
       <Filter>Resource Files</Filter>
     </Object>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\res\Shaders\fogShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\fogShader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\LightingTests.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\LightingTests.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\rimLighting.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\rimLighting.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

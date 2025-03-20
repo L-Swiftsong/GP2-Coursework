@@ -30,6 +30,7 @@ private:
 
 	void LinkFogShader();
 	void LinkRimShader();
+	void LinkLightingTestsShader();
 
 	bool Collision(glm::vec3 m1Pos, float m1Rad, glm::vec3 m2Pos, float m2Rad);
 	//void playAudio(unsigned int Source, glm::vec3 pos);
@@ -44,6 +45,7 @@ private:
 	Shader* active_shader_;
 	Shader fog_shader_;
 	Shader rim_lighting_shader_;
+	Shader lighting_test_shader_;
 	//Audio audioDevice;
 
 	float counter_;

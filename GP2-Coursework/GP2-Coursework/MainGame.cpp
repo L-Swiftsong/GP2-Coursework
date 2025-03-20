@@ -9,13 +9,14 @@ Transform transform;
 MainGame::MainGame() : game_state_(GameState::kPlay),
 	game_display_(Display()),
 	main_camera_(new Camera(glm::vec3(0, 0, -5), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
-	fog_shader_(Shader("..\\res\\fogShader.vert", "..\\res\\fogShader.frag")),
-	rim_lighting_shader_(Shader("..\\res\\rimLighting.vert", "..\\res\\rimLighting.frag")),
+	fog_shader_(Shader("..\\res\\Shaders\\fogShader.vert", "..\\res\\Shaders\\fogShader.frag")),
+	rim_lighting_shader_(Shader("..\\res\\Shaders\\rimLighting.vert", "..\\res\\Shaders\\rimLighting.frag")),
+	lighting_test_shader_(Shader("..\\res\\Shaders\\LightingTests.vert", "..\\res\\Shaders\\LightingTests.frag")),
 	suzanne_(GameObject("..\\res\\monkey3.obj", "..\\res\\water.jpg", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
 	suzanne_2_(GameObject("..\\res\\monkey3.obj", "..\\res\\bricks.jpg", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
 	counter_(1.0f)
 {
-	active_shader_ = &rim_lighting_shader_;
+	active_shader_ = &lighting_test_shader_;
 }
 
 MainGame::~MainGame()
@@ -107,6 +108,23 @@ void MainGame::LinkRimShader()
 	//rimLightingShader.setParam<glm::vec3>("lightDirection", glm::vec3(0.0f, 0.5f, 0.5f));
 	//rimLightingShader.setParam("lightColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 }
+void MainGame::LinkLightingTestsShader()
+{
+	lighting_test_shader_.set_vec_3("cameraPos", main_camera_->get_pos());
+
+	// Setup the Material.
+	lighting_test_shader_.set_int("material.Diffuse", 0);
+	lighting_test_shader_.set_int("material.Specular", 1);
+	lighting_test_shader_.set_float("material.Shininess", 32.0f);
+
+
+	// Setup the Directional Lights.
+	lighting_test_shader_.set_vec_3("directionalLight.Direction", -0.2f, -1.0f, -0.3f);
+	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", 0.05f, 0.05f, 0.05f);
+	lighting_test_shader_.set_vec_3("directionalLight.Ambient", 0.5f, 0.5f, 0.5f);
+	lighting_test_shader_.set_vec_3("directionalLight.Diffuse", 0.4f, 0.4f, 0.4f);
+	lighting_test_shader_.set_vec_3("directionalLight.Specular", 0.5f, 0.5f, 0.5f);
+}
 
 void MainGame::DrawGame()
 {
@@ -114,7 +132,8 @@ void MainGame::DrawGame()
 	game_display_.ClearDisplay(0.0f, 0.0f, 0.0f, 1.0f); //sets our background colour
 
 	//linkFogShader();
-	LinkRimShader();
+	//LinkRimShader();
+	LinkLightingTestsShader();
 
 	
 	// Update Transform.
