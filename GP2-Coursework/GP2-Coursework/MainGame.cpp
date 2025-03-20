@@ -119,11 +119,20 @@ void MainGame::LinkLightingTestsShader()
 
 
 	// Setup the Directional Lights.
-	lighting_test_shader_.set_vec_3("directionalLight.Direction", -0.2f, -1.0f, -0.3f);
-	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", 0.05f, 0.05f, 0.05f);
-	lighting_test_shader_.set_vec_3("directionalLight.Ambient", 0.5f, 0.5f, 0.5f);
+	lighting_test_shader_.set_vec_3("directionalLight.Direction", 0.2f, -1.0f, -0.3f);
+	lighting_test_shader_.set_vec_3("directionalLight.Ambient", 0.05f, 0.0f, 0.05f);
 	lighting_test_shader_.set_vec_3("directionalLight.Diffuse", 0.4f, 0.4f, 0.4f);
 	lighting_test_shader_.set_vec_3("directionalLight.Specular", 0.5f, 0.5f, 0.5f);
+
+	// Setup the Point Lights.
+	lighting_test_shader_.set_vec_3("pointLight.Position", 3.0f, 0.0f, 0.0f);
+	lighting_test_shader_.set_vec_3("pointLight.Ambient", 0.5f, 1.0f, 0.5f);
+	lighting_test_shader_.set_vec_3("pointLight.Diffuse", 0.75f, 0.75f, 0.75f);
+	lighting_test_shader_.set_vec_3("pointLight.Specular", 1.0f, 1.0f, 1.0f);
+
+	lighting_test_shader_.set_float("pointLight.Radius", 7.5f);
+	lighting_test_shader_.set_float("pointLight.MaxIntensity", 1.0f);
+	lighting_test_shader_.set_float("pointLight.Falloff", 0.5);
 }
 
 void MainGame::DrawGame()
