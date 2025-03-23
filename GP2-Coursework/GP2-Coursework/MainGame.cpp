@@ -17,11 +17,36 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	counter_(1.0f)
 {
 	active_shader_ = &lighting_test_shader_;
+
+	glm::vec3 testCols[6]
+	{
+		MORNING_DIRECTIONAL_LIGHT_AMBIENT,
+		MIDDAY_DIRECTIONAL_LIGHT_AMBIENT,
+		EVENING_DIRECTIONAL_LIGHT_AMBIENT,
+		NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT,
+		NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT,
+		MORNING_DIRECTIONAL_LIGHT_AMBIENT
+	};
+	float testVals[6]
+	{
+		0.0f, // Sunrise.
+		0.2f, // Midday.
+		0.4f, // Sunset.
+		0.5f, // Nighttime.
+		0.9f, // Nighttime.
+		1.0f // Sunrise.
+	};
+	test_gradient_ = new Gradient(false);
+	for (int i = 0; i < 6; ++i)
+	{
+		test_gradient_->AddStop(testVals[i], testCols[i]);
+	}
 }
 
 MainGame::~MainGame()
 {
 	delete main_camera_;
+	delete test_gradient_;
 }
 
 void MainGame::Run()
@@ -120,7 +145,15 @@ void MainGame::LinkLightingTestsShader()
 
 	// Setup the Directional Lights.
 	lighting_test_shader_.set_vec_3("directionalLight.Direction", 0.2f, -1.0f, -0.3f);
-	lighting_test_shader_.set_vec_3("directionalLight.Ambient", 0.05f, 0.0f, 0.05f);
+
+	glm::vec3 ambientVal = test_gradient_->GetValue(counter_ / 20.0f);
+	lighting_test_shader_.set_vec_3("directionalLight.Ambient", ambientVal.x, ambientVal.y, ambientVal.z);
+
+	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", MORNING_DIRECTIONAL_LIGHT_AMBIENT);
+	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", MIDDAY_DIRECTIONAL_LIGHT_AMBIENT);
+	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", EVENING_DIRECTIONAL_LIGHT_AMBIENT);
+	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT);
+
 	lighting_test_shader_.set_vec_3("directionalLight.Diffuse", 0.4f, 0.4f, 0.4f);
 	lighting_test_shader_.set_vec_3("directionalLight.Specular", 0.5f, 0.5f, 0.5f);
 
@@ -130,7 +163,7 @@ void MainGame::LinkLightingTestsShader()
 	lighting_test_shader_.set_vec_3("pointLight.Diffuse", 0.75f, 0.75f, 0.75f);
 	lighting_test_shader_.set_vec_3("pointLight.Specular", 1.0f, 1.0f, 1.0f);
 
-	lighting_test_shader_.set_float("pointLight.Radius", 7.5f);
+	lighting_test_shader_.set_float("pointLight.Radius", 0.1f);
 	lighting_test_shader_.set_float("pointLight.MaxIntensity", 1.0f);
 	lighting_test_shader_.set_float("pointLight.Falloff", 0.5);
 }

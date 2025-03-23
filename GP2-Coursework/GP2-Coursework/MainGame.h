@@ -8,8 +8,15 @@
 #include "Texture.h"
 #include "transform.h"
 #include "Audio.h"
+#include "Gradient.h"
 
 enum class GameState {kPlay, kExit};
+
+// Lighting Definitions.
+#define MORNING_DIRECTIONAL_LIGHT_AMBIENT glm::vec3(1.0f, 0.537f, 0.055f)
+#define MIDDAY_DIRECTIONAL_LIGHT_AMBIENT glm::vec3(1.0f, 0.931f, 0.872f)
+#define EVENING_DIRECTIONAL_LIGHT_AMBIENT glm::vec3(1.0f, 0.537f, 0.055f)
+#define NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT glm::vec3(0.791, 0.855f, 1.0f)
 
 
 #define SUSANNE_1_INITIAL_POSITION glm::vec3(0.0f, 1.0f, 0.0f)
@@ -40,6 +47,7 @@ private:
 	GameObject suzanne_;
 	GameObject suzanne_2_;
 	Camera* main_camera_;
+	Gradient* test_gradient_;
 
 
 	Shader* active_shader_;
