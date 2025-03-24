@@ -21,7 +21,11 @@ Shader::Shader(const std::string& vertex_file, const std::string& fragment_file)
 	glValidateProgram(shader_id_); //check the entire program is valid
 	CheckShaderError(shader_id_, GL_VALIDATE_STATUS, true, "Error: Shader program not valid");
 
-	uniforms_[kTransform] = glGetUniformLocation(shader_id_, "transform"); // associate with the location of uniform variable within a program
+	// Associate with the location of uniform variable within a program.
+	uniforms_[kMVPMatrix] = glGetUniformLocation(shader_id_, "transform");
+	uniforms_[kModelMatrix] = glGetUniformLocation(shader_id_, "modelMatrix");
+	uniforms_[kViewMatrix] = glGetUniformLocation(shader_id_, "viewMatrix");
+	uniforms_[kProjectionMatrix] = glGetUniformLocation(shader_id_, "projectionMatrix");
 }
 Shader::~Shader()
 {
@@ -42,7 +46,11 @@ void Shader::Bind()
 void Shader::Update(const Transform& transform, const Camera& camera)
 {
 	glm::mat4 mvp = camera.get_view_projection() * transform.get_model();
-	glUniformMatrix4fv(uniforms_[kTransform], 1, GLU_FALSE, &mvp[0][0]);
+	glUniformMatrix4fv(uniforms_[kMVPMatrix], 1, GLU_FALSE, &mvp[0][0]);
+
+	glUniformMatrix4fv(uniforms_[kModelMatrix], 1, GLU_FALSE, &transform.get_model()[0][0]);
+	glUniformMatrix4fv(uniforms_[kViewMatrix], 1, GLU_FALSE, &camera.get_view()[0][0]);
+	glUniformMatrix4fv(uniforms_[kProjectionMatrix], 1, GLU_FALSE, &camera.get_projection()[0][0]);
 }
 
 

@@ -169,7 +169,10 @@ private:
 	static const unsigned int kNumShaders = 2; // Number of shaders.
 	enum
 	{
-		kTransform,
+		kMVPMatrix,
+		kModelMatrix,
+		kViewMatrix,
+		kProjectionMatrix,
 
 		kNumTransforms
 	};

@@ -108,5 +108,11 @@
     <None Include="..\res\Shaders\rimLighting.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\res\Shaders\NormalsTest.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\NormalsTest.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

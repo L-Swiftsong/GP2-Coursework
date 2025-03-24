@@ -108,6 +108,8 @@
     <None Include="..\res\Shaders\fogShader.vert" />
     <None Include="..\res\Shaders\LightingTests.frag" />
     <None Include="..\res\Shaders\LightingTests.vert" />
+    <None Include="..\res\Shaders\NormalsTest.frag" />
+    <None Include="..\res\Shaders\NormalsTest.vert" />
     <None Include="..\res\Shaders\rimLighting.frag" />
     <None Include="..\res\Shaders\rimLighting.vert" />
   </ItemGroup>

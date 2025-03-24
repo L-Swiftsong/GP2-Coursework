@@ -12,11 +12,11 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	fog_shader_(Shader("..\\res\\Shaders\\fogShader.vert", "..\\res\\Shaders\\fogShader.frag")),
 	rim_lighting_shader_(Shader("..\\res\\Shaders\\rimLighting.vert", "..\\res\\Shaders\\rimLighting.frag")),
 	lighting_test_shader_(Shader("..\\res\\Shaders\\LightingTests.vert", "..\\res\\Shaders\\LightingTests.frag")),
-	suzanne_(GameObject("..\\res\\monkey3.obj", "..\\res\\water.jpg", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
-	suzanne_2_(GameObject("..\\res\\monkey3.obj", "..\\res\\bricks.jpg", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
+	suzanne_(GameObject("..\\res\\IcoSphere.obj", "..\\res\\water.jpg", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
+	suzanne_2_(GameObject("..\\res\\IcoSphere.obj", "..\\res\\bricks.jpg", glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
 	counter_(1.0f)
 {
-	active_shader_ = &lighting_test_shader_;
+	active_shader_ = new Shader("..\\res\\Shaders\\NormalsTest.vert", "..\\res\\Shaders\\NormalsTest.frag");
 
 	glm::vec3 testCols[6]
 	{
@@ -47,6 +47,7 @@ MainGame::~MainGame()
 {
 	delete main_camera_;
 	delete test_gradient_;
+	delete active_shader_;
 }
 
 void MainGame::Run()
@@ -146,11 +147,11 @@ void MainGame::LinkLightingTestsShader()
 	// Setup the Directional Lights.
 	lighting_test_shader_.set_vec_3("directionalLight.Direction", 0.2f, -1.0f, -0.3f);
 
-	glm::vec3 ambientVal = test_gradient_->GetValue(counter_ / 20.0f);
-	lighting_test_shader_.set_vec_3("directionalLight.Ambient", ambientVal.x, ambientVal.y, ambientVal.z);
+	//glm::vec3 ambientVal = test_gradient_->GetValue(counter_ / 20.0f);
+	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", ambientVal.x, ambientVal.y, ambientVal.z);
 
 	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", MORNING_DIRECTIONAL_LIGHT_AMBIENT);
-	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", MIDDAY_DIRECTIONAL_LIGHT_AMBIENT);
+	lighting_test_shader_.set_vec_3("directionalLight.Ambient", MIDDAY_DIRECTIONAL_LIGHT_AMBIENT);
 	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", EVENING_DIRECTIONAL_LIGHT_AMBIENT);
 	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT);
 
@@ -175,11 +176,15 @@ void MainGame::DrawGame()
 
 	//linkFogShader();
 	//LinkRimShader();
-	LinkLightingTestsShader();
+	//LinkLightingTestsShader();
 
 	
+	glm::vec3 currentCameraPos = main_camera_->get_pos();
+	//main_camera_->set_pos(glm::vec3(glm::sin(counter_), currentCameraPos.y, currentCameraPos.z));
+	//main_camera_->RotateY(glm::radians(glm::sin(counter_)) * 0.25f);
+
 	// Update Transform.
-	suzanne_.get_transform()->set_rot(glm::vec3(0.0, counter_ * 5, 0.0));
+	suzanne_.get_transform()->set_rot(glm::vec3(0.0, counter_, 0.0));
 	suzanne_.get_transform()->set_scale(glm::vec3(0.6, 0.6, 0.6));
 
 	// Draw the GameObject.
@@ -187,8 +192,7 @@ void MainGame::DrawGame()
 	
 
 	// Update Transform.
-	suzanne_2_.get_transform()->set_pos(glm::vec3(0.0, 0.0, 0.0));
-	suzanne_2_.get_transform()->set_rot(glm::vec3(0.0, 0.0, counter_ * 5));
+	suzanne_2_.get_transform()->set_rot(glm::vec3(0.0, counter_, counter_));
 	suzanne_2_.get_transform()->set_scale(glm::vec3(0.6, 0.6, 0.6));
 
 	// Draw the GameObject.

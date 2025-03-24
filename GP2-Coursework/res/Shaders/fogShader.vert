@@ -3,6 +3,7 @@
 layout (location = 0) in vec3 VertexPosition;
 layout (location = 2) in vec3 VertexNormal;
 
+uniform mat4 modelMatrix;
 uniform mat4 transform;
 
 out vec3 v_norm;
@@ -10,7 +11,14 @@ out vec4 v_pos;
 
 void main()
 {
-	v_norm = VertexNormal;
-	v_pos = transform * vec4(VertexPosition, 1.0);
+	// Fragment Position.
+	v_pos = modelMatrix * vec4(VertexPosition, 1.0f);
+
+	// Normal Matrix.
+	mat3 normalMatrix = mat3(transpose(inverse(modelMatrix)));
+	v_norm = normalize(normalMatrix * VertexNormal);
+
+
+	// Output Position.
 	gl_Position = transform * vec4(VertexPosition, 1.0);
 }

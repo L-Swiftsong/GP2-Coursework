@@ -3,10 +3,4 @@ E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\GP2-Coursework\Gradient.h
 E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\GP2-Coursework\Gradient.h(165,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\GP2-Coursework\Gradient.h(166,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\GP2-Coursework\Gradient.h(167,20): warning C4244: 'argument': conversion from 'double' to 'const float', possible loss of data
-  main.cpp
-E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\GP2-Coursework\Gradient.h(143,18): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\GP2-Coursework\Gradient.h(165,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\GP2-Coursework\Gradient.h(166,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\GP2-Coursework\Gradient.h(167,20): warning C4244: 'argument': conversion from 'double' to 'const float', possible loss of data
-  Generating Code...
   GP2-Coursework.vcxproj -> E:\University\Year 3\GP2\GP2-Coursework\GP2-Coursework\Debug\GP2-Coursework.exe

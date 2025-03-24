@@ -18,6 +18,11 @@ public:
 	{
 		return this->pos_;
 	}
+	void set_pos(glm::vec3 newPos)
+	{
+		this->pos_ = newPos;
+	}
+
 	glm::vec3 get_forward()
 	{
 		return this->forward_;
@@ -43,10 +48,10 @@ public:
 	//	pos_ += forward_ * amt;
 	//}
 
-	//void MoveRight(float amt)
-	//{
-	//	pos_ += glm::cross(up_, forward) * amt;
-	//}
+	void MoveRight(float amt)
+	{
+		pos_ += glm::cross(up_, forward_) * amt;
+	}
 
 	//void Pitch(float angle)
 	//{
