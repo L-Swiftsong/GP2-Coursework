@@ -1,79 +1,103 @@
 #include "Mesh.h"
-#include <vector>
 
-
-Mesh::Mesh(const std::string& file_name)
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::shared_ptr<Texture>>& textures)
 {
-	IndexedModel model = OBJModel(file_name).ToIndexedModel();
-	InitModel(model);
-	Sphere mesh_sphere_();
+	this->vertices = vertices;
+	this->indices = indices;
+	this->textures = textures;
+
+	SetupMesh();
 }
-Mesh::Mesh(Vertex* vertices, unsigned int num_vertices, unsigned int* indices, unsigned int num_indices)
-{
-	IndexedModel model;
-
-	for (unsigned int i = 0; i < num_vertices; i++)
-	{
-		model.positions.push_back(*vertices[i].get_pos());
-		model.texCoords.push_back(*vertices[i].get_tex_coord());
-		model.normals.push_back(*vertices[i].get_normal());
-	}
-
-	for (unsigned int i = 0; i < num_indices; i++)
-		model.indices.push_back(indices[i]);
-
-	InitModel(model);
-}
-
-
-void Mesh::InitModel(const IndexedModel& model)
-{
-	draw_count_ = model.indices.size();
-
-	glGenVertexArrays(1, &vertex_array_object_); //generate a vertex array and store it in the VAO
-	glBindVertexArray(vertex_array_object_); //bind the VAO (any operation that works on a VAO will work on our bound VAO - binding)
-
-	glGenBuffers(kNumBuffers, vertex_array_buffers_); //generate our buffers based of our array of data/buffers - GLuint vertexArrayBuffers[NUM_BUFFERS];
-
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffers_[kPositionVertexBuffer]); //tell opengl what type of data the buffer is (GL_ARRAY_BUFFER), and pass the data
-	glBufferData(GL_ARRAY_BUFFER, model.positions.size() * sizeof(model.positions[0]), &model.positions[0], GL_STATIC_DRAW); //move the data to the GPU - type of data, size of data, starting address (pointer) of data, where do we store the data on the GPU (determined by type)
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffers_[kTexCoordVertexBuffer]); //tell opengl what type of data the buffer is (GL_ARRAY_BUFFER), and pass the data
-	glBufferData(GL_ARRAY_BUFFER, model.positions.size() * sizeof(model.texCoords[0]), &model.texCoords[0], GL_STATIC_DRAW); //move the data to the GPU - type of data, size of data, starting address (pointer) of data, where do we store the data on the GPU
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffers_[kNormalVertexBuffer]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(model.normals[0]) * model.normals.size(), &model.normals[0], GL_STATIC_DRAW);
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array_buffers_[kIndexVertexBuffer]); //tell opengl what type of data the buffer is (GL_ARRAY_BUFFER), and pass the data
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model.indices.size() * sizeof(model.indices[0]), &model.indices[0], GL_STATIC_DRAW); //move the data to the GPU - type of data, size of data, starting address (pointer) of data, where do we store the data on the GPU
-
-	glBindVertexArray(0); // unbind our VAO
-}
-
 Mesh::~Mesh()
+{}
+
+
+//void Mesh::Draw(const Shader& shader)
+void Mesh::Draw(Shader& shader)
 {
-	glDeleteVertexArrays(1, &vertex_array_object_); // delete arrays
+    // bind appropriate textures
+    unsigned int diffuseNr = 1;
+    unsigned int specularNr = 1;
+    unsigned int normalNr = 1;
+    unsigned int heightNr = 1;
+    for (unsigned int i = 0; i < textures.size(); i++)
+    {
+        glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
+
+        // Retrieve texture number to format name (the N in diffuse_textureN)
+        std::string name;
+        TextureType type = textures[i]->get_texture_type();
+        if (type == TextureType::kDiffuse)
+            name = "texture_diffuse" + std::to_string(diffuseNr++);
+        else if (type == TextureType::kSpecular)
+            name = "texture_specular" + std::to_string(specularNr++);
+        else if (type == TextureType::kNormal)
+            name = "texture_normal" + std::to_string(normalNr++);
+        else if (type == TextureType::kHeight)
+            name = "texture_height" + std::to_string(heightNr++);
+
+        // now set the sampler to the correct texture unit
+        glUniform1i(glGetUniformLocation(shader.get_shader_id(), name.c_str()), i);
+
+        // and finally bind the texture
+        glBindTexture(GL_TEXTURE_2D, textures[i]->get_texture_id());
+    }
+
+    //shader.Update(transform, camera);
+
+    // draw mesh
+    glBindVertexArray(vertex_array_object);
+    glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+
+    // always good practice to set everything back to defaults once configured.
+    glActiveTexture(GL_TEXTURE0);
 }
 
-void Mesh::Draw()
+
+void Mesh::SetupMesh()
 {
-	glBindVertexArray(vertex_array_object_);
+    // create buffers/arrays
+    glGenVertexArrays(1, &vertex_array_object);
+    glGenBuffers(1, &vertex_buffer_object);
+    glGenBuffers(1, &element_buffer_object);
 
-	glDrawElements(GL_TRIANGLES, draw_count_, GL_UNSIGNED_INT, 0);
-	//glDrawArrays(GL_TRIANGLES, 0, drawCount);
+    glBindVertexArray(vertex_array_object);
+    // load data into vertex buffers
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object);
+    // A great thing about structs is that their memory layout is sequential for all its items.
+    // The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
+    // again translates to 3/2 floats which translates to a byte array.
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
-	glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_object);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+    // set the vertex attribute pointers
+    // vertex Positions
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    // vertex normals
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+    // vertex texture coords
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+    // vertex tangent
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
+    // vertex bitangent
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
+    // ids
+    glEnableVertexAttribArray(5);
+    glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, m_BoneIDs));
+
+    // weights
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_Weights));
+    
+
+
+    glBindVertexArray(0);
 }
-
-void Mesh::UpdateSphereData(glm::vec3 pos, float radius)
-{
-	mesh_sphere_.set_pos(pos);
-	mesh_sphere_.set_radius(radius);
-}
-

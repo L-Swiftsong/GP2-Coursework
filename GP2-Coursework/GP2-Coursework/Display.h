@@ -1,9 +1,10 @@
 #pragma once
+
 #include <SDL/SDL.h>
-#include <GL\glew.h>
+#include <GL/glew.h>
+
 #include <iostream>
 #include <string>
-using namespace std;
 
 
 class Display

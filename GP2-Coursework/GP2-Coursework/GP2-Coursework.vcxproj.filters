@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Mesh">
+      <UniqueIdentifier>{78d90583-7dd7-44fe-972e-b2891af3d158}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mesh">
+      <UniqueIdentifier>{f90c8e20-77c8-4fb4-8983-f30f13532363}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -24,25 +30,22 @@
     <ClCompile Include="Display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stb_image.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="obj_loader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Audio.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GameObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -51,9 +54,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Display.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
@@ -71,47 +71,54 @@
     <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="obj_loader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Audio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Gradient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Header Files\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>Header Files\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>Header Files\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files\Mesh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Object Include="..\res\monkey3.obj">
-      <Filter>Resource Files</Filter>
-    </Object>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\res\Shaders\fogShader.frag">
+    <None Include="..\res\Shaders\Tests\fogShader.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\res\Shaders\fogShader.vert">
+    <None Include="..\res\Shaders\Tests\fogShader.vert">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\res\Shaders\LightingTests.frag">
+    <None Include="..\res\Shaders\Tests\LightingTests.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\res\Shaders\LightingTests.vert">
+    <None Include="..\res\Shaders\Tests\LightingTests.vert">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\res\Shaders\rimLighting.frag">
+    <None Include="..\res\Shaders\Tests\NormalMapping.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\res\Shaders\rimLighting.vert">
+    <None Include="..\res\Shaders\Tests\NormalMapping.vert">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\res\Shaders\NormalsTest.frag">
+    <None Include="..\res\Shaders\Tests\NormalsTest.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\res\Shaders\NormalsTest.vert">
+    <None Include="..\res\Shaders\Tests\NormalsTest.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\rimLighting.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\rimLighting.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

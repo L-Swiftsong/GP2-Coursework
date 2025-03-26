@@ -1,38 +1,29 @@
 #pragma once
-
 #include "GameObject.h"
 
-GameObject::GameObject(const std::string mesh_file_path) : GameObject(mesh_file_path, "..\\res\\bricks.jpg", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))
+GameObject::GameObject(const std::string mesh_file_path) : GameObject(mesh_file_path, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))
 {}
-GameObject::GameObject(const std::string mesh_file_path, const std::string texture_file_path, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale_) :
-	mesh_(new Mesh(mesh_file_path)),
-	transform_(new Transform(position, rotation, scale_)),
-	texture_(new Texture(texture_file_path))
+GameObject::GameObject(const std::string mesh_file_path, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale_) :
+	model_(new Model(mesh_file_path)),
+	transform_(new Transform(position, rotation, scale_))
 {}
 
 GameObject::~GameObject()
 {
-	delete mesh_;
+	delete model_;
 	delete transform_;
-	delete texture_;
 }
 
 
-void GameObject::Draw()
-{
-	texture_->Bind(0);
-	mesh_->Draw();
-	mesh_->UpdateSphereData(*transform_->get_pos(), 0.62f);
-}
 void GameObject::Draw(const Camera& camera, Shader* shader)
 {
 	shader->Bind();
-	texture_->Bind(0);
+	//BindTextures();
 	shader->Update(*transform_, camera);
-	mesh_->Draw();
-	mesh_->UpdateSphereData(*transform_->get_pos(), 0.62f);
+	model_->Draw(*shader);
+	//mesh_->UpdateSphereData(*transform_->get_pos(), 0.62f);
 }
 
 
 Transform* GameObject::get_transform() const { return transform_; }
-Mesh* GameObject::get_mesh() const { return mesh_; }
+Model* GameObject::get_model() const { return model_; }

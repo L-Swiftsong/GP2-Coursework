@@ -3,9 +3,9 @@
 
 
 ## Naming Conventions
-Link: https://google.github.io/styleguide/cppguide.html
+C++ Style Link: https://google.github.io/styleguide/cppguide.html
 
-Quick Notes:
+Quick Notes (C++):
 - Variables: Snake Case
 	- Private (Classes Only): '_' suffix
 	- Constants: 'k' prefix
@@ -14,3 +14,11 @@ Quick Notes:
 - Functions:
 	- Pascal Case (Start with caps, first letter of words is capitalised)
 	- Accessors & Mutators (Getters & Setters): Named like variables (E.g. int count -> set_count(int count))
+
+
+Shader Notes:
+- Textures (Where 'N' represents any positive number):
+	- Diffuse:	texture_diffuseN
+	- Specular:	texture_specularN
+	- Normal:	texture_normalN
+	- Height:	texture_heightN

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Mesh.h"
+#include "Model.h"
 #include "transform.h"
-#include "Texture.h"
 #include "Shader.h"
 #include "Camera.h"
 
@@ -12,19 +11,17 @@ class GameObject
 {
 public:
 	GameObject(const std::string mesh_file_name);
-	GameObject(const std::string mesh_file_name, const std::string texture_file_path, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale_);
+	GameObject(const std::string mesh_file_name, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale_);
 	~GameObject();
 
-	void Draw();
 	void Draw(const Camera& camera, Shader* shader);
 
+	Model* get_model() const;
 	Transform* get_transform() const;
-	Mesh* get_mesh() const;
 
 private:
 	GameObject() = delete;
 
-	Mesh* mesh_;
+	Model* model_;
 	Transform* transform_;
-	Texture* texture_;
 };

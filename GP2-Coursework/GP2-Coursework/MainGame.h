@@ -7,7 +7,6 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "transform.h"
-#include "Audio.h"
 #include "Gradient.h"
 
 enum class GameState {kPlay, kExit};
@@ -44,8 +43,9 @@ private:
 
 	Display game_display_;
 	GameState game_state_;
-	GameObject suzanne_;
-	GameObject suzanne_2_;
+	GameObject* backpack_;
+	//GameObject* suzanne_;
+	//GameObject* suzanne_2_;
 	Camera* main_camera_;
 	Gradient* test_gradient_;
 

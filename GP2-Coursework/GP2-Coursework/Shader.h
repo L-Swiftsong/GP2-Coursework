@@ -20,6 +20,8 @@ public:
 
     ~Shader();
 
+	GLuint get_shader_id() const { return shader_id_; }
+
 
 	/*template <typename T> void setParam(const std::string& name, T& value) const
 	{

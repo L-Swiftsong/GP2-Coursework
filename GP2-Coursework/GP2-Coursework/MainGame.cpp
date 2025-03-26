@@ -4,19 +4,23 @@
 #include <string>
 
 
-Transform transform;
 
 MainGame::MainGame() : game_state_(GameState::kPlay),
 	game_display_(Display()),
-	main_camera_(new Camera(glm::vec3(0, 0, -5), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
-	fog_shader_(Shader("..\\res\\Shaders\\fogShader.vert", "..\\res\\Shaders\\fogShader.frag")),
-	rim_lighting_shader_(Shader("..\\res\\Shaders\\rimLighting.vert", "..\\res\\Shaders\\rimLighting.frag")),
-	lighting_test_shader_(Shader("..\\res\\Shaders\\LightingTests.vert", "..\\res\\Shaders\\LightingTests.frag")),
-	suzanne_(GameObject("..\\res\\IcoSphere.obj", "..\\res\\water.jpg", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
-	suzanne_2_(GameObject("..\\res\\IcoSphere.obj", "..\\res\\bricks.jpg", glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
+	main_camera_(new Camera(glm::vec3(0, 0, -10.0), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
+	fog_shader_(			Shader("..\\res\\Shaders\\Tests\\fogShader.vert",		"..\\res\\Shaders\\Tests\\fogShader.frag")),
+	rim_lighting_shader_(	Shader("..\\res\\Shaders\\Tests\\rimLighting.vert",		"..\\res\\Shaders\\Tests\\rimLighting.frag")),
+	lighting_test_shader_(	Shader("..\\res\\Shaders\\Tests\\LightingTests.vert",	"..\\res\\Shaders\\Tests\\LightingTests.frag")),
+	//suzanne_2_(GameObject("..\\res\\TestModel\\backpack.obj", glm::vec3(50.0, 0.0, 0.0), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
+	//suzanne_(GameObject("..\\res\\IcoSphere.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
+	//suzanne_2_(GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
 	counter_(1.0f)
 {
-	active_shader_ = new Shader("..\\res\\Shaders\\NormalsTest.vert", "..\\res\\Shaders\\NormalsTest.frag");
+	stbi_set_flip_vertically_on_load(true);
+
+	active_shader_ = new Shader("..\\res\\Shaders\\Tests\\NormalsTest.vert", "..\\res\\Shaders\\Tests\\NormalsTest.frag");
+	backpack_ = new GameObject("..\\res\\TestModel\\backpack.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+
 
 	glm::vec3 testCols[6]
 	{
@@ -48,6 +52,7 @@ MainGame::~MainGame()
 	delete main_camera_;
 	delete test_gradient_;
 	delete active_shader_;
+	delete backpack_;
 }
 
 void MainGame::Run()
@@ -61,7 +66,7 @@ void MainGame::GameLoop()
 	{
 		ProcessInput();
 		DrawGame();
-		Collision(suzanne_.get_mesh()->get_sphere_pos(), suzanne_.get_mesh()->get_sphere_radius(), suzanne_2_.get_mesh()->get_sphere_pos(), suzanne_2_.get_mesh()->get_sphere_radius());
+		//Collision(suzanne_.get_mesh()->get_sphere_pos(), suzanne_.get_mesh()->get_sphere_radius(), suzanne_2_.get_mesh()->get_sphere_pos(), suzanne_2_.get_mesh()->get_sphere_radius());
 		//playAudio(backGroundMusic, glm::vec3(0.0f,0.0f,0.0f));
 	}
 }
@@ -184,19 +189,20 @@ void MainGame::DrawGame()
 	//main_camera_->RotateY(glm::radians(glm::sin(counter_)) * 0.25f);
 
 	// Update Transform.
-	suzanne_.get_transform()->set_rot(glm::vec3(0.0, counter_, 0.0));
-	suzanne_.get_transform()->set_scale(glm::vec3(0.6, 0.6, 0.6));
+	backpack_->get_transform()->set_rot(glm::vec3(0.0, counter_, 0.0));
+	backpack_->get_transform()->set_scale(glm::vec3(0.6, 0.6, 0.6));
 
 	// Draw the GameObject.
-	suzanne_.Draw(*main_camera_, active_shader_);
+	active_shader_->Bind();
+	backpack_->Draw(*main_camera_, active_shader_);
 	
 
 	// Update Transform.
-	suzanne_2_.get_transform()->set_rot(glm::vec3(0.0, counter_, counter_));
-	suzanne_2_.get_transform()->set_scale(glm::vec3(0.6, 0.6, 0.6));
+	//suzanne_2_.get_transform()->set_rot(glm::vec3(0.0, counter_, counter_));
+	//suzanne_2_.get_transform()->set_scale(glm::vec3(0.6, 0.6, 0.6));
 
 	// Draw the GameObject.
-	suzanne_2_.Draw(*main_camera_, active_shader_);
+	//suzanne_2_.Draw(*main_camera_, active_shader_);
 
 
 	// Increment the Counter.
