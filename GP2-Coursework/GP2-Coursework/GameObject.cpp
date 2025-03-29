@@ -3,10 +3,23 @@
 
 GameObject::GameObject(const std::string mesh_file_path) : GameObject(mesh_file_path, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))
 {}
-GameObject::GameObject(const std::string mesh_file_path, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale_) :
+GameObject::GameObject(const std::string mesh_file_path, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) :
 	model_(new Model(mesh_file_path)),
-	transform_(new Transform(position, rotation, scale_))
+	transform_(new Transform(position, rotation, scale))
 {}
+GameObject::GameObject(const std::string mesh_file_path, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, const std::string& diffuse_texture_path, const std::string& specular_texture_path, const std::string& normal_texture_path) :
+	transform_(new Transform(position, rotation, scale))
+{
+	std::vector<Texture> textureOverrides;
+	if (diffuse_texture_path != "")
+		textureOverrides.push_back(Texture(TextureType::kDiffuse, diffuse_texture_path));
+	if (specular_texture_path != "")
+		textureOverrides.push_back(Texture(TextureType::kSpecular, specular_texture_path));
+	if (normal_texture_path != "")
+		textureOverrides.push_back(Texture(TextureType::kNormal, normal_texture_path));
+
+	model_ = new Model(mesh_file_path, textureOverrides);
+}
 
 GameObject::~GameObject()
 {

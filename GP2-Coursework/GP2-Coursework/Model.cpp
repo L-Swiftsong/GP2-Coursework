@@ -6,7 +6,21 @@ Model::Model(const std::string& file_path)
 
     // We're delaying the actual loading of textures from the creation of the meshes as at some point during our mesh creation process we lose access to them through OpenGL.
     // By delaying their initialisation till here, we retain the access.
-    LoadMaterialTextures();
+    LoadMaterialTextures(this->directory);
+}
+Model::Model(const std::string& file_path, const std::vector<Texture> texture_overrides)
+{
+    // Load the texture overrides.
+    for (int i = 0; i < texture_overrides.size(); ++i)
+    {
+        textures_loaded.push_back(std::make_shared<Texture>(texture_overrides[i]));
+    }
+
+    // Load our model.
+    LoadModel(file_path, true);
+
+    // Initialise our Textures.
+    LoadMaterialTextures("..\\res");
 }
 
 void Model::Draw(const Shader& shader)
@@ -19,7 +33,7 @@ void Model::Draw(const Shader& shader)
 
 
 // Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-void Model::LoadModel(const std::string& file_path)
+void Model::LoadModel(const std::string& file_path, const bool useOverrideTextures)
 {
 	// Read file via ASSIMP.
 	Assimp::Importer importer;
@@ -36,11 +50,11 @@ void Model::LoadModel(const std::string& file_path)
 	directory = file_path.substr(0, file_path.find_last_of('\\'));
 
 	// Process ASSIMP's root node recursively.
-	ProcessNode(scene->mRootNode, scene);
+	ProcessNode(scene->mRootNode, scene, useOverrideTextures);
 }
 
 // Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
-void Model::ProcessNode(const aiNode* node, const aiScene* scene)
+void Model::ProcessNode(const aiNode* node, const aiScene* scene, const bool useOverrideTextures)
 {
 	// Process each mesh located at the current node.
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -48,21 +62,31 @@ void Model::ProcessNode(const aiNode* node, const aiScene* scene)
 		// The node object only contains indices to index the actual objects in the scene. 
 		// The scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		meshes.push_back(ProcessMesh(mesh, scene));
+
+		meshes.push_back(ProcessMesh(mesh, scene, useOverrideTextures));
 	}
 
 	// After we've processed all of the meshes directly under this node (if any) we then recursively process each of the node's children nodes.
 	for (unsigned int i = 0; i < node->mNumChildren; i++)
 	{
-		ProcessNode(node->mChildren[i], scene);
+		ProcessNode(node->mChildren[i], scene, useOverrideTextures);
 	}
 }
-Mesh Model::ProcessMesh(const aiMesh* mesh, const aiScene* scene)
+Mesh Model::ProcessMesh(const aiMesh* mesh, const aiScene* scene, const bool useOverrideTextures)
 {
-    // data to fill
+    if (useOverrideTextures == false)
+    {
+        // Return a mesh object created from the extracted mesh data
+        return Mesh(GetMeshVertices(mesh), GetMeshIndices(mesh), GetMeshTextures(mesh, scene));
+    }
+    else
+    {
+        return Mesh(GetMeshVertices(mesh), GetMeshIndices(mesh), textures_loaded);
+    }
+}
+std::vector<Vertex> Model::GetMeshVertices(const aiMesh* mesh)
+{
     std::vector<Vertex> vertices;
-    std::vector<unsigned int> indices;
-    std::vector<std::shared_ptr<Texture>> textures;
 
     // Walk through each of the mesh's vertices.
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
@@ -116,6 +140,12 @@ Mesh Model::ProcessMesh(const aiMesh* mesh, const aiScene* scene)
         vertices.push_back(vertex);
     }
 
+    return vertices;
+}
+std::vector<unsigned int> Model::GetMeshIndices(const aiMesh* mesh)
+{
+    std::vector<unsigned int> indices;
+
     // Now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
     {
@@ -125,6 +155,12 @@ Mesh Model::ProcessMesh(const aiMesh* mesh, const aiScene* scene)
         for (unsigned int j = 0; j < face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
     }
+
+    return indices;
+}
+std::vector<std::shared_ptr<Texture>> Model::GetMeshTextures(const aiMesh* mesh, const aiScene* scene)
+{
+    std::vector<std::shared_ptr<Texture>> textures;
 
     // Process materials.
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
@@ -144,8 +180,7 @@ Mesh Model::ProcessMesh(const aiMesh* mesh, const aiScene* scene)
     std::vector<std::shared_ptr<Texture>> heightMaps = PrepareMaterialTextures(material, aiTextureType_AMBIENT, TextureType::kHeight);
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
-    // return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, textures);
+    return textures;
 }
 
 std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMaterial* mat, const aiTextureType type, const TextureType texture_type)
@@ -183,11 +218,11 @@ std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMat
     return textures;
 }
 
-void Model::LoadMaterialTextures()
+void Model::LoadMaterialTextures(const std::string& directory)
 {
     for (unsigned int i = 0; i < textures_loaded.size(); ++i)
     {
-        textures_loaded[i]->set_texture_id(TextureFromFile(textures_loaded[i]->get_file_path(), this->directory));
+        textures_loaded[i]->set_texture_id(TextureFromFile(textures_loaded[i]->get_file_path(), directory));
     }
 }
 GLuint Model::TextureFromFile(const std::string& file_name, const std::string& directory)
