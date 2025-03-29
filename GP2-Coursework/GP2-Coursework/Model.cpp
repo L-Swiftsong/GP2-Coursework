@@ -1,6 +1,6 @@
 #include "Model.h"
 
-Model::Model(const std::string& file_path, const bool gamma) : gamma_correction(gamma)
+Model::Model(const std::string& file_path)
 {
 	LoadModel(file_path);
 
@@ -9,11 +9,8 @@ Model::Model(const std::string& file_path, const bool gamma) : gamma_correction(
     LoadMaterialTextures();
 }
 
-//void Model::Draw(const Shader& shader)
-void Model::Draw(Shader& shader)
+void Model::Draw(const Shader& shader)
 {
-    //shader.set_int("texture_diffuse1", 0);
-
 	for (unsigned int i = 0; i < meshes.size(); ++i)
 	{
 		meshes[i].Draw(shader);
@@ -218,40 +215,6 @@ GLuint Model::TextureFromFile(const std::string& file_name, const std::string& d
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData); //Target, Mipmapping Level, Pixel Format, Width, Height, Border Size, Input Format, Data Type of Texture, Image Data
 
     stbi_image_free(imageData);
-
-    /*GLuint texture_id;
-    glGenTextures(1, &texture_id);
-    std::cout << file_name << ": " << texture_id << std::endl;
-
-    int width, height, nrComponents;
-    unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &nrComponents, 0);
-    if (data)
-    {
-        GLenum format = GL_RED;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
-
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-
-        stbi_image_free(data);
-    }
-    else
-    {
-        std::cout << "Texture failed to load at path: " << file_name << std::endl;
-        stbi_image_free(data);
-    }*/
 
     return texture_id;
 }

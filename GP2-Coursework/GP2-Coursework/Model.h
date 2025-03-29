@@ -20,15 +20,14 @@
 class Model
 {
 public:
-	Model(const std::string& file_path, const bool gamma = false);
+	Model(const std::string& file_path);
 
-	void Draw(Shader& shader);
+	void Draw(const Shader& shader);
 
 
 	std::vector<std::shared_ptr<Texture>> textures_loaded;
 	std::vector<Mesh> meshes;
 	std::string directory;
-	bool gamma_correction;
 
 private:
 	void LoadModel(const std::string& file_path);

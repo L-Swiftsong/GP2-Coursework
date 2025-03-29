@@ -18,7 +18,6 @@ GameObject::~GameObject()
 void GameObject::Draw(const Camera& camera, Shader* shader)
 {
 	shader->Bind();
-	//BindTextures();
 	shader->Update(*transform_, camera);
 	model_->Draw(*shader);
 	//mesh_->UpdateSphereData(*transform_->get_pos(), 0.62f);

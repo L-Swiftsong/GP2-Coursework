@@ -12,8 +12,7 @@ Mesh::~Mesh()
 {}
 
 
-//void Mesh::Draw(const Shader& shader)
-void Mesh::Draw(Shader& shader)
+void Mesh::Draw(const Shader& shader)
 {
     // bind appropriate textures
     unsigned int diffuseNr = 1;
@@ -42,8 +41,6 @@ void Mesh::Draw(Shader& shader)
         // and finally bind the texture
         glBindTexture(GL_TEXTURE_2D, textures[i]->get_texture_id());
     }
-
-    //shader.Update(transform, camera);
 
     // draw mesh
     glBindVertexArray(vertex_array_object);
