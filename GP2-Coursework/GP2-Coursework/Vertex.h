@@ -8,6 +8,9 @@
 struct Vertex
 {
 public:
+	Vertex() : Position(glm::vec3(0.0f)), TexCoords(glm::vec3(0.0f)), Normal(glm::vec3(0.0f)), Tangent(glm::vec3(0.0f)), Bitangent(glm::vec3(0.0f)), m_BoneIDs(), m_Weights()
+	{}
+
 	glm::vec3* get_pos() { return &Position; }
 	glm::vec2* get_tex_coord() { return &TexCoords; }
 	glm::vec3* get_normal() { return &Normal; }

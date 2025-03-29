@@ -1,5 +1,7 @@
 #include "Texture.h"
 
+Texture::Texture(const TextureType& texture_type, const std::string& file_path) : texture_handler_(NULL), texture_type_(texture_type), file_path_(file_path)
+{}
 Texture::Texture(const GLuint& texture_id, const TextureType& texture_type, const std::string& file_path) : texture_handler_(texture_id), texture_type_(texture_type), file_path_(file_path)
 {}
 

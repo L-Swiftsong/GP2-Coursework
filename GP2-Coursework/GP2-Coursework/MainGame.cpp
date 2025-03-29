@@ -18,7 +18,7 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 {
 	stbi_set_flip_vertically_on_load(true);
 
-	active_shader_ = new Shader("..\\res\\Shaders\\Tests\\NormalsTest.vert", "..\\res\\Shaders\\Tests\\NormalsTest.frag");
+	active_shader_ = new Shader("..\\res\\Shaders\\Tests\\NormalMapping.vert", "..\\res\\Shaders\\Tests\\NormalMapping.frag");
 	backpack_ = new GameObject("..\\res\\TestModel\\backpack.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
 
@@ -187,6 +187,8 @@ void MainGame::DrawGame()
 	glm::vec3 currentCameraPos = main_camera_->get_pos();
 	//main_camera_->set_pos(glm::vec3(glm::sin(counter_), currentCameraPos.y, currentCameraPos.z));
 	//main_camera_->RotateY(glm::radians(glm::sin(counter_)) * 0.25f);
+	active_shader_->set_vec_3("viewPos", currentCameraPos);
+	active_shader_->set_vec_3("lightPos", glm::vec3(0.5f, 1.0f, 0.3f));
 
 	// Update Transform.
 	backpack_->get_transform()->set_rot(glm::vec3(0.0, counter_, 0.0));

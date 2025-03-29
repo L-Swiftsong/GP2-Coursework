@@ -14,10 +14,12 @@ enum TextureType
 class Texture
 {
 public:
+	Texture(const TextureType& texture_type, const std::string& file_path);
 	Texture(const GLuint& texture_id, const TextureType& texture_type, const std::string& file_path);
 	~Texture();
 
 
+	void set_texture_id(const GLuint& newValue) { texture_handler_ = newValue; }
 	GLuint get_texture_id() const { return texture_handler_; }
 	TextureType get_texture_type() const { return texture_type_; }
 	std::string get_file_path() const { return file_path_; }

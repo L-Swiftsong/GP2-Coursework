@@ -4,9 +4,9 @@ Model::Model(const std::string& file_path, const bool gamma) : gamma_correction(
 {
 	LoadModel(file_path);
 
-    // For some reason, between the time that the materials are generated and the model is finished creation we lose access to them through OpenGL.
-    // Reloading (But not rebinding) these materials solves this, but we should find out why this is occuring and try to fix it.
-    ReloadMaterials();
+    // We're delaying the actual loading of textures from the creation of the meshes as at some point during our mesh creation process we lose access to them through OpenGL.
+    // By delaying their initialisation till here, we retain the access.
+    LoadMaterialTextures();
 }
 
 //void Model::Draw(const Shader& shader)
@@ -18,34 +18,6 @@ void Model::Draw(Shader& shader)
 	{
 		meshes[i].Draw(shader);
 	}
-}
-void Model::ReloadMaterials()
-{
-    for (int i = 0; i < textures_loaded.size(); ++i)
-    {
-        std::string filePath = directory + '\\' + textures_loaded[i].get_file_path();
-        int width, height, numComponents; //width, height, and no of components of image
-        unsigned char* imageData = stbi_load((filePath).c_str(), &width, &height, &numComponents, 4); //load the image and store the data
-
-        if (imageData == NULL)
-        {
-            std::cerr << "texture load failed" << filePath << std::endl;
-        }
-
-        GLuint texture_id;
-        glGenTextures(1, &texture_id); // number of and address of textures
-        glBindTexture(GL_TEXTURE_2D, texture_id); //bind texture - define type 
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // wrap texture outside width
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // wrap texture outside height
-
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // linear filtering for minification (texture is smaller than area)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear filtering for magnifcation (texture is larger)
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData); //Target, Mipmapping Level, Pixel Format, Width, Height, Border Size, Input Format, Data Type of Texture, Image Data
-
-        stbi_image_free(imageData);
-    }
 }
 
 
@@ -159,47 +131,42 @@ Mesh Model::ProcessMesh(const aiMesh* mesh, const aiScene* scene)
 
     // Process materials.
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-    // Note: We're assuming a convention for sampler names in the shaders. Each diffuse texture should
-    //  be named as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
-    //  Same applies to other textures as the following list summarizes:
-    //      diffuse: texture_diffuseN
-    //      specular: texture_specularN
-    //      normal: texture_normalN
-    //      height: texture_heightN
 
+    // Note: We're assuming a convention for sampler names in the shaders.
+    // View the '.ReadMe' for more information.
     // 1. Diffuse maps.
-    std::vector<std::shared_ptr<Texture>> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::kDiffuse);
+    std::vector<std::shared_ptr<Texture>> diffuseMaps = PrepareMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::kDiffuse);
     textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
     // 2. Specular maps.
-    std::vector<std::shared_ptr<Texture>> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::kSpecular);
+    std::vector<std::shared_ptr<Texture>> specularMaps = PrepareMaterialTextures(material, aiTextureType_SPECULAR, TextureType::kSpecular);
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     // 3. Normal maps.
-    std::vector<std::shared_ptr<Texture>> normalMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, TextureType::kNormal);
+    std::vector<std::shared_ptr<Texture>> normalMaps = PrepareMaterialTextures(material, aiTextureType_HEIGHT, TextureType::kNormal);
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
     // 4. Height maps.
-    std::vector<std::shared_ptr<Texture>> heightMaps = LoadMaterialTextures(material, aiTextureType_AMBIENT, TextureType::kHeight);
+    std::vector<std::shared_ptr<Texture>> heightMaps = PrepareMaterialTextures(material, aiTextureType_AMBIENT, TextureType::kHeight);
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, textures);
 }
 
-std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(const aiMaterial* mat, const aiTextureType type, const TextureType texture_type)
+std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMaterial* mat, const aiTextureType type, const TextureType texture_type)
 {
     std::vector<std::shared_ptr<Texture>> textures;
-    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+    for (unsigned int i = 0; i < mat->GetTextureCount(type); ++i)
     {
         aiString str;
         mat->GetTexture(type, i, &str);
-        
+
         // Check if a texture was loaded before and if so, continue to next iteration (Skip loading already loaded textures).
         bool skip = false;
-        for (unsigned int j = 0; j < textures_loaded.size(); j++)
+        for (unsigned int j = 0; j < textures_loaded.size(); ++j)
         {
-            if (std::strcmp(textures_loaded[j].get_file_path().data(), str.C_Str()) == 0)
+            if (std::strcmp(textures_loaded[j]->get_file_path().data(), str.C_Str()) == 0)
             {
                 // A texture with the same filepath has already been loaded, continue to next one (Optimization).
-                textures.push_back(std::make_shared<Texture>(textures_loaded[j]));
+                textures.push_back(textures_loaded[j]);
                 skip = true;
                 break;
             }
@@ -207,18 +174,26 @@ std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(const aiMateri
 
         if (!skip)
         {
-            // The texture hasn't been loaded already. Load it.
-            Texture texture = Texture(TextureFromFile(str.C_Str(), this->directory, gamma_correction), texture_type, str.C_Str());
-            textures.push_back(std::make_shared<Texture>(texture));
+            // The texture hasn't been loaded already. Load it but we defer initilising it till after the whole model has loaded.
+            std::shared_ptr<Texture> texture = std::make_shared<Texture>(Texture(texture_type, str.C_Str()));
+            textures.push_back(texture);
 
-            // Store it as a texture loaded for entire model to ensure we won't unnecessarily load duplicate textures.
+            // Store it as a texture loaded for entire model so that we can initialise it later.
             textures_loaded.push_back(texture);
         }
     }
 
     return textures;
 }
-GLuint Model::TextureFromFile(const std::string& file_name, const std::string& directory, bool gamma)
+
+void Model::LoadMaterialTextures()
+{
+    for (unsigned int i = 0; i < textures_loaded.size(); ++i)
+    {
+        textures_loaded[i]->set_texture_id(TextureFromFile(textures_loaded[i]->get_file_path(), this->directory));
+    }
+}
+GLuint Model::TextureFromFile(const std::string& file_name, const std::string& directory)
 {
     std::string filePath = directory + '\\' + file_name;
 
@@ -261,7 +236,7 @@ GLuint Model::TextureFromFile(const std::string& file_name, const std::string& d
             format = GL_RGBA;
 
         glBindTexture(GL_TEXTURE_2D, texture_id);
-        //glGenerateMipmap(GL_TEXTURE_2D);
+        glGenerateMipmap(GL_TEXTURE_2D);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

@@ -23,10 +23,9 @@ public:
 	Model(const std::string& file_path, const bool gamma = false);
 
 	void Draw(Shader& shader);
-	void ReloadMaterials();
 
 
-	std::vector<Texture> textures_loaded;
+	std::vector<std::shared_ptr<Texture>> textures_loaded;
 	std::vector<Mesh> meshes;
 	std::string directory;
 	bool gamma_correction;
@@ -36,8 +35,9 @@ private:
 	void ProcessNode(const aiNode* node, const aiScene* scene);
 	Mesh ProcessMesh(const aiMesh* mesh, const aiScene* scene);
 
-	std::vector<std::shared_ptr<Texture>> LoadMaterialTextures(const aiMaterial* mat, const aiTextureType type, const TextureType texture_type);
-	GLuint TextureFromFile(const std::string& file_path, const std::string& directory, bool gamma);
+	std::vector<std::shared_ptr<Texture>> PrepareMaterialTextures(const aiMaterial* mat, const aiTextureType type, const TextureType texture_type);
+	void LoadMaterialTextures();
+	GLuint TextureFromFile(const std::string& file_path, const std::string& directory);
 
 
 	std::vector<Mesh> meshes_;
