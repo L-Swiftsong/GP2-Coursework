@@ -18,7 +18,7 @@ enum class GameState {kPlay, kExit};
 #define NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT glm::vec3(0.791, 0.855f, 1.0f)
 
 
-#define SUSANNE_1_INITIAL_POSITION glm::vec3(0.0f, 1.0f, 0.0f)
+#define SUSANNE_1_INITIAL_POSITION glm::vec3(0.0f, 0.0f, 0.0f)
 
 
 class MainGame

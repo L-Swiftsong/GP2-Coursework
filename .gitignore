@@ -434,3 +434,7 @@ FodyWeavers.xsd
 *.exe
 *.out
 *.app
+
+
+# Don't ignore our 'Resources' folder.
+!GP2-Coursework/res/**
