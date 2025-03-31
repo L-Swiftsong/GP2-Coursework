@@ -438,3 +438,5 @@ FodyWeavers.xsd
 
 # Don't ignore our 'Resources' folder.
 !GP2-Coursework/res/**
+# Don't ignore our dependancies
+!GP2-Coursework/deps/**
