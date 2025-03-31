@@ -6,14 +6,14 @@ Model::Model(const std::string& file_path)
 
     // We're delaying the actual loading of textures from the creation of the meshes as at some point during our mesh creation process we lose access to them through OpenGL.
     // By delaying their initialisation till here, we retain the access.
-    LoadMaterialTextures(this->directory);
+    LoadMaterialTextures(this->directory_);
 }
 Model::Model(const std::string& file_path, const std::vector<Texture> texture_overrides)
 {
     // Load the texture overrides.
     for (int i = 0; i < texture_overrides.size(); ++i)
     {
-        textures_loaded.push_back(std::make_shared<Texture>(texture_overrides[i]));
+        textures_loaded_.push_back(std::make_shared<Texture>(texture_overrides[i]));
     }
 
     // Load our model.
@@ -22,12 +22,16 @@ Model::Model(const std::string& file_path, const std::vector<Texture> texture_ov
     // Initialise our Textures.
     LoadMaterialTextures("..\\res");
 }
+Model::~Model()
+{}
+
+
 
 void Model::Draw(const Shader& shader)
 {
-	for (unsigned int i = 0; i < meshes.size(); ++i)
+	for (unsigned int i = 0; i < meshes_.size(); ++i)
 	{
-		meshes[i].Draw(shader);
+		meshes_[i]->Draw(shader);
 	}
 }
 
@@ -47,41 +51,45 @@ void Model::LoadModel(const std::string& file_path, const bool useOverrideTextur
 	}
 
 	// Retrieve the directory path of the filepath.
-	directory = file_path.substr(0, file_path.find_last_of('\\'));
+	directory_ = file_path.substr(0, file_path.find_last_of('\\'));
+
+    // Initialise our 'meshes_' vector.
+    meshes_ = std::vector<std::unique_ptr<Mesh>>(scene->mNumMeshes);
 
 	// Process ASSIMP's root node recursively.
-	ProcessNode(scene->mRootNode, scene, useOverrideTextures);
+    int mesh_iterator = 0;
+	ProcessNode(scene->mRootNode, scene, &mesh_iterator, useOverrideTextures);
 }
 
 // Processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
-void Model::ProcessNode(const aiNode* node, const aiScene* scene, const bool useOverrideTextures)
+void Model::ProcessNode(const aiNode* node, const aiScene* scene, int* mesh_vector_iterator, const bool useOverrideTextures)
 {
-	// Process each mesh located at the current node.
+    // Process each mesh located at the current node.
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		// The node object only contains indices to index the actual objects in the scene. 
 		// The scene contains all the data, node is just to keep stuff organized (like relations between nodes).
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
-		meshes.push_back(ProcessMesh(mesh, scene, useOverrideTextures));
+        meshes_[(*mesh_vector_iterator)++] = ProcessMesh(mesh, scene, useOverrideTextures);
 	}
 
 	// After we've processed all of the meshes directly under this node (if any) we then recursively process each of the node's children nodes.
 	for (unsigned int i = 0; i < node->mNumChildren; i++)
 	{
-		ProcessNode(node->mChildren[i], scene, useOverrideTextures);
+		ProcessNode(node->mChildren[i], scene, mesh_vector_iterator, useOverrideTextures);
 	}
 }
-Mesh Model::ProcessMesh(const aiMesh* mesh, const aiScene* scene, const bool useOverrideTextures)
+std::unique_ptr<Mesh> Model::ProcessMesh(const aiMesh* mesh, const aiScene* scene, const bool useOverrideTextures)
 {
     if (useOverrideTextures == false)
     {
         // Return a mesh object created from the extracted mesh data
-        return Mesh(GetMeshVertices(mesh), GetMeshIndices(mesh), GetMeshTextures(mesh, scene));
+        return std::make_unique<Mesh>(Mesh(GetMeshVertices(mesh), GetMeshIndices(mesh), GetMeshTextures(mesh, scene)));
     }
     else
     {
-        return Mesh(GetMeshVertices(mesh), GetMeshIndices(mesh), textures_loaded);
+        return std::make_unique<Mesh>(Mesh(GetMeshVertices(mesh), GetMeshIndices(mesh), textures_loaded_));
     }
 }
 std::vector<Vertex> Model::GetMeshVertices(const aiMesh* mesh)
@@ -193,12 +201,12 @@ std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMat
 
         // Check if a texture was loaded before and if so, continue to next iteration (Skip loading already loaded textures).
         bool skip = false;
-        for (unsigned int j = 0; j < textures_loaded.size(); ++j)
+        for (unsigned int j = 0; j < textures_loaded_.size(); ++j)
         {
-            if (std::strcmp(textures_loaded[j]->get_file_path().data(), str.C_Str()) == 0)
+            if (std::strcmp(textures_loaded_[j]->get_file_path().data(), str.C_Str()) == 0)
             {
                 // A texture with the same filepath has already been loaded, continue to next one (Optimization).
-                textures.push_back(textures_loaded[j]);
+                textures.push_back(textures_loaded_[j]);
                 skip = true;
                 break;
             }
@@ -211,7 +219,7 @@ std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMat
             textures.push_back(texture);
 
             // Store it as a texture loaded for entire model so that we can initialise it later.
-            textures_loaded.push_back(texture);
+            textures_loaded_.push_back(texture);
         }
     }
 
@@ -220,9 +228,9 @@ std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMat
 
 void Model::LoadMaterialTextures(const std::string& directory)
 {
-    for (unsigned int i = 0; i < textures_loaded.size(); ++i)
+    for (unsigned int i = 0; i < textures_loaded_.size(); ++i)
     {
-        textures_loaded[i]->set_texture_id(TextureFromFile(textures_loaded[i]->get_file_path(), directory));
+        textures_loaded_[i]->set_texture_id(TextureFromFile(textures_loaded_[i]->get_file_path(), directory));
     }
 }
 GLuint Model::TextureFromFile(const std::string& file_name, const std::string& directory)

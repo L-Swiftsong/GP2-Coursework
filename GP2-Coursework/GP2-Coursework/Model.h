@@ -22,18 +22,14 @@ class Model
 public:
 	Model(const std::string& file_path);
 	Model(const std::string& file_path, const std::vector<Texture> textureOverrides);
+	~Model();
 
 	void Draw(const Shader& shader);
 
-
-	std::vector<std::shared_ptr<Texture>> textures_loaded;
-	std::vector<Mesh> meshes;
-	std::string directory;
-
 private:
 	void LoadModel(const std::string& file_path, const bool useOverrideTextures = false);
-	void ProcessNode(const aiNode* node, const aiScene* scene, const bool useOverrideTextures);
-	Mesh ProcessMesh(const aiMesh* mesh, const aiScene* scene, const bool useOverrideTextures);
+	void ProcessNode(const aiNode* node, const aiScene* scene, int* mesh_vector_iterator, const bool useOverrideTextures);
+	std::unique_ptr<Mesh> ProcessMesh(const aiMesh* mesh, const aiScene* scene, const bool useOverrideTextures);
 
 	std::vector<Vertex> GetMeshVertices(const aiMesh* mesh);
 	std::vector<unsigned int> GetMeshIndices(const aiMesh* mesh);
@@ -45,7 +41,8 @@ private:
 	GLuint TextureFromFile(const std::string& file_path, const std::string& directory);
 
 
-	std::vector<Mesh> meshes_;
+	std::vector<std::shared_ptr<Texture>> textures_loaded_;
+	std::vector<std::unique_ptr<Mesh>> meshes_;
 	std::string directory_;
 };
 

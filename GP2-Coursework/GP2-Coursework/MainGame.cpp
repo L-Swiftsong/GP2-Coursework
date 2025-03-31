@@ -7,7 +7,7 @@
 
 MainGame::MainGame() : game_state_(GameState::kPlay),
 	game_display_(Display()),
-	main_camera_(new Camera(glm::vec3(0, 0, -5.0), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
+	main_camera_(new Camera(glm::vec3(0, 0, -10.0), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
 	fog_shader_(			Shader("..\\res\\Shaders\\Tests\\fogShader.vert",		"..\\res\\Shaders\\Tests\\fogShader.frag")),
 	rim_lighting_shader_(	Shader("..\\res\\Shaders\\Tests\\rimLighting.vert",		"..\\res\\Shaders\\Tests\\rimLighting.frag")),
 	lighting_test_shader_(	Shader("..\\res\\Shaders\\Tests\\LightingTests.vert",	"..\\res\\Shaders\\Tests\\LightingTests.frag")),
@@ -190,7 +190,7 @@ void MainGame::DrawGame()
 	//main_camera_->set_pos(glm::vec3(glm::sin(counter_), currentCameraPos.y, currentCameraPos.z));
 	//main_camera_->RotateY(glm::radians(glm::sin(counter_)) * 0.25f);
 	active_shader_->set_vec_3("viewPos", currentCameraPos);
-	active_shader_->set_vec_3("lightPos", glm::vec3(0.5f, 1.0f, -0.3f));
+	active_shader_->set_vec_3("lightPos", glm::vec3(5.0f, 1.0f, -5.0f));
 
 	// Update Transform.
 	backpack_->get_transform()->set_rot(glm::vec3(-90.0f, 0.0f, 0.0f));

@@ -17,14 +17,13 @@ public:
 
 	void Draw(const Shader& shader);
 
-	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
-	std::vector<std::shared_ptr<Texture>> textures;
-	unsigned int vertex_array_object;
 
 
 private:
 	void SetupMesh();
 
-	unsigned int vertex_buffer_object, element_buffer_object;
+	std::vector<Vertex> vertices_;
+	std::vector<unsigned int> indices_;
+	std::vector<std::shared_ptr<Texture>> textures_;
+	unsigned int vertex_array_object_, vertex_buffer_object_, element_buffer_object_;
 };
