@@ -1,8 +1,4 @@
 #include "MainGame.h"
-#include "Camera.h"
-#include <iostream>
-#include <string>
-
 
 
 MainGame::MainGame() : game_state_(GameState::kPlay),
@@ -21,7 +17,7 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	active_shader_ = new Shader("..\\res\\Shaders\\Tests\\NormalMapping.vert", "..\\res\\Shaders\\Tests\\NormalMapping.frag");
 	//active_shader_ = new Shader("..\\res\\Shaders\\Tests\\NormalsTest.vert", "..\\res\\Shaders\\Tests\\NormalsTest.frag");
 	//backpack_ = new GameObject("..\\res\\TestModel\\backpack.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-	backpack_ = new GameObject("..\\res\\Plane.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
+	backpack_ = new GameObject("..\\res\\Plane.obj", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(glm::radians(-90.0f), 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
 
 
 	glm::vec3 testCols[6]
@@ -134,7 +130,7 @@ void MainGame::LinkFogShader()
 }
 void MainGame::LinkRimShader()
 {
-	rim_lighting_shader_.set_vec_3("cameraPos", main_camera_->get_pos());
+	rim_lighting_shader_.set_vec_3("cameraPos", main_camera_->get_transform()->get_pos());
 	rim_lighting_shader_.set_vec_3("lightDir", glm::vec3(1.0, 0.0, 1.0));
 	rim_lighting_shader_.set_vec_4("lightColour", glm::vec4(1.0, 1.0, 1.0, 1.0));
 	rim_lighting_shader_.set_vec_4("rimColour", glm::vec4(1.0, 1.0, 1.0, 1.0));
@@ -143,7 +139,7 @@ void MainGame::LinkRimShader()
 }
 void MainGame::LinkLightingTestsShader()
 {
-	lighting_test_shader_.set_vec_3("cameraPos", main_camera_->get_pos());
+	lighting_test_shader_.set_vec_3("cameraPos", main_camera_->get_transform()->get_pos());
 
 	// Setup the Material.
 	lighting_test_shader_.set_int("material.Diffuse", 0);
@@ -186,14 +182,14 @@ void MainGame::DrawGame()
 	//LinkLightingTestsShader();
 
 	
-	glm::vec3 currentCameraPos = main_camera_->get_pos();
+	glm::vec3 currentCameraPos = main_camera_->get_transform()->get_pos();
 	//main_camera_->set_pos(glm::vec3(glm::sin(counter_), currentCameraPos.y, currentCameraPos.z));
 	//main_camera_->RotateY(glm::radians(glm::sin(counter_)) * 0.25f);
 	active_shader_->set_vec_3("viewPos", currentCameraPos);
 	active_shader_->set_vec_3("lightPos", glm::vec3(5.0f, 1.0f, -5.0f));
 
 	// Update Transform.
-	backpack_->get_transform()->set_rot(glm::vec3(-90.0f, 0.0f, 0.0f));
+	//backpack_->get_transform()->set_rot(glm::vec3(-90.0f, 0.0f, 0.0f));
 
 	// Draw the GameObject.
 	active_shader_->Bind();
@@ -211,9 +207,39 @@ void MainGame::DrawGame()
 	// Increment the Counter.
 	counter_ = counter_ + 0.02f;
 
+	//main_camera_->Rotate(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(0.25f));
+	main_camera_->get_transform()->Rotate(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(0.5f), Transform::kWorldSpace);
+	LogVec3(ToDegrees(main_camera_->get_transform()->get_euler_angles()));
+
+	if (counter_ > 5)
+	{
+		/*glm::vec3 currentRot = backpack_->get_transform()->get_rot();
+		currentRot.z += glm::radians(45.0f);
+		backpack_->get_transform()->set_rot(currentRot);*/
+		//backpack_->get_transform()->Rotate(ToRadians(glm::vec3(0.0f, 0.0f, 45.0f)));
+		//LogVec3(ToDegrees(backpack_->get_transform()->get_euler_angles()));
+		
+		counter_ -= 5;
+	}
+
 				
 	glEnableClientState(GL_COLOR_ARRAY); 
 	glEnd();
 
 	game_display_.SwapBuffer();
-} 
+}
+
+
+
+inline glm::vec3 MainGame::ToDegrees(const glm::vec3& vector)
+{
+	return glm::vec3(glm::degrees(vector.x), glm::degrees(vector.y), glm::degrees(vector.z));
+}
+inline glm::vec3 MainGame::ToRadians(const glm::vec3& vector)
+{
+	return glm::vec3(glm::radians(vector.x), glm::radians(vector.y), glm::radians(vector.z));
+}
+inline void MainGame::LogVec3(const glm::vec3& vector)
+{
+	std::cout << vector.x << "," << vector.y << "," << vector.z << std::endl;
+}

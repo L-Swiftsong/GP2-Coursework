@@ -2,7 +2,9 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
-#include "camera.h"
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <iostream>
 
 struct Transform
 {
@@ -18,10 +20,7 @@ public:
 	{
 		glm::mat4 posMat = glm::translate(pos_);
 		glm::mat4 scaleMat = glm::scale(scale_);
-		glm::mat4 rotX = glm::rotate(rot_.x, glm::vec3(1.0, 0.0, 0.0));
-		glm::mat4 rotY = glm::rotate(rot_.y, glm::vec3(0.0, 1.0, 0.0));
-		glm::mat4 rotZ = glm::rotate(rot_.z, glm::vec3(0.0, 0.0, 1.0));
-		glm::mat4 rotMat = rotX * rotY * rotZ;
+		glm::mat4 rotMat = glm::toMat4(rot_);
 
 		return posMat * rotMat * scaleMat;
 	}
@@ -34,17 +33,56 @@ public:
 		return VP * M;//camera.GetViewProjection() * GetModel();
 	}*/
 
-	inline glm::vec3* get_pos() { return &pos_; } //getters
-	inline glm::vec3* get_rot() { return &rot_; }
-	inline glm::vec3* get_scale() { return &scale_; }
 
-	inline void set_pos(glm::vec3& pos) { this->pos_ = pos; } // setters
-	inline void set_rot(glm::vec3& rot) { this->rot_ = rot; }
+	// Position.
+	inline glm::vec3 get_pos() const { return pos_; }
+	inline void set_pos(glm::vec3& pos) { this->pos_ = pos; }
+
+	// Rotation.
+	inline glm::quat get_rot() const { return rot_; }
+	inline glm::vec3 get_euler_angles() const { return glm::eulerAngles(rot_); }
+	inline void set_rot(glm::quat& rot) { this->rot_ = rot; }
+	inline void set_euler_angles(glm::vec3& rot) { this->rot_ = glm::quat(rot); }
+
+	// Scale.
+	inline glm::vec3 get_scale() const { return scale_; }
 	inline void set_scale(glm::vec3& scale) { this->scale_ = scale; }
+
+	// Spaces.
+	inline glm::vec3 get_forward() const { return kWorldForward * this->rot_; }
+	inline glm::vec3 get_up() const { return kWorldUp * this->rot_; }
+	inline glm::vec3 get_right() const { return kWorldRight * this->rot_; }
+
+
+	enum RotationSpace
+	{
+		kLocalSpace,
+		kWorldSpace
+	};
+
+	void Rotate(glm::vec3 axis, float angle, RotationSpace rotationSpace = RotationSpace::kLocalSpace)
+	{
+		if (rotationSpace == RotationSpace::kLocalSpace)
+		{
+			// Local Space Rotation
+			rot_ = glm::angleAxis(angle, axis) * rot_;
+		}
+		else
+		{
+			// World space rotation.
+			rot_ = rot_ * glm::angleAxis(angle, axis);
+		}
+	}
+
 protected:
 private:
+	const glm::vec3 kWorldForward = glm::vec3(0.0f, 0.0f, 1.0f);
+	const glm::vec3 kWorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+	const glm::vec3 kWorldRight = glm::vec3(1.0f, 0.0f, 1.0f);
+
+
 	glm::vec3 pos_;
-	glm::vec3 rot_;
+	glm::quat rot_;
 	glm::vec3 scale_;
 };
 

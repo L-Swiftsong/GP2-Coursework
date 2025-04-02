@@ -8,6 +8,9 @@
 #include "Texture.h"
 #include "transform.h"
 #include "Gradient.h"
+#include "Camera.h"
+#include <iostream>
+#include <string>
 
 enum class GameState {kPlay, kExit};
 
@@ -40,6 +43,11 @@ private:
 
 	bool Collision(glm::vec3 m1Pos, float m1Rad, glm::vec3 m2Pos, float m2Rad);
 	//void playAudio(unsigned int Source, glm::vec3 pos);
+
+	inline glm::vec3 ToDegrees(const glm::vec3& vector);
+	inline glm::vec3 ToRadians(const glm::vec3& vector);
+	inline void LogVec3(const glm::vec3& vector);
+
 
 	Display game_display_;
 	GameState game_state_;
