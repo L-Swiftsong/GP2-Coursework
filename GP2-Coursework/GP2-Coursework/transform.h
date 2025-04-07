@@ -12,7 +12,7 @@ public:
 	Transform(const glm::vec3& pos = glm::vec3(), const glm::vec3& rot = glm::vec3(), const glm::vec3& scale = glm::vec3(1.0f, 1.0f, 1.0f))
 	{
 		this->pos_ = pos;
-		this->rot_ = rot;
+		this->rot_ = glm::quat(rot);
 		this->scale_ = scale;
 	}
 
@@ -48,7 +48,7 @@ public:
 	inline glm::vec3 get_scale() const { return scale_; }
 	inline void set_scale(glm::vec3& scale) { this->scale_ = scale; }
 
-	// Spaces.
+	// Orientation.
 	inline glm::vec3 get_forward() const { return kWorldForward * this->rot_; }
 	inline glm::vec3 get_up() const { return kWorldUp * this->rot_; }
 	inline glm::vec3 get_right() const { return kWorldRight * this->rot_; }
@@ -64,14 +64,30 @@ public:
 	{
 		if (rotationSpace == RotationSpace::kLocalSpace)
 		{
-			// Local Space Rotation
-			rot_ = glm::angleAxis(angle, axis) * rot_;
+			// Local Space Rotation.
+			// Rotate the desired axis of rotation based on our current rotation.
+			axis = glm::normalize(rot_ * axis);
+
+			// Calculate and set our new rotation.
+			glm::quat orientation_quaternion = glm::angleAxis(angle, axis);
+			rot_ = (orientation_quaternion) * rot_;
 		}
 		else
 		{
-			// World space rotation.
-			rot_ = rot_ * glm::angleAxis(angle, axis);
+			// World space rotation (Second Rot * First Rot).
+			rot_ = glm::angleAxis(angle, axis) * rot_;
 		}
+	}
+	void RotateAroundPoint(glm::vec3 point, glm::vec3 axis, float angle)
+	{
+		glm::quat orientation_quaternion = glm::angleAxis(angle, axis);
+
+		// Rotate our position around the specified point.
+		glm::vec3 rotated_point = point + (orientation_quaternion * (this->get_pos() - point));
+		this->set_pos(rotated_point);
+
+		// Rotate our rotation.
+		rot_ = glm::angleAxis(-angle, axis) * rot_;
 	}
 
 protected:

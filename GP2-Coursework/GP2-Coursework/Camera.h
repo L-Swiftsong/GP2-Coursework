@@ -9,8 +9,8 @@
 struct Camera
 {
 public:
-	Camera(const glm::vec3& pos_, float fov, float aspect, float near_clip, float far_clip)	:
-		transform_(new Transform(pos_, glm::vec3(0.0f), glm::vec3(1.0f))),
+	Camera(const glm::vec3& pos_, float fov, float aspect, float near_clip, float far_clip) :
+		transform_(new Transform(pos_, glm::vec3(0.0f, glm::radians(180.0f), 0.0f), glm::vec3(1.0f))),
 		projection_(glm::perspective(fov, aspect, near_clip, far_clip))
 	{}
 	~Camera()
