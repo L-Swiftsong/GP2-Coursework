@@ -10,13 +10,15 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	//suzanne_2_(GameObject("..\\res\\TestModel\\backpack.obj", glm::vec3(50.0, 0.0, 0.0), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
 	//suzanne_(GameObject("..\\res\\IcoSphere.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
 	//suzanne_2_(GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
+	sun_light_dir(glm::quat(glm::vec3(0.0f, 1.0f, 0.0f))),
 	counter_(1.0f)
 {
 	stbi_set_flip_vertically_on_load(true);
 
-	active_shader_ = new Shader("..\\res\\Shaders\\Tests\\NormalMapping.vert", "..\\res\\Shaders\\Tests\\NormalMapping.frag");
+	active_shader_ = std::make_unique<Shader>(lighting_test_shader_);//new Shader("..\\res\\Shaders\\Tests\\NormalMapping.vert", "..\\res\\Shaders\\Tests\\NormalMapping.frag");
 	//active_shader_ = new Shader("..\\res\\Shaders\\Tests\\NormalsTest.vert", "..\\res\\Shaders\\Tests\\NormalsTest.frag");
 	backpack_ = new GameObject("..\\res\\TestModel\\backpack.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, -0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
 	//backpack_ = new GameObject("..\\res\\Plane.obj", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
 	
 	//backpack_->get_transform()->Rotate(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(90.0f), Transform::kLocalSpace);
@@ -55,8 +57,8 @@ MainGame::~MainGame()
 {
 	delete main_camera_;
 	delete test_gradient_;
-	delete active_shader_;
 	delete backpack_;
+	delete dir_light_object_reference_;
 }
 
 void MainGame::Run()
@@ -154,27 +156,32 @@ void MainGame::LinkLightingTestsShader()
 
 
 	// Setup the Directional Lights.
-	lighting_test_shader_.set_vec_3("directionalLight.Direction", 0.2f, -1.0f, -0.3f);
+	const glm::vec3 kWorldForward = glm::vec3(0.0f, 0.0f, 1.0f);
+	lighting_test_shader_.set_vec_3("directionalLight.Direction", kWorldForward * sun_light_dir);
 
 	//glm::vec3 ambientVal = test_gradient_->GetValue(counter_ / 20.0f);
 	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", ambientVal.x, ambientVal.y, ambientVal.z);
 
 	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", MORNING_DIRECTIONAL_LIGHT_AMBIENT);
-	lighting_test_shader_.set_vec_3("directionalLight.Ambient", MIDDAY_DIRECTIONAL_LIGHT_AMBIENT);
+	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", MIDDAY_DIRECTIONAL_LIGHT_AMBIENT);
+	lighting_test_shader_.set_vec_3("directionalLight.Ambient", glm::vec3(0.0f));
 	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", EVENING_DIRECTIONAL_LIGHT_AMBIENT);
 	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT);
 
-	lighting_test_shader_.set_vec_3("directionalLight.Diffuse", 0.4f, 0.4f, 0.4f);
-	lighting_test_shader_.set_vec_3("directionalLight.Specular", 0.5f, 0.5f, 0.5f);
+	lighting_test_shader_.set_vec_3("directionalLight.Diffuse", glm::vec3(0.8f));
+	lighting_test_shader_.set_vec_3("directionalLight.Specular", glm::vec3(1.0f));
 
 	// Setup the Point Lights.
 	lighting_test_shader_.set_vec_3("pointLight.Position", 3.0f, 0.0f, 0.0f);
-	lighting_test_shader_.set_vec_3("pointLight.Ambient", 0.5f, 1.0f, 0.5f);
-	lighting_test_shader_.set_vec_3("pointLight.Diffuse", 0.75f, 0.75f, 0.75f);
-	lighting_test_shader_.set_vec_3("pointLight.Specular", 1.0f, 1.0f, 1.0f);
+	//lighting_test_shader_.set_vec_3("pointLight.Ambient", 0.5f, 1.0f, 0.5f);
+	lighting_test_shader_.set_vec_3("pointLight.Ambient", glm::vec3(0.0f));
+	//lighting_test_shader_.set_vec_3("pointLight.Diffuse", 0.75f, 0.75f, 0.75f);
+	lighting_test_shader_.set_vec_3("pointLight.Diffuse", glm::vec3(0.0f));
+	//lighting_test_shader_.set_vec_3("pointLight.Specular", 1.0f, 1.0f, 1.0f);
+	lighting_test_shader_.set_vec_3("pointLight.Specular", glm::vec3(0.0f));
 
 	lighting_test_shader_.set_float("pointLight.Radius", 0.1f);
-	lighting_test_shader_.set_float("pointLight.MaxIntensity", 1.0f);
+	lighting_test_shader_.set_float("pointLight.MaxIntensity", 0.0f);
 	lighting_test_shader_.set_float("pointLight.Falloff", 0.5);
 }
 
@@ -185,45 +192,34 @@ void MainGame::DrawGame()
 
 	//linkFogShader();
 	//LinkRimShader();
-	//LinkLightingTestsShader();
+	LinkLightingTestsShader();
 
 	
-	glm::vec3 currentCameraPos = main_camera_->get_transform()->get_pos();
+	//glm::vec3 currentCameraPos = main_camera_->get_transform()->get_pos();
 	//main_camera_->set_pos(glm::vec3(glm::sin(counter_), currentCameraPos.y, currentCameraPos.z));
 	//main_camera_->RotateY(glm::radians(glm::sin(counter_)) * 0.25f);
-	active_shader_->set_vec_3("viewPos", currentCameraPos);
-	active_shader_->set_vec_3("lightPos", glm::vec3(5.0f, 1.0f, 5.0f));
+	//active_shader_->set_vec_3("viewPos", currentCameraPos);
+	//active_shader_->set_vec_3("lightPos", glm::vec3(5.0f, 1.0f, 5.0f));
 
 	// Update Transform.
 	//backpack_->get_transform()->set_rot(glm::vec3(-90.0f, 0.0f, 0.0f));
 
 	// Draw the GameObject.
 	active_shader_->Bind();
-	backpack_->Draw(*main_camera_, active_shader_);
-	
-
-	// Update Transform.
-	//suzanne_2_.get_transform()->set_rot(glm::vec3(0.0, counter_, counter_));
-	//suzanne_2_.get_transform()->set_scale(glm::vec3(0.6, 0.6, 0.6));
-
-	// Draw the GameObject.
-	//suzanne_2_.Draw(*main_camera_, active_shader_);
+	backpack_->Draw(*main_camera_, active_shader_.get());
+	dir_light_object_reference_->Draw(*main_camera_, active_shader_.get());
 
 
 	// Increment the Counter.
 	counter_ = counter_ + 0.02f;
-	main_camera_->get_transform()->RotateAroundPoint(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(1.0f));
+	//main_camera_->get_transform()->RotateAroundPoint(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(1.0f));
 
-	if (counter_ > 5)
-	{
-		/*glm::vec3 currentRot = backpack_->get_transform()->get_rot();
-		currentRot.z += glm::radians(45.0f);
-		backpack_->get_transform()->set_rot(currentRot);*/
-		//backpack_->get_transform()->Rotate(ToRadians(glm::vec3(0.0f, 0.0f, 45.0f)));
-		//LogVec3(ToDegrees(backpack_->get_transform()->get_euler_angles()));
-		
-		counter_ -= 5;
-	}
+	// Rotate the sun.
+	const glm::vec3 sun_rotation_axis = glm::normalize(glm::vec3(-1.0f, 0.5f, 0.0f));
+	const glm::vec3 kWorldForward = glm::vec3(0.0f, 0.0f, 1.0f);
+	sun_light_dir = glm::angleAxis(glm::radians(1.0f), sun_rotation_axis) * sun_light_dir;
+	dir_light_object_reference_->get_transform()->set_pos((-kWorldForward * sun_light_dir) * 5.0f);
+
 
 				
 	glEnableClientState(GL_COLOR_ARRAY); 

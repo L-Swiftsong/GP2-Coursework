@@ -52,18 +52,20 @@ private:
 	Display game_display_;
 	GameState game_state_;
 	GameObject* backpack_;
+	GameObject* dir_light_object_reference_;
 	//GameObject* suzanne_;
 	//GameObject* suzanne_2_;
 	Camera* main_camera_;
 	Gradient* test_gradient_;
 
 
-	Shader* active_shader_;
+	std::unique_ptr<Shader> active_shader_;
 	Shader fog_shader_;
 	Shader rim_lighting_shader_;
 	Shader lighting_test_shader_;
 	//Audio audioDevice;
 
+	glm::quat sun_light_dir;
 	float counter_;
 };
 
