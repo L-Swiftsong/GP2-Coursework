@@ -3,7 +3,7 @@
 
 MainGame::MainGame() : game_state_(GameState::kPlay),
 	game_display_(Display()),
-	main_camera_(new Camera(glm::vec3(0.0f, 0.0f, 10.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
+	main_camera_(new Camera(glm::vec3(0.0f, 0.0f, 5.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
 	fog_shader_(			Shader("..\\res\\Shaders\\Tests\\fogShader.vert",		"..\\res\\Shaders\\Tests\\fogShader.frag")),
 	rim_lighting_shader_(	Shader("..\\res\\Shaders\\Tests\\rimLighting.vert",		"..\\res\\Shaders\\Tests\\rimLighting.frag")),
 	lighting_test_shader_(	Shader("..\\res\\Shaders\\Tests\\LightingTests.vert",	"..\\res\\Shaders\\Tests\\LightingTests.frag")),
@@ -13,19 +13,15 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	sun_light_dir(glm::quat(glm::vec3(0.0f, 1.0f, 0.0f))),
 	counter_(1.0f)
 {
-	stbi_set_flip_vertically_on_load(true);
+	//stbi_set_flip_vertically_on_load(true);
 
 	active_shader_ = std::make_unique<Shader>(lighting_test_shader_);//new Shader("..\\res\\Shaders\\Tests\\NormalMapping.vert", "..\\res\\Shaders\\Tests\\NormalMapping.frag");
 	//active_shader_ = new Shader("..\\res\\Shaders\\Tests\\NormalsTest.vert", "..\\res\\Shaders\\Tests\\NormalsTest.frag");
 	backpack_ = new GameObject("..\\res\\TestModel\\backpack.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, -0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
-	//backpack_ = new GameObject("..\\res\\Plane.obj", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
-	
-	//backpack_->get_transform()->Rotate(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(90.0f), Transform::kLocalSpace);
-	//backpack_->get_transform()->Rotate(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(45.0), Transform::kWorldSpace);
-	//backpack_->get_transform()->RotateAroundPoint(glm::vec3(1.5f, 1.5f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(90.0f));
+	wooden_bench_ = new GameObject("..\\res\\Models\\Bench\\WoodenBench.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(2.0f));
 
-	//main_camera_->get_transform()->RotateAroundPoint(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(180.0f));
+
+	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, -0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
 
 
 	glm::vec3 testCols[6]
@@ -58,6 +54,7 @@ MainGame::~MainGame()
 	delete main_camera_;
 	delete test_gradient_;
 	delete backpack_;
+	delete wooden_bench_;
 	delete dir_light_object_reference_;
 }
 
@@ -206,7 +203,7 @@ void MainGame::DrawGame()
 
 	// Draw the GameObject.
 	active_shader_->Bind();
-	backpack_->Draw(*main_camera_, active_shader_.get());
+	wooden_bench_->Draw(*main_camera_, active_shader_.get());
 	dir_light_object_reference_->Draw(*main_camera_, active_shader_.get());
 
 

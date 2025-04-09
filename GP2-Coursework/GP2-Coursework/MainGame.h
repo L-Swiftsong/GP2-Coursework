@@ -52,6 +52,7 @@ private:
 	Display game_display_;
 	GameState game_state_;
 	GameObject* backpack_;
+	GameObject* wooden_bench_;
 	GameObject* dir_light_object_reference_;
 	//GameObject* suzanne_;
 	//GameObject* suzanne_2_;
