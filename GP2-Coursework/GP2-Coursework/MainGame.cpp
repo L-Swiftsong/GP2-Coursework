@@ -3,15 +3,16 @@
 
 MainGame::MainGame() : game_state_(GameState::kPlay),
 	game_display_(Display()),
-	main_camera_(new Camera(glm::vec3(0.0f, 0.0f, 5.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
+	main_camera_(new Camera(glm::vec3(0.0f, 0.0f, 10.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
 	fog_shader_(			Shader("..\\res\\Shaders\\Tests\\fogShader.vert",		"..\\res\\Shaders\\Tests\\fogShader.frag")),
 	rim_lighting_shader_(	Shader("..\\res\\Shaders\\Tests\\rimLighting.vert",		"..\\res\\Shaders\\Tests\\rimLighting.frag")),
 	lighting_test_shader_(	Shader("..\\res\\Shaders\\Tests\\LightingTests.vert",	"..\\res\\Shaders\\Tests\\LightingTests.frag")),
 	//suzanne_2_(GameObject("..\\res\\TestModel\\backpack.obj", glm::vec3(50.0, 0.0, 0.0), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
 	//suzanne_(GameObject("..\\res\\IcoSphere.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
 	//suzanne_2_(GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
-	sun_light_dir(glm::quat(glm::vec3(0.0f, 1.0f, 0.0f))),
-	counter_(1.0f)
+	sun_light_dir_(glm::quat(glm::vec3(0.0f, 1.0f, 0.0f))),
+	sun_diffuse_(MIDDAY_DIRECTIONAL_LIGHT_AMBIENT),
+	counter_(0.0f)
 {
 	//stbi_set_flip_vertically_on_load(true);
 
@@ -24,29 +25,13 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, -0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
 
 
-	glm::vec3 testCols[6]
+	std::vector<std::tuple<float, glm::vec3>> directional_light_values
 	{
-		MORNING_DIRECTIONAL_LIGHT_AMBIENT,
-		MIDDAY_DIRECTIONAL_LIGHT_AMBIENT,
-		EVENING_DIRECTIONAL_LIGHT_AMBIENT,
-		NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT,
-		NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT,
-		MORNING_DIRECTIONAL_LIGHT_AMBIENT
+		std::make_tuple(0.25f, MIDDAY_DIRECTIONAL_LIGHT_AMBIENT),		// Midday.
+		std::make_tuple(0.45f, EVENING_DIRECTIONAL_LIGHT_AMBIENT),		// Sunrise/Sunset.
+		std::make_tuple(0.55f, NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT),	// Nighttime.
 	};
-	float testVals[6]
-	{
-		0.0f, // Sunrise.
-		0.2f, // Midday.
-		0.4f, // Sunset.
-		0.5f, // Nighttime.
-		0.9f, // Nighttime.
-		1.0f // Sunrise.
-	};
-	test_gradient_ = new Gradient(false);
-	for (int i = 0; i < 6; ++i)
-	{
-		test_gradient_->AddStop(testVals[i], testCols[i]);
-	}
+	test_gradient_ = new Gradient(true, directional_light_values);
 }
 
 MainGame::~MainGame()
@@ -153,8 +138,7 @@ void MainGame::LinkLightingTestsShader()
 
 
 	// Setup the Directional Lights.
-	const glm::vec3 kWorldForward = glm::vec3(0.0f, 0.0f, 1.0f);
-	lighting_test_shader_.set_vec_3("directionalLight.Direction", kWorldForward * sun_light_dir);
+	lighting_test_shader_.set_vec_3("directionalLight.Direction", kMiddayLightDirection * sun_light_dir_);
 
 	//glm::vec3 ambientVal = test_gradient_->GetValue(counter_ / 20.0f);
 	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", ambientVal.x, ambientVal.y, ambientVal.z);
@@ -165,8 +149,8 @@ void MainGame::LinkLightingTestsShader()
 	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", EVENING_DIRECTIONAL_LIGHT_AMBIENT);
 	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT);
 
-	lighting_test_shader_.set_vec_3("directionalLight.Diffuse", glm::vec3(0.8f));
-	lighting_test_shader_.set_vec_3("directionalLight.Specular", glm::vec3(1.0f));
+	lighting_test_shader_.set_vec_3("directionalLight.Diffuse", sun_diffuse_ * 0.8f);
+	lighting_test_shader_.set_vec_3("directionalLight.Specular", sun_diffuse_);
 
 	// Setup the Point Lights.
 	lighting_test_shader_.set_vec_3("pointLight.Position", 3.0f, 0.0f, 0.0f);
@@ -184,8 +168,9 @@ void MainGame::LinkLightingTestsShader()
 
 void MainGame::DrawGame()
 {
-	//_gameDisplay.clearDisplay(0.8f, 0.8f, 0.8f, 1.0f); //sets our background colour
-	game_display_.ClearDisplay(0.0f, 0.0f, 0.0f, 1.0f); //sets our background colour
+	game_display_.ClearDisplay(0.0f, 0.0f, 0.0f, 1.0f); // Sets our background colour.
+
+	CalculateLightingValues();
 
 	//linkFogShader();
 	//LinkRimShader();
@@ -209,20 +194,33 @@ void MainGame::DrawGame()
 
 	// Increment the Counter.
 	counter_ = counter_ + 0.02f;
-	//main_camera_->get_transform()->RotateAroundPoint(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(1.0f));
 
-	// Rotate the sun.
-	const glm::vec3 sun_rotation_axis = glm::normalize(glm::vec3(-1.0f, 0.5f, 0.0f));
-	const glm::vec3 kWorldForward = glm::vec3(0.0f, 0.0f, 1.0f);
-	sun_light_dir = glm::angleAxis(glm::radians(1.0f), sun_rotation_axis) * sun_light_dir;
-	dir_light_object_reference_->get_transform()->set_pos((-kWorldForward * sun_light_dir) * 5.0f);
-
-
-				
 	glEnableClientState(GL_COLOR_ARRAY); 
 	glEnd();
 
 	game_display_.SwapBuffer();
+}
+
+
+void MainGame::CalculateLightingValues()
+{
+	float scaled_counter = counter_ / kDayLength;
+
+	// Calculate our sunlight/skybox colour.
+	float time = (-std::cos(glm::radians(scaled_counter * 360.0f)) + 1.0f) / 2.0f;
+	sun_diffuse_ = test_gradient_->get_value(time);
+
+	// Calculate our sunlight direction.
+	float desired_angle = std::fmod((360.0f * scaled_counter), 360.0f);
+	sun_light_dir_ = glm::quat(ToRadians(kSunRotationAxis * desired_angle));
+
+
+	// (Debug) Display our sunlight direction.
+	glm::vec3 desired_direction = -kMiddayLightDirection * sun_light_dir_;
+	dir_light_object_reference_->get_transform()->set_pos(desired_direction * 5.0f); // Shows the direction the light is shining FROM.
+
+	// (Debug) Set the background colour to match our sunlight colour (Will later replace when doing Skybox stuff).
+	game_display_.ClearDisplay(sun_diffuse_.x, sun_diffuse_.y, sun_diffuse_.z, 1.0f);
 }
 
 

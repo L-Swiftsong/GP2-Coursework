@@ -33,6 +33,11 @@ public:
 	void Run();
 
 private:
+	const glm::vec3 kMiddayLightDirection = glm::vec3(0.0f, -1.0f, 0.0f);
+	const float kDayLength = 10.0f;
+	const glm::vec3 kSunRotationAxis = glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f));
+
+
 	void ProcessInput();
 	void GameLoop();
 	void DrawGame();
@@ -43,6 +48,8 @@ private:
 
 	bool Collision(glm::vec3 m1Pos, float m1Rad, glm::vec3 m2Pos, float m2Rad);
 	//void playAudio(unsigned int Source, glm::vec3 pos);
+
+	void CalculateLightingValues();
 
 	inline glm::vec3 ToDegrees(const glm::vec3& vector);
 	inline glm::vec3 ToRadians(const glm::vec3& vector);
@@ -66,7 +73,8 @@ private:
 	Shader lighting_test_shader_;
 	//Audio audioDevice;
 
-	glm::quat sun_light_dir;
+	glm::quat sun_light_dir_;
+	glm::vec3 sun_diffuse_;
 	float counter_;
 };
 

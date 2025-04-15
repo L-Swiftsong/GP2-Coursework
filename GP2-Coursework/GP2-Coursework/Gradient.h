@@ -82,6 +82,13 @@ struct Gradient
 {
 public:
 	Gradient(bool forwardBackConstrain) : forward_back_constrain_(forwardBackConstrain) {}
+	Gradient(bool forwardBackConstrain, std::vector<std::tuple<float, glm::vec3>> values) : forward_back_constrain_(forwardBackConstrain)
+	{
+		for (int i = 0; i < values.size(); ++i)
+		{
+			AddStop(std::get<0>(values[i]), std::get<1>(values[i]));
+		}
+	}
 	~Gradient()
 	{
 		for (typename std::vector<GradientStop*>::iterator it = stops_.begin(); it != stops_.end(); it++)
@@ -103,29 +110,44 @@ public:
 		stops_.insert(iterator, new GradientStop(time, value));
 	}
 
-	glm::vec3 GetValue(float time)
+	glm::vec3 get_value(float time)
 	{
+		// Ensure that we have at least one value.
+		if (stops_.empty())
+		{
+			return glm::vec3(0.0f);
+		}
+
+		// Constrain our time to between 0.0f & 1.0f.
 		time = ConstrainFloat(time);
 
+		if (stops_.front()->get_time() >= time)
+		{
+			// Our time is before our first step.
+			return stops_.front()->get_value().get_value();
+		}
+		else if (stops_.back()->get_time() <= time)
+		{
+			// Our time is after our last step.
+			return stops_.back()->get_value().get_value();
+		}
+
+		// Find the two GradientStops that our time lies between.
 		std::vector<GradientStop*>::iterator iterator;
-		GradientStop* start, * stop = NULL;
+		GradientStop *start = NULL, *stop = NULL;
 		for (iterator = stops_.begin(); iterator != stops_.end(); ++iterator)
 		{
 			stop = *iterator;
 			if (stop->get_time() > time)
 			{
-				break;
+				start = *(--iterator);
+				float percent = (time - start->get_time()) / (stop->get_time() - start->get_time());
+				return Lerp(start->get_value(), stop->get_value(), percent);
 			}
 		}
 
-		if (iterator == stops_.begin() || iterator == stops_.end())
-		{
-			return stop->get_value().get_value();
-		}
-
-		start = *(--iterator);
-		float percent = (time - start->get_time()) / (stop->get_time() - start->get_time());
-		return Lerp(start->get_value(), stop->get_value(), percent);
+		// Something went wrong when finding our time.
+		throw ("Error when trying to retreive Gradient Value for time " + std::to_string(time));
 	}
 
 private:
