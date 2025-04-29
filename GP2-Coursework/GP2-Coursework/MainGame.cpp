@@ -3,7 +3,7 @@
 
 MainGame::MainGame() : game_state_(GameState::kPlay),
 	game_display_(Display()),
-	main_camera_(new Camera(glm::vec3(0.0f, 0.0f, 10.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
+	main_camera_(new Camera(glm::vec3(0.0f, 3.5f, 5.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
 	fog_shader_(			Shader("..\\res\\Shaders\\Tests\\fogShader.vert",		"..\\res\\Shaders\\Tests\\fogShader.frag")),
 	rim_lighting_shader_(	Shader("..\\res\\Shaders\\Tests\\rimLighting.vert",		"..\\res\\Shaders\\Tests\\rimLighting.frag")),
 	lighting_test_shader_(	Shader("..\\res\\Shaders\\Tests\\LightingTests.vert",	"..\\res\\Shaders\\Tests\\LightingTests.frag")),
@@ -18,9 +18,9 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 
 	active_shader_ = std::make_unique<Shader>(lighting_test_shader_);//new Shader("..\\res\\Shaders\\Tests\\NormalMapping.vert", "..\\res\\Shaders\\Tests\\NormalMapping.frag");
 	//active_shader_ = new Shader("..\\res\\Shaders\\Tests\\NormalsTest.vert", "..\\res\\Shaders\\Tests\\NormalsTest.frag");
-	backpack_ = new GameObject("..\\res\\TestModel\\backpack.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+	//backpack_ = new GameObject("..\\res\\TestModel\\backpack.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 	wooden_bench_ = new GameObject("..\\res\\Models\\Bench\\WoodenBench.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(2.0f));
-
+	main_camera_->get_transform()->set_euler_angles(ToRadians(glm::vec3(10.0f, 180.0f, 0.0f)));
 
 	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, -0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
 
@@ -131,38 +131,24 @@ void MainGame::LinkLightingTestsShader()
 {
 	lighting_test_shader_.set_vec_3("cameraPos", main_camera_->get_transform()->get_pos());
 
-	// Setup the Material.
-	lighting_test_shader_.set_int("material.Diffuse", 0);
-	lighting_test_shader_.set_int("material.Specular", 1);
-	lighting_test_shader_.set_float("material.Shininess", 32.0f);
-
 
 	// Setup the Directional Lights.
-	lighting_test_shader_.set_vec_3("directionalLight.Direction", kMiddayLightDirection * sun_light_dir_);
+	//lighting_test_shader_.set_vec_3("directionalLight.Direction", kMiddayLightDirection * sun_light_dir_);
+	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", glm::vec3(0.0f));
+	//lighting_test_shader_.set_vec_3("directionalLight.Diffuse", sun_diffuse_ * 0.8f);
+	//lighting_test_shader_.set_vec_3("directionalLight.Specular", sun_diffuse_);
 
-	//glm::vec3 ambientVal = test_gradient_->GetValue(counter_ / 20.0f);
-	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", ambientVal.x, ambientVal.y, ambientVal.z);
-
-	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", MORNING_DIRECTIONAL_LIGHT_AMBIENT);
-	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", MIDDAY_DIRECTIONAL_LIGHT_AMBIENT);
+	lighting_test_shader_.set_vec_3("directionalLight.Direction", glm::vec3(-1.0f, -1.0f, -1.0f));
 	lighting_test_shader_.set_vec_3("directionalLight.Ambient", glm::vec3(0.0f));
-	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", EVENING_DIRECTIONAL_LIGHT_AMBIENT);
-	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT);
-
-	lighting_test_shader_.set_vec_3("directionalLight.Diffuse", sun_diffuse_ * 0.8f);
-	lighting_test_shader_.set_vec_3("directionalLight.Specular", sun_diffuse_);
+	lighting_test_shader_.set_vec_3("directionalLight.Diffuse", glm::vec3(0.8f));
+	lighting_test_shader_.set_vec_3("directionalLight.Specular", glm::vec3(1.0f));
 
 	// Setup the Point Lights.
-	lighting_test_shader_.set_vec_3("pointLight.Position", 3.0f, 0.0f, 0.0f);
-	//lighting_test_shader_.set_vec_3("pointLight.Ambient", 0.5f, 1.0f, 0.5f);
-	lighting_test_shader_.set_vec_3("pointLight.Ambient", glm::vec3(0.0f));
-	//lighting_test_shader_.set_vec_3("pointLight.Diffuse", 0.75f, 0.75f, 0.75f);
-	lighting_test_shader_.set_vec_3("pointLight.Diffuse", glm::vec3(0.0f));
-	//lighting_test_shader_.set_vec_3("pointLight.Specular", 1.0f, 1.0f, 1.0f);
-	lighting_test_shader_.set_vec_3("pointLight.Specular", glm::vec3(0.0f));
+	lighting_test_shader_.set_vec_3("pointLight.Position", 0.0f, 1.0f, 0.0f);
+	lighting_test_shader_.set_vec_3("pointLight.Diffuse", glm::vec3(1.0f));
 
-	lighting_test_shader_.set_float("pointLight.Radius", 0.1f);
-	lighting_test_shader_.set_float("pointLight.MaxIntensity", 0.0f);
+	lighting_test_shader_.set_float("pointLight.Radius", 3.0f);
+	lighting_test_shader_.set_float("pointLight.MaxIntensity", 2.0f);
 	lighting_test_shader_.set_float("pointLight.Falloff", 0.5);
 }
 
@@ -220,7 +206,7 @@ void MainGame::CalculateLightingValues()
 	dir_light_object_reference_->get_transform()->set_pos(desired_direction * 5.0f); // Shows the direction the light is shining FROM.
 
 	// (Debug) Set the background colour to match our sunlight colour (Will later replace when doing Skybox stuff).
-	game_display_.ClearDisplay(sun_diffuse_.x, sun_diffuse_.y, sun_diffuse_.z, 1.0f);
+	//game_display_.ClearDisplay(sun_diffuse_.x, sun_diffuse_.y, sun_diffuse_.z, 1.0f);
 }
 
 

@@ -7,8 +7,10 @@ enum TextureType
 {
 	kDiffuse,
 	kSpecular,
+	kMetallic,
+	kRoughness,
 	kNormal,
-	kHeight,
+	kDisplacement,
 };
 
 class Texture

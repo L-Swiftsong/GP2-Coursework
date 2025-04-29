@@ -9,12 +9,12 @@ uniform mat4 transform;
 
 out vec2 textureCoordinate;
 out vec3 v_normal;
-out vec4 v_pos; 
+out vec3 v_pos; 
 
 void main()
 {
 	// Fragment Position.
-	v_pos = modelMatrix * vec4(VertexPosition, 1.0f);
+	v_pos = (modelMatrix * vec4(VertexPosition, 1.0f)).xyz;
 
 	// Normal Matrix.
 	mat3 normalMatrix = mat3(transpose(inverse(modelMatrix)));

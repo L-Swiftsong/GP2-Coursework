@@ -175,18 +175,24 @@ std::vector<std::shared_ptr<Texture>> Model::GetMeshTextures(const aiMesh* mesh,
 
     // Note: We're assuming a convention for sampler names in the shaders.
     // View the '.ReadMe' for more information.
-    // 1. Diffuse maps.
+    // Diffuse maps.
     std::vector<std::shared_ptr<Texture>> diffuseMaps = PrepareMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::kDiffuse);
     textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-    // 2. Specular maps.
+    // Specular maps.
     std::vector<std::shared_ptr<Texture>> specularMaps = PrepareMaterialTextures(material, aiTextureType_SPECULAR, TextureType::kSpecular);
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-    // 3. Normal maps.
+    // Metallic maps.
+    std::vector<std::shared_ptr<Texture>> metallicMaps = PrepareMaterialTextures(material, aiTextureType_METALNESS, TextureType::kMetallic);
+    textures.insert(textures.end(), metallicMaps.begin(), metallicMaps.end());
+    // Roughness maps.
+    std::vector<std::shared_ptr<Texture>> roughnessMaps = PrepareMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, TextureType::kRoughness);
+    textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
+    // Normal maps.
     std::vector<std::shared_ptr<Texture>> normalMaps = PrepareMaterialTextures(material, aiTextureType_HEIGHT, TextureType::kNormal);
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-    // 4. Height maps.
-    std::vector<std::shared_ptr<Texture>> heightMaps = PrepareMaterialTextures(material, aiTextureType_AMBIENT, TextureType::kHeight);
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+    // Displacement maps.
+    std::vector<std::shared_ptr<Texture>> displacementMaps = PrepareMaterialTextures(material, aiTextureType_DISPLACEMENT, TextureType::kDisplacement);
+    textures.insert(textures.end(), displacementMaps.begin(), displacementMaps.end());
 
     return textures;
 }
@@ -194,15 +200,49 @@ std::vector<std::shared_ptr<Texture>> Model::GetMeshTextures(const aiMesh* mesh,
 std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMaterial* mat, const aiTextureType type, const TextureType texture_type)
 {
     std::vector<std::shared_ptr<Texture>> textures;
+
+    // (Debug) Output Type Name.
+    std::string type_name = "";
+    switch (type)
+    {
+        case aiTextureType_DIFFUSE:     type_name = "Diffuse"; break;
+        case aiTextureType_SPECULAR:    type_name = "Specular"; break;
+        case aiTextureType_AMBIENT:     type_name = "Ambient"; break;
+        case aiTextureType_EMISSIVE:    type_name = "Emissive"; break;
+        case aiTextureType_HEIGHT:      type_name = "Height"; break;
+        case aiTextureType_NORMALS:     type_name = "Normals"; break;
+        case aiTextureType_SHININESS:   type_name = "Shininess"; break;
+        case aiTextureType_OPACITY:     type_name = "Transparency"; break;
+        case aiTextureType_DISPLACEMENT:type_name = "Displacement"; break;
+        case aiTextureType_LIGHTMAP:    type_name = "Lightmap"; break;
+        case aiTextureType_REFLECTION:  type_name = "Reflection"; break;
+
+        // PBR.
+        case aiTextureType_BASE_COLOR:          type_name = "(PBR) Base Colour"; break;
+        case aiTextureType_NORMAL_CAMERA:       type_name = "(PBR) Normal"; break;
+        case aiTextureType_EMISSION_COLOR:      type_name = "(PBR) Emissive Colour"; break;
+        case aiTextureType_METALNESS:           type_name = "(PBR) Metalness"; break;
+        case aiTextureType_DIFFUSE_ROUGHNESS:   type_name = "(PBR) Roughness"; break;
+        case aiTextureType_AMBIENT_OCCLUSION:   type_name = "(PBR) Ambient Occlusion"; break;
+
+        //case aiTextureType_DIFFUSE:     type_name = ""; break;
+        default: type_name = "<Unset Debug Value>"; break;
+    }
+    std::cout << "Searching For Type: " << type_name << std::endl;
+
+
     for (unsigned int i = 0; i < mat->GetTextureCount(type); ++i)
     {
         aiString str;
         mat->GetTexture(type, i, &str);
+        
+        std::cout << "Searching For Texture: " << str.C_Str() << std::endl;
 
         // Check if a texture was loaded before and if so, continue to next iteration (Skip loading already loaded textures).
         bool skip = false;
         for (unsigned int j = 0; j < textures_loaded_.size(); ++j)
         {
+
             if (std::strcmp(textures_loaded_[j]->get_file_path().data(), str.C_Str()) == 0)
             {
                 // A texture with the same filepath has already been loaded, continue to next one (Optimization).
@@ -217,6 +257,8 @@ std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMat
             // The texture hasn't been loaded already. Load it but we defer initilising it till after the whole model has loaded.
             std::shared_ptr<Texture> texture = std::make_shared<Texture>(Texture(texture_type, str.C_Str()));
             textures.push_back(texture);
+
+            std::cout << "Loaded Texture: " << str.C_Str() << std::endl;
 
             // Store it as a texture loaded for entire model so that we can initialise it later.
             textures_loaded_.push_back(texture);

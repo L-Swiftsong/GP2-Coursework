@@ -17,8 +17,10 @@ void Mesh::Draw(const Shader& shader)
     // bind appropriate textures
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
+    unsigned int metallicNr = 1;
+    unsigned int roughnessNr = 1;
     unsigned int normalNr = 1;
-    unsigned int heightNr = 1;
+    unsigned int displacementNr = 1;
     for (unsigned int i = 0; i < textures_.size(); i++)
     {
         glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
@@ -26,14 +28,15 @@ void Mesh::Draw(const Shader& shader)
         // Retrieve texture number to format name (the N in diffuse_textureN)
         std::string name;
         TextureType type = textures_[i]->get_texture_type();
-        if (type == TextureType::kDiffuse)
-            name = "texture_diffuse" + std::to_string(diffuseNr++);
-        else if (type == TextureType::kSpecular)
-            name = "texture_specular" + std::to_string(specularNr++);
-        else if (type == TextureType::kNormal)
-            name = "texture_normal" + std::to_string(normalNr++);
-        else if (type == TextureType::kHeight)
-            name = "texture_height" + std::to_string(heightNr++);
+        switch (type)
+        {
+            case (TextureType::kDiffuse):       name = "texture_diffuse" + std::to_string(diffuseNr++);             break;
+            case (TextureType::kSpecular):      name = "texture_specular" + std::to_string(specularNr++);           break;
+            case (TextureType::kMetallic):      name = "texture_metallic" + std::to_string(metallicNr++);           break;
+            case (TextureType::kRoughness):     name = "texture_roughness" + std::to_string(roughnessNr++);         break;
+            case (TextureType::kNormal):        name = "texture_normal" + std::to_string(normalNr++);               break;
+            case (TextureType::kDisplacement):  name = "texture_displacement" + std::to_string(displacementNr++);   break;
+        }
 
         // now set the sampler to the correct texture unit
         glUniform1i(glGetUniformLocation(shader.get_shader_id(), name.c_str()), i);

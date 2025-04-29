@@ -9,6 +9,6 @@ Ni 1.500000
 d 1.000000
 illum 2
 map_Kd WoodenBench_Diffuse.png
-map_Ns WoodenBench_Roughness.png
-map_refl WoodenBench_Metallic.png
-map_Bump -bm 1.000000 WoodenBench_Normal.png
+map_Pr WoodenBench_Roughness.png
+map_Pm WoodenBench_Metallic.png
+norm WoodenBench_Normal.png
