@@ -48,6 +48,12 @@
     <ClCompile Include="stb_image_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Cubemap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Skybox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h">
@@ -89,6 +95,12 @@
     <ClInclude Include="Model.h">
       <Filter>Header Files\Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="Cubemap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Skybox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\res\Shaders\Tests\fogShader.frag">
@@ -119,6 +131,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\res\Shaders\Tests\rimLighting.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\SkyboxTest.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\SkyboxTest.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

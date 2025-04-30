@@ -9,6 +9,8 @@
 #include "transform.h"
 #include "Gradient.h"
 #include "Camera.h"
+//#include "Skybox.h"
+#include "Cubemap.h"
 #include <iostream>
 #include <string>
 
@@ -51,6 +53,8 @@ private:
 
 	void CalculateLightingValues();
 
+	void DrawSkybox();
+
 	inline glm::vec3 ToDegrees(const glm::vec3& vector);
 	inline glm::vec3 ToRadians(const glm::vec3& vector);
 	inline void LogVec3(const glm::vec3& vector);
@@ -61,10 +65,14 @@ private:
 	GameObject* backpack_;
 	GameObject* wooden_bench_;
 	GameObject* dir_light_object_reference_;
-	//GameObject* suzanne_;
-	//GameObject* suzanne_2_;
 	Camera* main_camera_;
 	Gradient* test_gradient_;
+
+
+	//std::unique_ptr<Skybox> skybox_;
+	unsigned int skybox_vao, skybox_vbo;
+	Shader skybox_shader_;
+	Texture skybox_texture_;
 
 
 	std::unique_ptr<Shader> active_shader_;
@@ -76,5 +84,25 @@ private:
 	glm::quat sun_light_dir_;
 	glm::vec3 sun_diffuse_;
 	float counter_;
+
+
+
+
+	const float skyboxVertices[24] = {
+		// positions          
+		-1.0f,	-1.0f,	1.0f,
+		1.0f,	-1.0f,	1.0f,
+		1.0f,	-1.0f,	-1.0f,
+		-1.0f,	-1.0f,	-1.0f,
+		-1.0f,	1.0f,	1.0f,
+		1.0f,	1.0f,	1.0f,
+		1.0f,	1.0f,	-1.0f,
+		-1.0f,	1.0f,	-1.0f,
+	};
+	const unsigned int skyboxIndices[6]
+	{
+		1, 2, 6,
+		6, 5, 1
+	};
 };
 

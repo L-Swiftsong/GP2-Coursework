@@ -11,6 +11,8 @@ enum TextureType
 	kRoughness,
 	kNormal,
 	kDisplacement,
+
+	kSkybox,
 };
 
 class Texture

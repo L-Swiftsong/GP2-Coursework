@@ -109,6 +109,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Cubemap.cpp" />
     <ClCompile Include="Display.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="main.cpp" />
@@ -116,11 +117,13 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="stb_image_loader.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Cubemap.h" />
     <ClInclude Include="Display.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Gradient.h" />
@@ -128,6 +131,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Skybox.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Texture.h" />
@@ -145,6 +149,8 @@
     <None Include="..\res\Shaders\Tests\NormalsTest.vert" />
     <None Include="..\res\Shaders\Tests\rimLighting.frag" />
     <None Include="..\res\Shaders\Tests\rimLighting.vert" />
+    <None Include="..\res\Shaders\Tests\SkyboxTest.frag" />
+    <None Include="..\res\Shaders\Tests\SkyboxTest.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

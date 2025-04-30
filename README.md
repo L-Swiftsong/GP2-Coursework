@@ -17,6 +17,11 @@ Quick Notes (C++):
 
 
 Shader Notes:
+- Matrices:
+	- MVP Matrix:			transform
+	- Model Matrix:			modelMatrix
+	- View Matrix:			viewMatrix
+	- Projection Matrix:	projectionMatrix
 - Textures (Where 'N' represents any positive number):
 	- Diffuse:	texture_diffuseN
 	- Specular:	texture_specularN

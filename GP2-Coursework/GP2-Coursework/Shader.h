@@ -14,6 +14,8 @@ public:
 	void Bind(); //Set gpu to use our shaders
 	void Update(const Transform& transform, const Camera& camera);
 
+	void SetShaderMatrix(const int& matrix_index, const glm::mat4& matrix_value);
+
 	std::string Shader::LoadShader(const std::string& fileName);
 	void Shader::CheckShaderError(GLuint shader, GLuint flag, bool is_program, const std::string& error_message);
 	GLuint Shader::CreateShader(const std::string& text, unsigned int type);
@@ -163,12 +165,6 @@ public:
 		}
 	}
 
-
-protected:
-private:
-	Shader() = delete;
-
-	static const unsigned int kNumShaders = 2; // Number of shaders.
 	enum
 	{
 		kMVPMatrix,
@@ -178,6 +174,13 @@ private:
 
 		kNumTransforms
 	};
+
+
+protected:
+private:
+	Shader() = delete;
+
+	static const unsigned int kNumShaders = 2; // Number of shaders per shader object.
 
 
 	// Track the shader program.

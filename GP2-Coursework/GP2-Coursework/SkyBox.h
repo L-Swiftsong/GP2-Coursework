@@ -1,15 +1,75 @@
 #pragma once
+
 #include <GL/glew.h>
 #include <glm\glm.hpp>
+#include "Shader.h"
+#include "Cubemap.h"
+#include "Texture.h"
+#include <string>
 
-class SkyBox
+#define SKYBOX_VERTEX_SHADER_PATH "..\\res\\Shaders\\Tests\\SkyboxTest.vert"
+#define SKYBOX_FRAGMENT_SHADER_PATH "..\\res\\Shaders\\Tests\\SkyboxTest.frag"
+
+class Skybox
 {
 public:
-	SkyBox();
-	~SkyBox();
+	Skybox(const std::string& file_name_no_extensions, const std::string& file_extension);
+	void SetupSkybox();
+
+	void Draw(const Camera& camera);
+
 
 private:
-	GLuint vbo;
-	GLuint vao;
+	std::unique_ptr<Texture> skybox_texture_;
+	//std::unique_ptr<Shader> skybox_shader_;
+	Shader skybox_shader_;
+	unsigned int vertex_array_object_, vertex_buffer_object_;
+
+
+
+    const float skyboxVertices[108] = {
+        // positions          
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    };
 };
 

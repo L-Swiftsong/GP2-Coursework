@@ -7,9 +7,11 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	fog_shader_(			Shader("..\\res\\Shaders\\Tests\\fogShader.vert",		"..\\res\\Shaders\\Tests\\fogShader.frag")),
 	rim_lighting_shader_(	Shader("..\\res\\Shaders\\Tests\\rimLighting.vert",		"..\\res\\Shaders\\Tests\\rimLighting.frag")),
 	lighting_test_shader_(	Shader("..\\res\\Shaders\\Tests\\LightingTests.vert",	"..\\res\\Shaders\\Tests\\LightingTests.frag")),
-	//suzanne_2_(GameObject("..\\res\\TestModel\\backpack.obj", glm::vec3(50.0, 0.0, 0.0), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
-	//suzanne_(GameObject("..\\res\\IcoSphere.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
-	//suzanne_2_(GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
+
+	//skybox_(std::make_unique<Skybox>(Skybox("..\\res\\Skyboxes\\TestSky", ".jpg"))),
+	skybox_shader_(Shader("..\\res\\Shaders\\Tests\\SkyboxTest.vert", "..\\res\\Shaders\\Tests\\SkyboxTest.frag")),
+	skybox_texture_(Cubemap::CreateCubemapTexture("..\\res\\Skyboxes\\TestSky", ".jpg")),
+
 	sun_light_dir_(glm::quat(glm::vec3(0.0f, 1.0f, 0.0f))),
 	sun_diffuse_(MIDDAY_DIRECTIONAL_LIGHT_AMBIENT),
 	counter_(0.0f)
@@ -32,6 +34,21 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 		std::make_tuple(0.55f, NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT),	// Nighttime.
 	};
 	test_gradient_ = new Gradient(true, directional_light_values);
+
+
+
+	unsigned int skybox_ebo;
+	glGenVertexArrays(1, &skybox_vao);
+	glGenBuffers(1, &skybox_vbo);
+	glGenBuffers(1, &skybox_ebo);
+	glBindVertexArray(skybox_vao);
+	glBindBuffer(GL_ARRAY_BUFFER, skybox_vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skybox_ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndices), &skyboxIndices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 MainGame::~MainGame()
@@ -162,7 +179,6 @@ void MainGame::DrawGame()
 	//LinkRimShader();
 	LinkLightingTestsShader();
 
-	
 	//glm::vec3 currentCameraPos = main_camera_->get_transform()->get_pos();
 	//main_camera_->set_pos(glm::vec3(glm::sin(counter_), currentCameraPos.y, currentCameraPos.z));
 	//main_camera_->RotateY(glm::radians(glm::sin(counter_)) * 0.25f);
@@ -176,6 +192,10 @@ void MainGame::DrawGame()
 	active_shader_->Bind();
 	wooden_bench_->Draw(*main_camera_, active_shader_.get());
 	dir_light_object_reference_->Draw(*main_camera_, active_shader_.get());
+
+
+	//skybox_->Draw(*main_camera_);
+	DrawSkybox();
 
 
 	// Increment the Counter.
@@ -207,6 +227,27 @@ void MainGame::CalculateLightingValues()
 
 	// (Debug) Set the background colour to match our sunlight colour (Will later replace when doing Skybox stuff).
 	//game_display_.ClearDisplay(sun_diffuse_.x, sun_diffuse_.y, sun_diffuse_.z, 1.0f);
+}
+
+void MainGame::DrawSkybox()
+{
+	glDepthFunc(GL_LEQUAL);
+
+	skybox_shader_.Bind();
+	glm::mat4 view = glm::mat4(glm::mat3(glm::lookAt(main_camera_->get_transform()->get_pos(), main_camera_->get_transform()->get_pos() + main_camera_->get_transform()->get_forward(), main_camera_->get_transform()->get_up())));
+	glm::mat4 projection = main_camera_->get_projection();
+
+	glUniformMatrix4fv(glGetUniformLocation(skybox_shader_.get_shader_id(), "view"), 1, GL_FALSE, &view[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(skybox_shader_.get_shader_id(), "projection"), 1, GL_FALSE, &projection[0][0]);
+
+
+	glBindVertexArray(skybox_vao);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_texture_.get_texture_id());
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+
+	glDepthFunc(GL_LESS);
 }
 
 

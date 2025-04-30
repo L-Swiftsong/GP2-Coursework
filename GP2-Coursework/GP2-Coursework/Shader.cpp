@@ -54,6 +54,13 @@ void Shader::Update(const Transform& transform, const Camera& camera)
 }
 
 
+void Shader::SetShaderMatrix(const int& matrix_index, const glm::mat4& matrix_value)
+{
+	glUniformMatrix4fv(uniforms_[matrix_index], 1, GLU_FALSE, &matrix_value[0][0]);
+}
+
+
+
 GLuint Shader::CreateShader(const std::string& text, unsigned int type)
 {
 	GLuint shader = glCreateShader(type); //create shader based on specified type
