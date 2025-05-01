@@ -8,12 +8,12 @@ Model::Model(const std::string& file_path)
     // By delaying their initialisation till here, we retain the access.
     LoadMaterialTextures(this->directory_);
 }
-Model::Model(const std::string& file_path, const std::vector<Texture> texture_overrides)
+Model::Model(const std::string& file_path, const std::vector<std::shared_ptr<Texture>> texture_overrides)
 {
     // Load the texture overrides.
     for (int i = 0; i < texture_overrides.size(); ++i)
     {
-        textures_loaded_.push_back(std::make_shared<Texture>(texture_overrides[i]));
+        textures_loaded_.push_back(texture_overrides[i]);
     }
 
     // Load our model.
@@ -85,11 +85,11 @@ std::unique_ptr<Mesh> Model::ProcessMesh(const aiMesh* mesh, const aiScene* scen
     if (useOverrideTextures == false)
     {
         // Return a mesh object created from the extracted mesh data
-        return std::make_unique<Mesh>(Mesh(GetMeshVertices(mesh), GetMeshIndices(mesh), GetMeshTextures(mesh, scene)));
+        return std::make_unique<Mesh>(GetMeshVertices(mesh), GetMeshIndices(mesh), GetMeshTextures(mesh, scene));
     }
     else
     {
-        return std::make_unique<Mesh>(Mesh(GetMeshVertices(mesh), GetMeshIndices(mesh), textures_loaded_));
+        return std::make_unique<Mesh>(GetMeshVertices(mesh), GetMeshIndices(mesh), textures_loaded_);
     }
 }
 std::vector<Vertex> Model::GetMeshVertices(const aiMesh* mesh)
@@ -255,7 +255,7 @@ std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMat
         if (!skip)
         {
             // The texture hasn't been loaded already. Load it but we defer initilising it till after the whole model has loaded.
-            std::shared_ptr<Texture> texture = std::make_shared<Texture>(Texture(texture_type, str.C_Str()));
+            std::shared_ptr<Texture> texture = std::make_shared<Texture>(texture_type, str.C_Str());
             textures.push_back(texture);
 
             std::cout << "Loaded Texture: " << str.C_Str() << std::endl;

@@ -1,7 +1,6 @@
 #include "Skybox.h"
 
 Skybox::Skybox(const std::string& file_name_no_extensions, const std::string& file_extension) :
-	//skybox_texture_(std::make_unique<Texture>(*Cubemap::CreateCubemapTexture(file_name_no_extensions, file_extension))),
 	skybox_texture_(Cubemap::CreateCubemapTexture(file_name_no_extensions, file_extension)),
 	skybox_shader_(std::make_unique<Shader>(SKYBOX_VERTEX_SHADER_PATH, SKYBOX_FRAGMENT_SHADER_PATH))
 {

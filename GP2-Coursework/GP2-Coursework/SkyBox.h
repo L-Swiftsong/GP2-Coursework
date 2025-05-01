@@ -21,7 +21,6 @@ public:
 
 private:
 	std::unique_ptr<Texture> skybox_texture_;
-	//Texture* skybox_texture_;
 	std::unique_ptr<Shader> skybox_shader_;
 	unsigned int vertex_array_object_, vertex_buffer_object_;
 

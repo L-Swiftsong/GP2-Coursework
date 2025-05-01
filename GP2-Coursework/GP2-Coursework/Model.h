@@ -21,7 +21,7 @@ class Model
 {
 public:
 	Model(const std::string& file_path);
-	Model(const std::string& file_path, const std::vector<Texture> textureOverrides);
+	Model(const std::string& file_path, const std::vector<std::shared_ptr<Texture>> textureOverrides);
 	~Model();
 
 	void Draw(const Shader& shader);

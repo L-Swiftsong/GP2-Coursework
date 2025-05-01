@@ -33,6 +33,8 @@ public:
 
 protected:
 private:
+	Texture(const Texture&) = delete;
+
 	GLuint texture_id_;
 	TextureType texture_type_;
 	std::string file_path_; // We're storing the path of the texture to compare when loading other textures on the same model.
