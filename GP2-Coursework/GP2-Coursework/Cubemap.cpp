@@ -1,6 +1,6 @@
 #include "Cubemap.h"
 
-Texture Cubemap::CreateCubemapTexture(const std::string& file_path_no_extension, const std::string& file_type)
+Texture* Cubemap::CreateCubemapTexture(const std::string& file_path_no_extension, const std::string& file_type)
 {
     // Load our Cubemap Faces.
     unsigned int textureID;
@@ -36,7 +36,7 @@ Texture Cubemap::CreateCubemapTexture(const std::string& file_path_no_extension,
 
 
     // Create and return our Cubemap Texture.
-    return Texture(textureID, TextureType::kSkybox, file_path_no_extension);
+    return new Texture(textureID, TextureType::kSkybox, file_path_no_extension);
 };
 
 std::string Cubemap::GetFaceName(const std::string file_name, const unsigned int face_index, const std::string& file_type)
