@@ -1,35 +1,31 @@
 #include "Skybox.h"
 
 Skybox::Skybox(const std::string& file_name_no_extensions, const std::string& file_extension) :
-	skybox_texture_(Cubemap::CreateCubemapTexture(file_name_no_extensions, file_extension)),
+	skybox_texture_day_(std::move(Cubemap::CreateCubemapTexture("..\\res\\Skyboxes\\PolyverseSkies-BlueSky", file_extension))),
+	skybox_texture_night_(std::move(Cubemap::CreateCubemapTexture(file_name_no_extensions, file_extension))),
+	//skybox_texture_(std::move(Cubemap::CreateCubemapTextureFromSingle(file_name_no_extensions, file_extension))),
 	skybox_shader_(std::make_unique<Shader>(SKYBOX_VERTEX_SHADER_PATH, SKYBOX_FRAGMENT_SHADER_PATH))
 {
 	unsigned int skybox_ebo;
 	glGenVertexArrays(1, &vertex_array_object_);
 	glGenBuffers(1, &vertex_buffer_object_);
-	//glGenBuffers(1, &skybox_ebo);
 
 	glBindVertexArray(vertex_array_object_);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object_);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
 
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skybox_ebo);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndices), &skyboxIndices, GL_STATIC_DRAW);
-
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-
-	skybox_shader_->set_int("skybox", 0);
 }
 Skybox::~Skybox()
 {}
 
 
-void Skybox::Draw(const Camera& camera)
+void Skybox::Draw(const Camera& camera, const float& blend_value)
 {
 	// Change our depth function so that we draw the skybox behind everything.
 	glDepthFunc(GL_LEQUAL);
@@ -42,12 +38,27 @@ void Skybox::Draw(const Camera& camera)
 	skybox_shader_->set_mat_4("projectionMatrix", camera.get_projection());
 
 
+	skybox_shader_->set_float("skybox_blend_value", blend_value);
+
+
 	// Draw the skybox cube.
 	glBindVertexArray(vertex_array_object_);
+
+
+	// Bind the Day & Night Cubemaps.
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_texture_->get_texture_id());
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_texture_day_->get_texture_id());
+	skybox_shader_->set_int("skybox1", 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_texture_night_->get_texture_id());
+	skybox_shader_->set_int("skybox2", 1);
+
+
+	// Draw the Skybox Cube.
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
+	glActiveTexture(GL_TEXTURE0);
 
 	// Reset the depth function.
 	glDepthFunc(GL_LESS);

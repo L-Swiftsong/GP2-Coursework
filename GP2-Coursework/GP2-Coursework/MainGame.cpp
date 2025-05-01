@@ -3,12 +3,13 @@
 
 MainGame::MainGame() : game_state_(GameState::kPlay),
 	game_display_(Display()),
-	main_camera_(new Camera(glm::vec3(0.0f, 1.5f, 10.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
+	main_camera_(new Camera(glm::vec3(0.0f, 3.5f, 5.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
 	fog_shader_(			Shader("..\\res\\Shaders\\Tests\\fogShader.vert",		"..\\res\\Shaders\\Tests\\fogShader.frag")),
 	rim_lighting_shader_(	Shader("..\\res\\Shaders\\Tests\\rimLighting.vert",		"..\\res\\Shaders\\Tests\\rimLighting.frag")),
 	lighting_test_shader_(	Shader("..\\res\\Shaders\\Tests\\LightingTests.vert",	"..\\res\\Shaders\\Tests\\LightingTests.frag")),
 
-	skybox_(std::make_unique<Skybox>("..\\res\\Skyboxes\\TestSky", ".jpg")),
+	//skybox_(std::make_unique<Skybox>("..\\res\\Skyboxes\\TestSky", ".jpg")),
+	skybox_(std::make_unique<Skybox>("..\\res\\Skyboxes\\PolyverseSkies-NightSky", ".jpg")),
 
 	sun_light_dir_(glm::quat(glm::vec3(0.0f, 1.0f, 0.0f))),
 	sun_diffuse_(MIDDAY_DIRECTIONAL_LIGHT_AMBIENT),
@@ -145,22 +146,17 @@ void MainGame::LinkLightingTestsShader()
 
 
 	// Setup the Directional Lights.
-	//lighting_test_shader_.set_vec_3("directionalLight.Direction", kMiddayLightDirection * sun_light_dir_);
-	//lighting_test_shader_.set_vec_3("directionalLight.Ambient", glm::vec3(0.0f));
-	//lighting_test_shader_.set_vec_3("directionalLight.Diffuse", sun_diffuse_ * 0.8f);
-	//lighting_test_shader_.set_vec_3("directionalLight.Specular", sun_diffuse_);
-
-	lighting_test_shader_.set_vec_3("directionalLight.Direction", glm::vec3(-1.0f, -1.0f, -1.0f));
+	lighting_test_shader_.set_vec_3("directionalLight.Direction", kMiddayLightDirection * sun_light_dir_);
 	lighting_test_shader_.set_vec_3("directionalLight.Ambient", glm::vec3(0.0f));
-	lighting_test_shader_.set_vec_3("directionalLight.Diffuse", glm::vec3(0.8f));
-	lighting_test_shader_.set_vec_3("directionalLight.Specular", glm::vec3(1.0f));
+	lighting_test_shader_.set_vec_3("directionalLight.Diffuse", sun_diffuse_ * 0.8f);
+	lighting_test_shader_.set_vec_3("directionalLight.Specular", sun_diffuse_);
 
 	// Setup the Point Lights.
 	lighting_test_shader_.set_vec_3("pointLight.Position", 0.0f, 1.0f, 0.0f);
 	lighting_test_shader_.set_vec_3("pointLight.Diffuse", glm::vec3(1.0f));
 
 	lighting_test_shader_.set_float("pointLight.Radius", 3.0f);
-	lighting_test_shader_.set_float("pointLight.MaxIntensity", 2.0f);
+	lighting_test_shader_.set_float("pointLight.MaxIntensity", 0.0f);
 	lighting_test_shader_.set_float("pointLight.Falloff", 0.5);
 }
 
@@ -175,16 +171,16 @@ void MainGame::DrawGame()
 	LinkLightingTestsShader();
 
 
-	main_camera_->get_transform()->RotateAroundPoint(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(45.0f) * delta_time_);
+	//main_camera_->get_transform()->RotateAroundPoint(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(45.0f) * delta_time_);
+
+	// Draw the skybox (Done before other objects as for some reason doing it after causes other shaders to fail).
+	skybox_->Draw(*main_camera_, day_lerp_time);
 
 
 	// Draw the GameObject.
 	active_shader_->Bind();
 	wooden_bench_->Draw(*main_camera_, active_shader_.get());
 	dir_light_object_reference_->Draw(*main_camera_, active_shader_.get());
-
-
-	skybox_->Draw(*main_camera_);
 
 
 	// Increment the Counter.
@@ -200,22 +196,20 @@ void MainGame::DrawGame()
 void MainGame::CalculateLightingValues()
 {
 	float scaled_counter = counter_ / kDayLength;
+	day_percentage_time = scaled_counter - std::floorf(scaled_counter);
+	day_lerp_time = (-std::cos(glm::radians(day_percentage_time * 360.0f)) + 1.0f) / 2.0f;
 
 	// Calculate our sunlight/skybox colour.
-	float time = (-std::cos(glm::radians(scaled_counter * 360.0f)) + 1.0f) / 2.0f;
-	sun_diffuse_ = test_gradient_->get_value(time);
+	sun_diffuse_ = test_gradient_->get_value(day_lerp_time);
 
 	// Calculate our sunlight direction.
-	float desired_angle = std::fmod((360.0f * scaled_counter), 360.0f);
+	float desired_angle = std::fmod((360.0f * day_percentage_time), 360.0f);
 	sun_light_dir_ = glm::quat(ToRadians(kSunRotationAxis * desired_angle));
 
 
 	// (Debug) Display our sunlight direction.
 	glm::vec3 desired_direction = -kMiddayLightDirection * sun_light_dir_;
 	dir_light_object_reference_->get_transform()->set_pos(desired_direction * 5.0f); // Shows the direction the light is shining FROM.
-
-	// (Debug) Set the background colour to match our sunlight colour (Will later replace when doing Skybox stuff).
-	//game_display_.ClearDisplay(sun_diffuse_.x, sun_diffuse_.y, sun_diffuse_.z, 1.0f);
 }
 
 

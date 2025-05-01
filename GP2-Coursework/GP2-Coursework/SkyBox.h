@@ -16,11 +16,12 @@ public:
 	Skybox(const std::string& file_name_no_extensions, const std::string& file_extension);
 	~Skybox();
 
-	void Draw(const Camera& camera);
+	void Draw(const Camera& camera, const float& blend_value);
 
 
 private:
-	std::unique_ptr<Texture> skybox_texture_;
+	std::unique_ptr<Texture> skybox_texture_day_;
+	std::unique_ptr<Texture> skybox_texture_night_;
 	std::unique_ptr<Shader> skybox_shader_;
 	unsigned int vertex_array_object_, vertex_buffer_object_;
 

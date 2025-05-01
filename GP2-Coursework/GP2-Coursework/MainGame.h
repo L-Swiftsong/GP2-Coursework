@@ -80,6 +80,7 @@ private:
 	Shader lighting_test_shader_;
 	//Audio audioDevice;
 
+	float day_percentage_time, day_lerp_time;
 	glm::quat sun_light_dir_;
 	glm::vec3 sun_diffuse_;
 
