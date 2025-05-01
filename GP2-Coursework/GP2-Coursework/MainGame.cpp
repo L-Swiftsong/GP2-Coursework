@@ -62,18 +62,30 @@ MainGame::~MainGame()
 
 void MainGame::Run()
 {
+	glfwInit();
 	GameLoop();
 }
 
 void MainGame::GameLoop()
 {
+	previous_time_since_start_ = glfwGetTime();
 	while (game_state_ != GameState::kExit)
 	{
+		CalculateDeltaTime();
 		ProcessInput();
 		DrawGame();
 		//Collision(suzanne_.get_mesh()->get_sphere_pos(), suzanne_.get_mesh()->get_sphere_radius(), suzanne_2_.get_mesh()->get_sphere_pos(), suzanne_2_.get_mesh()->get_sphere_radius());
 		//playAudio(backGroundMusic, glm::vec3(0.0f,0.0f,0.0f));
 	}
+
+	glfwTerminate();
+}
+
+void MainGame::CalculateDeltaTime()
+{
+	current_time_since_start_ = glfwGetTime();
+	delta_time_ = current_time_since_start_ - previous_time_since_start_;
+	previous_time_since_start_ = current_time_since_start_;
 }
 
 void MainGame::ProcessInput()
@@ -199,7 +211,7 @@ void MainGame::DrawGame()
 
 
 	// Increment the Counter.
-	counter_ = counter_ + 0.02f;
+	counter_ = counter_ + (1.0f * delta_time_);
 
 	glEnableClientState(GL_COLOR_ARRAY); 
 	glEnd();

@@ -1,6 +1,9 @@
 #pragma once
+
 #include <SDL\SDL.h>
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include "Display.h" 
 #include "Shader.h"
 #include "GameObject.h"
@@ -40,8 +43,9 @@ private:
 	const glm::vec3 kSunRotationAxis = glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f));
 
 
-	void ProcessInput();
 	void GameLoop();
+	void CalculateDeltaTime();
+	void ProcessInput();
 	void DrawGame();
 
 	void LinkFogShader();
@@ -83,9 +87,10 @@ private:
 
 	glm::quat sun_light_dir_;
 	glm::vec3 sun_diffuse_;
-	float counter_;
 
 
+	float counter_ = 0.0f;
+	float previous_time_since_start_ = 0.0f, current_time_since_start_ = 0.0f, delta_time_ = 0.0f;
 
 
 	const float skyboxVertices[24] = {
