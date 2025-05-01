@@ -139,6 +139,8 @@
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\res\Shaders\DefaultTexture.frag" />
+    <None Include="..\res\Shaders\DefaultTexture.vert" />
     <None Include="..\res\Shaders\Tests\fogShader.frag" />
     <None Include="..\res\Shaders\Tests\fogShader.vert" />
     <None Include="..\res\Shaders\Tests\LightingTests.frag" />

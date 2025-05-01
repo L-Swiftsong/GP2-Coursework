@@ -12,5 +12,5 @@ void main()
     vec4 pos = projection * view * vec4(VertexPosition, 1.0);
 	gl_Position = pos.xyww;
 
-	texture_direction = vec3(VertexPosition.x, VertexPosition.y, -VertexPosition.z);
+	texture_direction = VertexPosition;//vec3(VertexPosition.x, VertexPosition.y, -VertexPosition.z);
 }

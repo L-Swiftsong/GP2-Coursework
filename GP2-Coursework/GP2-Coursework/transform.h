@@ -67,27 +67,25 @@ public:
 			// Local Space Rotation.
 			// Rotate the desired axis of rotation based on our current rotation.
 			axis = glm::normalize(rot_ * axis);
+		}
 
-			// Calculate and set our new rotation.
-			glm::quat orientation_quaternion = glm::angleAxis(angle, axis);
-			rot_ = (orientation_quaternion) * rot_;
-		}
-		else
-		{
-			// World space rotation (Second Rot * First Rot).
-			rot_ = glm::angleAxis(angle, axis) * rot_;
-		}
-	}
-	void RotateAroundPoint(glm::vec3 point, glm::vec3 axis, float angle)
-	{
+		// Calculate and set our new rotation (Second Rot * First Rot).
 		glm::quat orientation_quaternion = glm::angleAxis(angle, axis);
-
+		rot_ = (orientation_quaternion) * rot_;
+	}
+	void RotateAroundPoint(glm::vec3 point, glm::vec3 rotation_axis, float angle)
+	{
 		// Rotate our position around the specified point.
-		glm::vec3 rotated_point = point + (orientation_quaternion * (this->get_pos() - point));
+		glm::quat position_orientation_quaternion = glm::angleAxis(angle, rotation_axis);
+		glm::vec3 rotated_point = point + (position_orientation_quaternion * (this->get_pos() - point));
 		this->set_pos(rotated_point);
 
-		// Rotate our rotation.
-		rot_ = glm::angleAxis(-angle, axis) * rot_;
+
+		// Rotate the desired axis of rotation based on our current rotation.
+		rotation_axis = glm::normalize(rot_ * rotation_axis);
+
+		// Apply our rotation.
+		rot_ = glm::angleAxis(-angle, rotation_axis) * rot_;
 	}
 
 protected:

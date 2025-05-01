@@ -3,13 +3,14 @@
 
 MainGame::MainGame() : game_state_(GameState::kPlay),
 	game_display_(Display()),
-	main_camera_(new Camera(glm::vec3(0.0f, 3.5f, 5.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
+	main_camera_(new Camera(glm::vec3(0.0f, 1.5f, 10.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
 	fog_shader_(			Shader("..\\res\\Shaders\\Tests\\fogShader.vert",		"..\\res\\Shaders\\Tests\\fogShader.frag")),
 	rim_lighting_shader_(	Shader("..\\res\\Shaders\\Tests\\rimLighting.vert",		"..\\res\\Shaders\\Tests\\rimLighting.frag")),
 	lighting_test_shader_(	Shader("..\\res\\Shaders\\Tests\\LightingTests.vert",	"..\\res\\Shaders\\Tests\\LightingTests.frag")),
 
 	//skybox_(std::make_unique<Skybox>(Skybox("..\\res\\Skyboxes\\TestSky", ".jpg"))),
 	skybox_shader_(Shader("..\\res\\Shaders\\Tests\\SkyboxTest.vert", "..\\res\\Shaders\\Tests\\SkyboxTest.frag")),
+	//skybox_shader_(Shader("..\\res\\Shaders\\DefaultTexture.vert", "..\\res\\Shaders\\DefaultTexture.frag")),
 	skybox_texture_(Cubemap::CreateCubemapTexture("..\\res\\Skyboxes\\TestSky", ".jpg")),
 
 	sun_light_dir_(glm::quat(glm::vec3(0.0f, 1.0f, 0.0f))),
@@ -40,15 +41,23 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	unsigned int skybox_ebo;
 	glGenVertexArrays(1, &skybox_vao);
 	glGenBuffers(1, &skybox_vbo);
-	glGenBuffers(1, &skybox_ebo);
+	//glGenBuffers(1, &skybox_ebo);
+
 	glBindVertexArray(skybox_vao);
+	
 	glBindBuffer(GL_ARRAY_BUFFER, skybox_vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skybox_ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndices), &skyboxIndices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skybox_ebo);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndices), &skyboxIndices, GL_STATIC_DRAW);
+	
 	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	skybox_shader_.set_int("skybox", 0);
 }
 
 MainGame::~MainGame()
@@ -191,14 +200,9 @@ void MainGame::DrawGame()
 	//LinkRimShader();
 	LinkLightingTestsShader();
 
-	//glm::vec3 currentCameraPos = main_camera_->get_transform()->get_pos();
-	//main_camera_->set_pos(glm::vec3(glm::sin(counter_), currentCameraPos.y, currentCameraPos.z));
-	//main_camera_->RotateY(glm::radians(glm::sin(counter_)) * 0.25f);
-	//active_shader_->set_vec_3("viewPos", currentCameraPos);
-	//active_shader_->set_vec_3("lightPos", glm::vec3(5.0f, 1.0f, 5.0f));
 
-	// Update Transform.
-	//backpack_->get_transform()->set_rot(glm::vec3(-90.0f, 0.0f, 0.0f));
+	main_camera_->get_transform()->RotateAroundPoint(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(45.0f) * delta_time_);
+
 
 	// Draw the GameObject.
 	active_shader_->Bind();
@@ -249,14 +253,20 @@ void MainGame::DrawSkybox()
 	glm::mat4 view = glm::mat4(glm::mat3(glm::lookAt(main_camera_->get_transform()->get_pos(), main_camera_->get_transform()->get_pos() + main_camera_->get_transform()->get_forward(), main_camera_->get_transform()->get_up())));
 	glm::mat4 projection = main_camera_->get_projection();
 
-	glUniformMatrix4fv(glGetUniformLocation(skybox_shader_.get_shader_id(), "view"), 1, GL_FALSE, &view[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(skybox_shader_.get_shader_id(), "projection"), 1, GL_FALSE, &projection[0][0]);
+	//glUniformMatrix4fv(glGetUniformLocation(skybox_shader_.get_shader_id(), "view"), 1, GL_FALSE, &view[0][0]);
+	//glUniformMatrix4fv(glGetUniformLocation(skybox_shader_.get_shader_id(), "projection"), 1, GL_FALSE, &projection[0][0]);
+	skybox_shader_.set_mat_4("view", view);
+	skybox_shader_.set_mat_4("projection", projection);
+
+	//glm::mat4 model = glm::translate(glm::vec3(0.0f)) * glm::toMat4(glm::quat(glm::vec3(0.0f))) * glm::scale(glm::vec3(1.0f));
+	//glm::mat4 mvp = main_camera_->get_view_projection() * model;
+	//skybox_shader_.set_mat_4("transform", mvp);
 
 
 	glBindVertexArray(skybox_vao);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_texture_.get_texture_id());
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 
 	glDepthFunc(GL_LESS);

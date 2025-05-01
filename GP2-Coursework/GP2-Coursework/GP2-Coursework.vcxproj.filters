@@ -19,6 +19,9 @@
     <Filter Include="Source Files\Mesh">
       <UniqueIdentifier>{f90c8e20-77c8-4fb4-8983-f30f13532363}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Debug">
+      <UniqueIdentifier>{36ac4b8e-8885-45f6-a826-7cbeeaed835b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -138,6 +141,12 @@
     </None>
     <None Include="..\res\Shaders\Tests\SkyboxTest.vert">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\DefaultTexture.frag">
+      <Filter>Resource Files\Debug</Filter>
+    </None>
+    <None Include="..\res\Shaders\DefaultTexture.vert">
+      <Filter>Resource Files\Debug</Filter>
     </None>
   </ItemGroup>
 </Project>

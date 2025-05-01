@@ -47,7 +47,7 @@ std::string Cubemap::GetFaceName(const std::string file_name, const unsigned int
         case 1: return file_name + "_left" + file_type;
         case 2: return file_name + "_top" + file_type;
         case 3: return file_name + "_bottom" + file_type;
-        case 4: return file_name + "_back" + file_type;
-        case 5: return file_name + "_front" + file_type;
+        case 4: return file_name + "_front" + file_type;
+        case 5: return file_name + "_back" + file_type;
     }
 }
