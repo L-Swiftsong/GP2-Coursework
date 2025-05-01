@@ -438,5 +438,11 @@ FodyWeavers.xsd
 
 # Don't ignore our 'Resources' folder.
 !GP2-Coursework/res/**
-# Don't ignore our dependancies
+# Don't ignore our dependancies.
 !GP2-Coursework/deps/**
+
+# Don't ignore our required .dll files.
+# The first two are required together for some reason, while the third ensures that we're only including the required '.dll' files rather than also the '.exe' and '.pdb' files
+!GP2-Coursework/x64/
+!GP2-Coursework/x64/Debug/
+!GP2-Coursework/x64/Debug/*.dll
