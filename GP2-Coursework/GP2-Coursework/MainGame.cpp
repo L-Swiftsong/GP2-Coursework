@@ -17,13 +17,18 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 {
 	//stbi_set_flip_vertically_on_load(true);
 
-	active_shader_ = std::make_unique<Shader>(lighting_test_shader_);//new Shader("..\\res\\Shaders\\Tests\\NormalMapping.vert", "..\\res\\Shaders\\Tests\\NormalMapping.frag");
-	//active_shader_ = new Shader("..\\res\\Shaders\\Tests\\NormalsTest.vert", "..\\res\\Shaders\\Tests\\NormalsTest.frag");
-	//backpack_ = new GameObject("..\\res\\TestModel\\backpack.obj", SUSANNE_1_INITIAL_POSITION, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+	active_shader_ = std::make_unique<Shader>(lighting_test_shader_);
+
+	// Setup Models.
 	wooden_bench_ = new GameObject("..\\res\\Models\\Bench\\WoodenBench.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(2.0f));
+	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, -0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
+
 	main_camera_->get_transform()->set_euler_angles(ToRadians(glm::vec3(10.0f, 180.0f, 0.0f)));
 
-	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, -0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
+
+	// Setup Lights.
+	directional_lights_[0] = DirectionalLight(kMiddayLightDirection, MIDDAY_DIRECTIONAL_LIGHT_AMBIENT, 1.0f);
+	point_lights_[0] = PointLight(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f), 3.0f, 1.0f, 0.5f);
 
 
 	std::vector<std::tuple<float, glm::vec3>> directional_light_values
@@ -146,18 +151,16 @@ void MainGame::LinkLightingTestsShader()
 
 
 	// Setup the Directional Lights.
-	lighting_test_shader_.set_vec_3("directionalLight.Direction", kMiddayLightDirection * sun_light_dir_);
-	lighting_test_shader_.set_vec_3("directionalLight.Ambient", glm::vec3(0.0f));
-	lighting_test_shader_.set_vec_3("directionalLight.Diffuse", sun_diffuse_ * 0.8f);
-	lighting_test_shader_.set_vec_3("directionalLight.Specular", sun_diffuse_);
+	for (int i = 0; i < directional_lights_.size(); ++i)
+	{
+		directional_lights_[i].UpdateShader(lighting_test_shader_);
+	}
 
 	// Setup the Point Lights.
-	lighting_test_shader_.set_vec_3("pointLight.Position", 0.0f, 1.0f, 0.0f);
-	lighting_test_shader_.set_vec_3("pointLight.Diffuse", glm::vec3(1.0f));
-
-	lighting_test_shader_.set_float("pointLight.Radius", 3.0f);
-	lighting_test_shader_.set_float("pointLight.MaxIntensity", 0.0f);
-	lighting_test_shader_.set_float("pointLight.Falloff", 0.5);
+	for (int i = 0; i < point_lights_.size(); ++i)
+	{
+		point_lights_[i].UpdateShader(lighting_test_shader_);
+	}
 }
 
 void MainGame::DrawGame()
@@ -205,6 +208,10 @@ void MainGame::CalculateLightingValues()
 	// Calculate our sunlight direction.
 	float desired_angle = std::fmod((360.0f * day_percentage_time), 360.0f);
 	sun_light_dir_ = glm::quat(ToRadians(kSunRotationAxis * desired_angle));
+
+	// Update the sun directional light.
+	directional_lights_[0].set_direction(kMiddayLightDirection * sun_light_dir_);
+	directional_lights_[0].set_diffuse(sun_diffuse_);
 
 
 	// (Debug) Display our sunlight direction.

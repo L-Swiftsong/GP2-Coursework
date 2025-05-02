@@ -6,17 +6,13 @@ struct DirectionalLight
 {
 	vec3 Direction;
 
-	vec3 Ambient;
 	vec3 Diffuse;
-	vec3 Specular;
 };
 struct PointLight
 {
 	vec3 Position;
 
-	vec3 Ambient;
 	vec3 Diffuse;
-	vec3 Specular;
 
     float Radius;
     float MaxIntensity;

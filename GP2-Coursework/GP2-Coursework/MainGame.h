@@ -12,7 +12,12 @@
 #include "transform.h"
 #include "Gradient.h"
 #include "Camera.h"
+
 #include "Skybox.h"
+
+#include "PointLight.h"
+#include "DirectionalLight.h"
+
 #include "Cubemap.h"
 #include <iostream>
 #include <string>
@@ -79,6 +84,9 @@ private:
 	Shader rim_lighting_shader_;
 	Shader lighting_test_shader_;
 	//Audio audioDevice;
+
+	std::array<DirectionalLight, 1> directional_lights_;
+	std::array<PointLight, 1> point_lights_;
 
 	float day_percentage_time, day_lerp_time;
 	glm::quat sun_light_dir_;
