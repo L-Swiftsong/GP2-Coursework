@@ -1,0 +1,34 @@
+#pragma once
+
+#include <SDL\SDL.h>
+#include <glm/gtx/transform.hpp>
+
+// For Debugging.
+#include <string>
+#include <iostream>
+
+class InputManager
+{
+public:
+	void ProcessInput();
+
+
+	const glm::vec3 get_camera_movement_input_normalized();
+	const glm::vec2 get_camera_look_input();
+	const bool get_sprint_held();
+
+private:
+	void PrintKeyInfo(SDL_KeyboardEvent* key);
+
+	const glm::vec3 SafeNormalizeVec3(const glm::vec3& vector);
+	const glm::vec2 SafeNormalizeVec2(const glm::vec2& vector);
+
+	glm::vec3 camera_movement_input_;
+	glm::vec2 camera_look_input_;
+	bool sprint_held_;
+
+
+	const glm::vec2 kVector2None = glm::vec2(0.0f);
+	const glm::vec3 kVector3None = glm::vec3(0.0f);
+};
+

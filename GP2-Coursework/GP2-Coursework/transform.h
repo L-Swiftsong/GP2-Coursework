@@ -36,13 +36,14 @@ public:
 
 	// Position.
 	inline glm::vec3 get_pos() const { return pos_; }
-	inline void set_pos(glm::vec3& pos) { this->pos_ = pos; }
+	inline void set_pos(const glm::vec3& pos) { this->pos_ = pos; }
 
 	// Rotation.
 	inline glm::quat get_rot() const { return rot_; }
 	inline glm::vec3 get_euler_angles() const { return glm::eulerAngles(rot_); }
-	inline void set_rot(glm::quat& rot) { this->rot_ = rot; }
-	inline void set_euler_angles(glm::vec3& rot) { this->rot_ = glm::quat(rot); }
+	inline void set_rot(const glm::quat& rot) { this->rot_ = rot; }
+	inline void set_euler_angles(const float& pitch, const float& yaw, const float& roll) { this->rot_ = glm::quat(glm::vec3(pitch, yaw, roll)); }
+	inline void set_euler_angles(const glm::vec3& rot) { this->rot_ = glm::quat(rot); }
 
 	// Scale.
 	inline glm::vec3 get_scale() const { return scale_; }
@@ -62,10 +63,10 @@ public:
 
 	void Rotate(glm::vec3 axis, float angle, RotationSpace rotationSpace = RotationSpace::kLocalSpace)
 	{
-		if (rotationSpace == RotationSpace::kLocalSpace)
+		if (rotationSpace == RotationSpace::kWorldSpace)
 		{
-			// Local Space Rotation.
-			// Rotate the desired axis of rotation based on our current rotation.
+			// World Space Rotation.
+			// Transform the desired axis of rotation based on our current rotation.
 			axis = glm::normalize(rot_ * axis);
 		}
 
@@ -92,7 +93,7 @@ protected:
 private:
 	const glm::vec3 kWorldForward = glm::vec3(0.0f, 0.0f, 1.0f);
 	const glm::vec3 kWorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-	const glm::vec3 kWorldRight = glm::vec3(1.0f, 0.0f, 1.0f);
+	const glm::vec3 kWorldRight = glm::vec3(1.0f, 0.0f, 0.0f);
 
 
 	glm::vec3 pos_;

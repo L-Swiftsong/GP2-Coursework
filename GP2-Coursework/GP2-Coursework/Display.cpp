@@ -79,6 +79,9 @@ void Display::InitDisplay()
 		ReturnError("GLEW failed to initialise");
 	}
 
+	// Initialise our Input & Mouse Capturing.
+	SDL_SetRelativeMouseMode(SDL_TRUE);
+
 	// Enable z-buffering.
 	glEnable(GL_DEPTH_TEST);
 	// Dont draw faces that are not pointing at the camera.

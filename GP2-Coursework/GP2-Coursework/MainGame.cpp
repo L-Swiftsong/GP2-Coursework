@@ -3,6 +3,7 @@
 
 MainGame::MainGame() : game_state_(GameState::kPlay),
 	game_display_(Display()),
+	input_manager_(std::make_unique<InputManager>()),
 	main_camera_(new Camera(glm::vec3(0.0f, 3.5f, 5.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
 	fog_shader_(			Shader("..\\res\\Shaders\\Tests\\fogShader.vert",		"..\\res\\Shaders\\Tests\\fogShader.frag")),
 	rim_lighting_shader_(	Shader("..\\res\\Shaders\\Tests\\rimLighting.vert",		"..\\res\\Shaders\\Tests\\rimLighting.frag")),
@@ -23,7 +24,7 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	wooden_bench_ = new GameObject("..\\res\\Models\\Bench\\WoodenBench.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(2.0f));
 	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, -0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
 
-	main_camera_->get_transform()->set_euler_angles(ToRadians(glm::vec3(10.0f, 180.0f, 0.0f)));
+	main_camera_->get_transform()->set_euler_angles(ToRadians(glm::vec3(0.0f, 180.0f, 0.0f)));
 
 
 	// Setup Lights.
@@ -61,7 +62,11 @@ void MainGame::GameLoop()
 	while (game_state_ != GameState::kExit)
 	{
 		CalculateDeltaTime();
-		ProcessInput();
+		input_manager_->ProcessInput();
+		
+		HandleCameraMovement();
+		HandleCameraLook();
+
 		DrawGame();
 		//Collision(suzanne_.get_mesh()->get_sphere_pos(), suzanne_.get_mesh()->get_sphere_radius(), suzanne_2_.get_mesh()->get_sphere_pos(), suzanne_2_.get_mesh()->get_sphere_radius());
 		//playAudio(backGroundMusic, glm::vec3(0.0f,0.0f,0.0f));
@@ -76,23 +81,6 @@ void MainGame::CalculateDeltaTime()
 	delta_time_ = current_time_since_start_ - previous_time_since_start_;
 	previous_time_since_start_ = current_time_since_start_;
 }
-
-void MainGame::ProcessInput()
-{
-	SDL_Event evnt;
-
-	while(SDL_PollEvent(&evnt)) //get and process events
-	{
-		switch (evnt.type)
-		{
-			case SDL_QUIT:
-				game_state_ = GameState::kExit;
-				break;
-		}
-	}
-	
-}
-
 
 bool MainGame::Collision(glm::vec3 m1Pos, float m1Rad, glm::vec3 m2Pos, float m2Rad)
 {
@@ -127,6 +115,44 @@ bool MainGame::Collision(glm::vec3 m1Pos, float m1Rad, glm::vec3 m2Pos, float m2
 //		audioDevice.playSound(Source, pos);
 //	}
 //}
+
+
+void MainGame::HandleCameraMovement()
+{
+	Transform* camera_transform = main_camera_->get_transform();
+
+	// Calculate Current Frame's Movement.
+	glm::vec3 camera_movement = input_manager_->get_camera_movement_input_normalized();
+	camera_movement = camera_movement * main_camera_->get_transform()->get_rot();
+	camera_movement *= (input_manager_->get_sprint_held() ? kCameraFastMoveSpeed : kCameraMoveSpeed) * delta_time_;
+
+	// Apply Camera Movement.
+	main_camera_->get_transform()->set_pos(main_camera_->get_transform()->get_pos() + camera_movement);
+}
+void MainGame::HandleCameraLook()
+{
+	Transform* camera_transform = main_camera_->get_transform();
+
+	// Calculate Desired Rotation.
+	glm::vec2 camera_look = input_manager_->get_camera_look_input();
+	camera_look *= kCameraLookSensitivity * delta_time_;
+
+	y_rotation += camera_look.x;
+
+	x_rotation -= camera_look.y;
+	if (x_rotation < -90.0f)
+		x_rotation = -90.0f;
+	else if (x_rotation > 90.0f)
+		x_rotation = 90.0f;
+
+
+	// Apply our rotation.
+	// Note: For some reason we are having errors if we don't reset our rotation before applying our current.
+	camera_transform->set_euler_angles(0.0f, 0.0f, 0.0f);
+	camera_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(x_rotation), Transform::kLocalSpace);
+	camera_transform->Rotate(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(y_rotation), Transform::kWorldSpace);
+}
+
 
 void MainGame::LinkFogShader()
 {
@@ -173,8 +199,6 @@ void MainGame::DrawGame()
 	//LinkRimShader();
 	LinkLightingTestsShader();
 
-
-	//main_camera_->get_transform()->RotateAroundPoint(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(45.0f) * delta_time_);
 
 	// Draw the skybox (Done before other objects as for some reason doing it after causes other shaders to fail).
 	skybox_->Draw(*main_camera_, day_lerp_time);

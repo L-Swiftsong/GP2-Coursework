@@ -4,7 +4,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "Display.h" 
+#include "Display.h"
+#include "InputManager.h"
 #include "Shader.h"
 #include "GameObject.h"
 #include "Mesh.h"
@@ -21,6 +22,7 @@
 #include "Cubemap.h"
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 enum class GameState {kPlay, kExit};
 
@@ -50,8 +52,12 @@ private:
 
 	void GameLoop();
 	void CalculateDeltaTime();
-	void ProcessInput();
+
+	void HandleCameraMovement();
+	void HandleCameraLook();
+	
 	void DrawGame();
+
 
 	void LinkFogShader();
 	void LinkRimShader();
@@ -69,6 +75,7 @@ private:
 
 	Display game_display_;
 	GameState game_state_;
+	std::unique_ptr<InputManager> input_manager_;
 	GameObject* backpack_;
 	GameObject* wooden_bench_;
 	GameObject* dir_light_object_reference_;
@@ -79,6 +86,15 @@ private:
 	std::unique_ptr<Skybox> skybox_;
 
 
+	// Camera Movement & Rotation.
+	const float kCameraMoveSpeed = 5.0f;
+	const float kCameraFastMoveSpeed = 15.0f;
+	const float kCameraLookSensitivity = 500.0f;
+	float x_rotation;
+	float y_rotation;
+
+
+	// Shaders.
 	std::unique_ptr<Shader> active_shader_;
 	Shader fog_shader_;
 	Shader rim_lighting_shader_;
