@@ -42,7 +42,7 @@ uniform sampler2D texture_displacement1;
 vec3 albedo;
 float metallic;
 float roughness;
-vec3 F0;
+vec3 zero_angle_surface_reflection;
 
 
 const float PI = 3.14159265359;
@@ -54,10 +54,13 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir);
 float CalcPointAttenuation(PointLight light);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir);
 
-float DistributionGGX(vec3 normal, vec3 height, float roughness);
+
+vec3 CalculatePBRLighting(vec3 light_dir, vec3 H, vec3 radiance, vec3 normal, vec3 view_dir);
+
+float DistributionGGX(vec3 normal, vec3 H, float roughness);
 float GeometrySchlickGGX(float normalDotView, float roughness);
 float GeometrySmith(vec3 normal, vec3 view, vec3 L, float roughness);
-vec3 FresnelSchlick(float cosTheta, vec3 F0);
+vec3 FresnelSchlick(float cos_theta, vec3 zero_angle_surface_reflection);
 
 float clamp01(float value) { return clamp(value, 0.0, 1.0); }
 float sqr(float x) { return x * x; }
@@ -69,17 +72,17 @@ void main()
     metallic = texture(texture_metallic1, textureCoordinate).r;
     roughness = texture(texture_roughness1, textureCoordinate).r;
 
-    F0 = mix(vec3(0.04), albedo, metallic);
+    zero_angle_surface_reflection = mix(vec3(0.04), albedo, metallic);
     
 
-    vec3 viewDir = normalize(cameraPos - v_pos.xyz);
-	vec3 lightingResult = CalcDirectionalLight(directionalLight, v_normal, viewDir);
-    lightingResult += CalcPointLight(pointLight, v_normal, viewDir);
+    vec3 view_dir = normalize(cameraPos - v_pos.xyz);
+	vec3 lighting_output = CalcDirectionalLight(directionalLight, v_normal, view_dir);
+    lighting_output += CalcPointLight(pointLight, v_normal, view_dir);
 
     // Calculate Ambient Lighting (Temp).
     vec3 ambient = vec3(0.03) * albedo;
 
-    vec3 color = ambient + lightingResult;
+    vec3 color = ambient + lighting_output;
     color = color / (color + vec3(1.0));    // HDR Tonemapping.
     color = pow(color, vec3(1.0/2.2));      // Gamma Correction.
 
@@ -88,61 +91,28 @@ void main()
 
 
 // Function Definitions.
-vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir)
+vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 view_dir)
 {
-	vec3 lightDir = normalize(-light.Direction);
-    
-    // Diffuse multiplier.
-    float diffuseMult = max(dot(normal, lightDir), 0.0f);
+	// Calculate per-light radiance.
+    vec3 light_dir = normalize(-light.Direction);
+	vec3 H = normalize(view_dir + light_dir);
+    vec3 radiance = light.Diffuse;
 
-    // Specular multiplier.
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float specularMult = pow(max(dot(viewDir, reflectDir), 0.0f), 1.0f); //material.Shininess);
-
-    // Calculate results.
-    vec3 ambient  = light.Ambient * albedo;
-    vec3 diffuse  = light.Diffuse * diffuseMult * albedo;
-    vec3 specular = light.Specular * specularMult * metallic;
-
-    // Combine results.
-    return (ambient + diffuse + specular);
+    // Calculate and return our PBR Lighting Value.
+    return CalculatePBRLighting(light_dir, H, radiance, normal, view_dir);
 }
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir)
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 view_dir)
 {
     // Calculate per-light radiance.
-	vec3 lightDir = normalize(light.Position - v_pos);
-	vec3 height = normalize(viewDir + lightDir);
+	vec3 light_dir = normalize(light.Position - v_pos);
+	vec3 H = normalize(view_dir + light_dir);
 
+    // Determine our radiance.
     float attenuation = CalcPointAttenuation(light);
     vec3 radiance = light.Diffuse * attenuation;
 
-
-    // Cook-torrance brdf.
-    float NDF = DistributionGGX(normal, height, roughness);
-    float G = GeometrySmith(normal, viewDir, lightDir, roughness);
-    vec3 F = FresnelSchlick(max(dot(height, viewDir), 0.0), F0);
-
-    vec3 numerator = NDF * G * F;
-    float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, lightDir), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero error.
-    vec3 specular = numerator/denominator;
-
-
-    // kS is equal to Fresnel.
-    vec3 kS = F;
-    // For energy conservation, the diffuse and specular light can't
-    //  be above 1.0 (unless the surface emits light); to preserve this
-    //  relationship the diffuse component (kD) should equal 1.0 - kS.
-    vec3 kD = vec3(1.0) - kS;
-    // Multiply kD by the inverse metalness such that only non-metals 
-    //  have diffuse lighting, or a linear blend if partly metal (pure metals
-    //  have no diffuse light).
-    kD *= 1.0 - metallic;
-
-    // Scale light by the dot between the Normal and Light Direction.
-    float NdotL = max(dot(normal, lightDir), 0.0);
-
-    // Add to ourgoing radiance LO.
-    return (kD * albedo / PI + specular) * radiance * NdotL;
+    // Calculate and return our PBR Lighting Value.
+    return CalculatePBRLighting(light_dir, H, radiance, normal, view_dir);
 }
 
 
@@ -156,56 +126,89 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir)
 float CalcPointAttenuation(PointLight light)
 {
     float distance = length(light.Position - v_pos);
-    float normalisedDistance = distance / light.Radius;
+    float normalised_distance = distance / light.Radius;
 
-    if (normalisedDistance >= 1.0)
+    if (normalised_distance >= 1.0)
     {
         // Outwith max range.
         return 0.0;
     }
 
-    float sqrDistance = sqr(normalisedDistance);
-    return light.MaxIntensity * sqr(1.0 - sqrDistance) / (1.0 + light.Falloff * normalisedDistance);
+    float sqr_distance = sqr(normalised_distance);
+    return light.MaxIntensity * sqr(1.0 - sqr_distance) / (1.0 + light.Falloff * normalised_distance);
 }
 
 
 // ----------------------------------------------------------------------------
-float DistributionGGX(vec3 normal, vec3 height, float roughness)
+vec3 CalculatePBRLighting(vec3 light_dir, vec3 H, vec3 radiance, vec3 normal, vec3 view_dir)
+{
+    // Cook-torrance brdf.
+    float normal_distribution = DistributionGGX(normal, H, roughness);
+    float geometry = GeometrySmith(normal, view_dir, light_dir, roughness);
+    vec3 fresnel = FresnelSchlick(max(dot(H, view_dir), 0.0), zero_angle_surface_reflection);
+
+    vec3 numerator = normal_distribution * geometry * fresnel;
+    float denominator = 4.0 * max(dot(normal, view_dir), 0.0) * max(dot(normal, light_dir), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero error.
+    vec3 specular = numerator/denominator;
+
+
+    // Specular contribution is equal to the Fresnel.
+    vec3 specular_contribution = fresnel;
+    // For energy conservation, the diffuse and specular light can't
+    //  be above 1.0 (unless the surface emits light); to preserve this
+    //  relationship the diffuse component (kD) should equal 1.0 - specular_contribution.
+    vec3 diffuse_contribution = vec3(1.0) - specular_contribution;
+    // Multiply kD by the inverse metalness such that only non-metals 
+    //  have diffuse lighting, or a linear blend if partly metal (pure metals
+    //  have no diffuse light).
+    diffuse_contribution *= 1.0 - metallic;
+
+    // Scale light by the dot between the Normal and Light Direction.
+    float normal_dot_light_dir = max(dot(normal, light_dir), 0.0);
+
+    // Add to ourgoing radiance LO.
+    return (diffuse_contribution * albedo / PI + specular) * radiance * normal_dot_light_dir;
+}
+
+
+// ----------------------------------------------------------------------------
+float DistributionGGX(vec3 normal, vec3 H, float roughness)
 {
     float a = roughness * roughness;
     float a2 = a * a;
-    float normalDotHeight = max(dot(normal, height), 0.0);
-    float normalDotHeightSqr = normalDotHeight * normalDotHeight;
+    float normal_dot_H = max(dot(normal, H), 0.0);
+    float normal_dot_H_sqr = normal_dot_H * normal_dot_H;
 
     float nom   = a2;
-    float denom = (normalDotHeightSqr * (a2 - 1.0) + 1.0);
+    float denom = (normal_dot_H_sqr * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
 
     return nom / denom;
 }
 // ----------------------------------------------------------------------------
-float GeometrySchlickGGX(float normalDotView, float roughness)
+float GeometrySchlickGGX(float normal_dot_view, float roughness)
 {
     float r = (roughness + 1.0);
     float k = (r*r) / 8.0;
 
-    float nom   = normalDotView;
-    float denom = normalDotView * (1.0 - k) + k;
+    float nom   = normal_dot_view;
+    float denom = normal_dot_view * (1.0 - k) + k;
 
     return nom / denom;
 }
 // ----------------------------------------------------------------------------
-float GeometrySmith(vec3 normal, vec3 viewDir, vec3 L, float roughness)
+float GeometrySmith(vec3 normal, vec3 view_dir, vec3 light_dir, float roughness)
 {
-    float normalDotView = max(dot(normal, viewDir), 0.0);
-    float normalDotL = max(dot(normal, L), 0.0);
-    float ggx2 = GeometrySchlickGGX(normalDotView, roughness);
-    float ggx1 = GeometrySchlickGGX(normalDotL, roughness);
+    float normal_dot_light_dir = max(dot(normal, light_dir), 0.0);
+    float ggx1 = GeometrySchlickGGX(normal_dot_light_dir, roughness);
+
+    float normal_dot_view = max(dot(normal, view_dir), 0.0);
+    float ggx2 = GeometrySchlickGGX(normal_dot_view, roughness);
 
     return ggx1 * ggx2;
 }
 // ----------------------------------------------------------------------------
-vec3 FresnelSchlick(float cosTheta, vec3 F0)
+vec3 FresnelSchlick(float cos_theta, vec3 zero_angle_surface_reflection)
 {
-    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+    return zero_angle_surface_reflection + (1.0 - zero_angle_surface_reflection) * pow(clamp(1.0 - cos_theta, 0.0, 1.0), 5.0);
 }
