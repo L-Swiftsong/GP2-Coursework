@@ -188,7 +188,7 @@ std::vector<std::shared_ptr<Texture>> Model::GetMeshTextures(const aiMesh* mesh,
     std::vector<std::shared_ptr<Texture>> roughnessMaps = PrepareMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, TextureType::kRoughness);
     textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
     // Normal maps.
-    std::vector<std::shared_ptr<Texture>> normalMaps = PrepareMaterialTextures(material, aiTextureType_HEIGHT, TextureType::kNormal);
+    std::vector<std::shared_ptr<Texture>> normalMaps = PrepareMaterialTextures(material, aiTextureType_NORMALS, TextureType::kNormal);
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
     // Displacement maps.
     std::vector<std::shared_ptr<Texture>> displacementMaps = PrepareMaterialTextures(material, aiTextureType_DISPLACEMENT, TextureType::kDisplacement);
@@ -235,8 +235,8 @@ std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMat
     {
         aiString str;
         mat->GetTexture(type, i, &str);
-        
         std::cout << "Searching For Texture: " << str.C_Str() << std::endl;
+        
 
         // Check if a texture was loaded before and if so, continue to next iteration (Skip loading already loaded textures).
         bool skip = false;

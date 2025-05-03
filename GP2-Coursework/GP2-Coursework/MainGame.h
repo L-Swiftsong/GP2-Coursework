@@ -76,9 +76,12 @@ private:
 	Display game_display_;
 	GameState game_state_;
 	std::unique_ptr<InputManager> input_manager_;
-	GameObject* backpack_;
+	
+	GameObject* plane_;
 	GameObject* wooden_bench_;
 	GameObject* dir_light_object_reference_;
+	GameObject* three_axies_;
+
 	Camera* main_camera_;
 	Gradient* test_gradient_;
 
@@ -99,6 +102,7 @@ private:
 	Shader fog_shader_;
 	Shader rim_lighting_shader_;
 	Shader lighting_test_shader_;
+	Shader default_shader_;
 	//Audio audioDevice;
 
 	std::array<DirectionalLight, 1> directional_lights_;

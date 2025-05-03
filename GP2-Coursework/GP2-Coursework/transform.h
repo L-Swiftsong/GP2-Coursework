@@ -19,8 +19,8 @@ public:
 	inline glm::mat4 get_model() const
 	{
 		glm::mat4 posMat = glm::translate(pos_);
-		glm::mat4 scaleMat = glm::scale(scale_);
 		glm::mat4 rotMat = glm::toMat4(rot_);
+		glm::mat4 scaleMat = glm::scale(scale_);
 
 		return posMat * rotMat * scaleMat;
 	}

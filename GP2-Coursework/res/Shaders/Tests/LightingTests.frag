@@ -1,5 +1,4 @@
 #version 400
-
 out vec4 FragColor;
 
 struct DirectionalLight
@@ -19,9 +18,13 @@ struct PointLight
     float Falloff;
 };
 
-in vec2 textureCoordinate;
-in vec3 v_normal;
-in vec3 v_pos;
+in VERTEX_OUT
+{
+    vec3 frag_pos;
+    vec2 texture_coordinate;
+
+	mat3 TBN;
+} f_in;
 
 uniform vec3 cameraPos;
 uniform DirectionalLight directionalLight;
@@ -40,6 +43,9 @@ float metallic;
 float roughness;
 vec3 zero_angle_surface_reflection;
 
+vec3 tangent_view_pos;
+vec3 tangent_frag_pos;
+
 
 const float PI = 3.14159265359;
 
@@ -47,7 +53,7 @@ const float PI = 3.14159265359;
 // Function Declarations.
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir);
 
-float CalcPointAttenuation(PointLight light);
+float CalcPointAttenuation(PointLight light, vec3 light_position);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir);
 
 
@@ -64,21 +70,32 @@ float sqr(float x) { return x * x; }
 
 void main() 
 {
-    albedo = pow(texture(texture_diffuse1, textureCoordinate).rgb, vec3(2.2));
-    metallic = texture(texture_metallic1, textureCoordinate).r;
-    roughness = texture(texture_roughness1, textureCoordinate).r;
+    // Determine unlit colour/metallic/roughness values.
+    albedo = pow(texture(texture_diffuse1, f_in.texture_coordinate).rgb, vec3(2.2));
+    metallic = texture(texture_metallic1, f_in.texture_coordinate).r;
+    roughness = texture(texture_roughness1, f_in.texture_coordinate).r;
 
     zero_angle_surface_reflection = mix(vec3(0.04), albedo, metallic);
     
 
-    vec3 view_dir = normalize(cameraPos - v_pos.xyz);
-	vec3 lighting_output = CalcDirectionalLight(directionalLight, v_normal, view_dir);
-    lighting_output += CalcPointLight(pointLight, v_normal, view_dir);
+    // Determine normal using normal map.
+	vec3 normal = texture(texture_normal1, f_in.texture_coordinate).rgb;
+	normal = normalize((normal * 2.0f) - 1.0f);
+
+
+    // Calculate our view direction.
+    tangent_view_pos = f_in.TBN * cameraPos;
+    tangent_frag_pos = f_in.TBN * f_in.frag_pos;
+    vec3 view_dir = normalize(tangent_view_pos - tangent_frag_pos);
+
+
+	vec3 lighting_output = CalcDirectionalLight(directionalLight, normal, view_dir);
+    lighting_output += CalcPointLight(pointLight, normal, view_dir);
 
     // Calculate Ambient Lighting (Temp).
     vec3 ambient = vec3(0.03) * albedo;
 
-    vec3 color = ambient + lighting_output;
+    vec3 color = lighting_output;
     color = color / (color + vec3(1.0));    // HDR Tonemapping.
     color = pow(color, vec3(1.0/2.2));      // Gamma Correction.
 
@@ -90,7 +107,7 @@ void main()
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 view_dir)
 {
 	// Calculate per-light radiance.
-    vec3 light_dir = normalize(-light.Direction);
+    vec3 light_dir = normalize(f_in.TBN * -light.Direction);
 	vec3 H = normalize(view_dir + light_dir);
     vec3 radiance = light.Diffuse;
 
@@ -99,12 +116,14 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 view_dir)
 }
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 view_dir)
 {
+    vec3 tangent_light_pos = f_in.TBN * light.Position;
+
     // Calculate per-light radiance.
-	vec3 light_dir = normalize(light.Position - v_pos);
+	vec3 light_dir = normalize(tangent_light_pos - tangent_frag_pos);
 	vec3 H = normalize(view_dir + light_dir);
 
     // Determine our radiance.
-    float attenuation = CalcPointAttenuation(light);
+    float attenuation = CalcPointAttenuation(light, tangent_light_pos);
     vec3 radiance = light.Diffuse * attenuation;
 
     // Calculate and return our PBR Lighting Value.
@@ -112,16 +131,10 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 view_dir)
 }
 
 
-// Calculate Distance Attenuation: 1.0 / (c + kd + sd^2).
-/*float CalcPointAttenuation(PointLight light)
-{
-    float distance = length(light.Position - v_pos.xyz);
-    return clamp01(1.0 / (light.ConstantAttenuation + light.LinearAttenuation * distance + light.QuadraticAttenuation * (distance * distance)));
-}*/
 // Calculate Distance Attenuation: 'https://lisyarus.github.io/blog/posts/point-light-attenuation.html'.
-float CalcPointAttenuation(PointLight light)
+float CalcPointAttenuation(PointLight light, vec3 light_position)
 {
-    float distance = length(light.Position - v_pos);
+    float distance = length(light_position - tangent_frag_pos);
     float normalised_distance = distance / light.Radius;
 
     if (normalised_distance >= 1.0)
