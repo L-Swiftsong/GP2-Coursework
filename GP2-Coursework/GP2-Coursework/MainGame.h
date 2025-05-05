@@ -92,7 +92,7 @@ private:
 	// Camera Movement & Rotation.
 	const float kCameraMoveSpeed = 5.0f;
 	const float kCameraFastMoveSpeed = 15.0f;
-	const float kCameraLookSensitivity = 500.0f;
+	const float kCameraLookSensitivity = 50.0f;
 	float x_rotation;
 	float y_rotation;
 

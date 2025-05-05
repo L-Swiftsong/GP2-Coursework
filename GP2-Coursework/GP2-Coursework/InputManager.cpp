@@ -5,9 +5,6 @@ void InputManager::ProcessInput()
 {
 	SDL_Event event;
 
-	camera_look_input_.x = 0;
-	camera_look_input_.y = 0;
-
 	while (SDL_PollEvent(&event)) //get and process events
 	{
 		switch (event.type)
@@ -31,8 +28,8 @@ void InputManager::ProcessInput()
 			break;
 		// Mouse Movement.
 		case SDL_MOUSEMOTION:
-			camera_look_input_.x = event.motion.xrel;
-			camera_look_input_.y = event.motion.yrel;
+			//camera_look_input_.x = event.motion.xrel;
+			//camera_look_input_.y = event.motion.yrel;
 			break;
 		case SDL_KEYUP:
 			switch (event.key.keysym.sym)
@@ -50,6 +47,10 @@ void InputManager::ProcessInput()
 			break;
 		}
 	}
+
+	int x, y;
+	SDL_GetRelativeMouseState(&x, &y);
+	camera_look_input_ = glm::vec2(x, y);
 }
 
 void InputManager::PrintKeyInfo(SDL_KeyboardEvent* key)
