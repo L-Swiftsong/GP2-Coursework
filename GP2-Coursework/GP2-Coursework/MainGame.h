@@ -87,6 +87,7 @@ private:
 	GameObject* plane_;
 	GameObject* wooden_bench_;
 	GameObject* dir_light_object_reference_;
+	GameObject* point_light_object_reference_;
 	GameObject* three_axies_;
 
 	Camera* main_camera_;

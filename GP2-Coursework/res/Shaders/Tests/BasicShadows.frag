@@ -39,43 +39,35 @@ uniform PointLight point_lights;
 
 uniform vec3 view_pos;
 uniform float far_plane;
+uniform vec3 ambient_color = vec3(0.35f, 0.35f, 0.87f);
+
+
+vec3 base_color;
+vec3 normal;
 
 
 // Function Pre-Definitions.
 float CalculateShadowStrength_PointLight(PointLight light, vec3 frag_pos);
 float CalculateShadowStrength_DirectionalLight(DirectionalLight light, vec4 frag_pos_light_space);
 
+vec3 CalculateDirectionalLighting(DirectionalLight light);
+vec3 CalculatePointLighting(PointLight light);
+
 void main()
 {
-	vec3 base_color = texture(texture_diffuse1, f_in.texture_coordinate).rgb;
-    vec3 normal = normalize(f_in.normal);
-    vec3 light_color = vec3(1.0);
+	base_color = texture(texture_diffuse1, f_in.texture_coordinate).rgb;
+    normal = normalize(f_in.normal);
+    
     
     // Calculate Ambient Color
-    vec3 ambient = 0.15f * light_color;
-    
-    // Calculate Diffuse Color
-    vec3 light_dir = normalize(point_lights.Position - f_in.frag_pos);
-    float diffuse_strength = max(dot(light_dir, normal), 0.0);
-    vec3 diffuse = diffuse_strength * light_color;
-    
-    // Calculate Specular Color
-    vec3 view_dir = normalize(view_pos - f_in.frag_pos);
-    vec3 halfway_dir = normalize(light_dir + view_dir);
-    float specular_strength = pow(max(dot(normal, halfway_dir), 0.0), 64.0);
-    vec3 specular = specular_strength * halfway_dir;
-
-    // Calculate Shadow Strength.
-    // Note: This will incorrectly calculate the shadow strength where the two light's shadows don't overlap (Lights won't illuminate other lights shadows).
-    float shadow_strength = 0.0f;
-    //for(int i = 0; i < __; ++i)
-        shadow_strength += (CalculateShadowStrength_DirectionalLight(directional_lights, f_in.frag_pos_light_space));
-    //for(int i = 0; i < __; ++i)
-        shadow_strength += (CalculateShadowStrength_PointLight(point_lights, f_in.frag_pos));
+    vec3 ambient = 0.15f * ambient_color;
 
 
     // Calculate and output our lighting.
-    vec3 lighting = (ambient + (1.0f - shadow_strength) * (diffuse + specular)) * base_color;
+    vec3 lighting = ambient * base_color;
+    lighting += CalculateDirectionalLighting(directional_lights);
+    lighting += CalculatePointLighting(point_lights);
+
     FragColor = vec4(lighting, 1.0f);
     //FragColor = vec4(vec3(1.0f - shadow_strength), 1.0f);
 }
@@ -149,4 +141,46 @@ float CalculateShadowStrength_DirectionalLight(DirectionalLight light, vec4 frag
 
     // Return our calculated shadow strength.
     return shadow_strength;
+}
+
+
+vec3 CalculateDirectionalLighting(DirectionalLight light)
+{
+    // Calculate Diffuse Color.
+    vec3 light_dir = normalize(-light.Direction);
+    float diffuse_strength = max(dot(light_dir, normal), 0.0);
+    vec3 diffuse = diffuse_strength * light.Diffuse;
+    
+    // Calculate Specular Color.
+    vec3 view_dir = normalize(view_pos - f_in.frag_pos);
+    vec3 halfway_dir = normalize(light_dir + view_dir);
+    float specular_strength = pow(max(dot(normal, halfway_dir), 0.0), 64.0);
+    vec3 specular = specular_strength * light.Diffuse;
+
+    // Calculate our Shadow Strength for this light.
+    float shadow_strength = CalculateShadowStrength_DirectionalLight(directional_lights, f_in.frag_pos_light_space);
+
+    // Calculate and output this light's output.
+    vec3 lighting_output = ((1.0f - shadow_strength) * (diffuse + specular)) * base_color;
+    return lighting_output;
+}
+vec3 CalculatePointLighting(PointLight light)
+{
+    // Calculate Diffuse Color.
+    vec3 light_dir = normalize(point_lights.Position - f_in.frag_pos);
+    float diffuse_strength = max(dot(light_dir, normal), 0.0);
+    vec3 diffuse = diffuse_strength * light.Diffuse;
+    
+    // Calculate Specular Color.
+    vec3 view_dir = normalize(view_pos - f_in.frag_pos);
+    vec3 halfway_dir = normalize(light_dir + view_dir);
+    float specular_strength = pow(max(dot(normal, halfway_dir), 0.0), 64.0);
+    vec3 specular = specular_strength * light.Diffuse;
+
+    // Calculate our Shadow Strength for this light.
+    float shadow_strength = CalculateShadowStrength_PointLight(point_lights, f_in.frag_pos);
+
+    // Calculate and output this light's output.
+    vec3 lighting_output = ((1.0f - shadow_strength) * (diffuse + specular)) * base_color;
+    return lighting_output;
 }
