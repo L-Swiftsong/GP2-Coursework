@@ -22,6 +22,7 @@ in VERTEX_OUT
 {
     vec3 frag_pos;
     vec2 texture_coordinate;
+	vec3 vertex_normal;
 
 	mat3 TBN;
 } f_in;
@@ -37,14 +38,16 @@ uniform sampler2D texture_roughness1;
 uniform sampler2D texture_normal1;
 uniform sampler2D texture_displacement1;
 
+uniform bool has_normal;
+
 
 vec3 albedo;
 float metallic;
 float roughness;
 vec3 zero_angle_surface_reflection;
 
-vec3 tangent_view_pos;
-vec3 tangent_frag_pos;
+vec3 view_pos;
+vec3 frag_pos;
 
 
 const float PI = 3.14159265359;
@@ -79,14 +82,26 @@ void main()
     
 
     // Determine normal using normal map.
-	vec3 normal = texture(texture_normal1, f_in.texture_coordinate).rgb;
-	normal = normalize((normal * 2.0f) - 1.0f);
+    vec3 normal;
+    if (!has_normal)
+    {
+        // We don't have an assigned normal map.
+        normal = f_in.vertex_normal;
+        //FragColor = vec4(normal, 1.0f);
+        //return;
+    }
+    else
+    {
+        // We have an assigned normal map.
+	    normal = texture(texture_normal1, f_in.texture_coordinate).rgb;
+    	normal = normalize((normal * 2.0f) - 1.0f);
+    }
 
 
     // Calculate our view direction.
-    tangent_view_pos = f_in.TBN * cameraPos;
-    tangent_frag_pos = f_in.TBN * f_in.frag_pos;
-    vec3 view_dir = normalize(tangent_view_pos - tangent_frag_pos);
+    view_pos = has_normal ? f_in.TBN * cameraPos : cameraPos;
+    frag_pos = has_normal ? f_in.TBN * f_in.frag_pos : f_in.frag_pos;
+    vec3 view_dir = normalize(view_pos - frag_pos);
 
 
 	vec3 lighting_output = CalcDirectionalLight(directionalLight, normal, view_dir);
@@ -107,7 +122,7 @@ void main()
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 view_dir)
 {
 	// Calculate per-light radiance.
-    vec3 light_dir = normalize(f_in.TBN * -light.Direction);
+    vec3 light_dir = normalize(has_normal ? (f_in.TBN * -light.Direction) : -light.Direction);
 	vec3 H = normalize(view_dir + light_dir);
     vec3 radiance = light.Diffuse;
 
@@ -116,14 +131,14 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 view_dir)
 }
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 view_dir)
 {
-    vec3 tangent_light_pos = f_in.TBN * light.Position;
+    vec3 light_pos = has_normal ? (f_in.TBN * light.Position) : light.Position;
 
     // Calculate per-light radiance.
-	vec3 light_dir = normalize(tangent_light_pos - tangent_frag_pos);
+	vec3 light_dir = normalize(light_pos - frag_pos);
 	vec3 H = normalize(view_dir + light_dir);
 
     // Determine our radiance.
-    float attenuation = CalcPointAttenuation(light, tangent_light_pos);
+    float attenuation = CalcPointAttenuation(light, light_pos);
     vec3 radiance = light.Diffuse * attenuation;
 
     // Calculate and return our PBR Lighting Value.
@@ -134,7 +149,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 view_dir)
 // Calculate Distance Attenuation: 'https://lisyarus.github.io/blog/posts/point-light-attenuation.html'.
 float CalcPointAttenuation(PointLight light, vec3 light_position)
 {
-    float distance = length(light_position - tangent_frag_pos);
+    float distance = length(light_position - frag_pos);
     float normalised_distance = distance / light.Radius;
 
     if (normalised_distance >= 1.0)

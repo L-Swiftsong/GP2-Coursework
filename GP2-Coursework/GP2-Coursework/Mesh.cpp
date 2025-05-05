@@ -45,6 +45,9 @@ void Mesh::Draw(const Shader& shader)
         glBindTexture(GL_TEXTURE_2D, textures_[i]->get_texture_id());
     }
 
+    glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_normal"), normalNr > 1);
+
+
     // draw mesh
     glBindVertexArray(vertex_array_object_);
     glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices_.size()), GL_UNSIGNED_INT, 0);

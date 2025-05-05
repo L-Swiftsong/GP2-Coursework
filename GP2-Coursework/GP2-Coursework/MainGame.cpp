@@ -26,9 +26,10 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 		std::vector<std::string>{"..\\res\\Models\\Terrain\\Texture_Grass_Diffuse.png", "..\\res\\Models\\Terrain\\Texture_Dirt_Diffuse.png", "..\\res\\Models\\Terrain\\Texture_Rock_Diffuse.png", "..\\res\\Models\\Terrain\\SplatAlpha 0.png"},
 		std::vector<std::string>{},
 		std::vector<std::string>{"..\\res\\Models\\Terrain\\Texture_Grass_Normal.png", "..\\res\\Models\\Terrain\\Texture_Dirt_Normal.png", "..\\res\\Models\\Terrain\\Texture_Rock_Normal.png"});
+	fir_tree_ = new GameObject("..\\res\\Models\\Trees\\LowPolyFirTree.obj", glm::vec3(0.0f, 0.0f, -5.0f), glm::radians(glm::vec3(0.0f)), glm::vec3(1.0f));
 
 	plane_ = new GameObject("..\\res\\Plane.obj", glm::vec3(0.0f), glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)), glm::vec3(1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
-	wooden_bench_ = new GameObject("..\\res\\Models\\Bench\\WoodenBench.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.5f));
+	wooden_bench_ = new GameObject("..\\res\\Models\\Bench\\WoodenBench.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
 	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "brickwall.jpg", "", "brickwall_normal.jpg");
 	three_axies_ = new GameObject("..\\res\\Models\\ThreeAxies.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.25f));
 
@@ -54,6 +55,7 @@ MainGame::~MainGame()
 	delete main_camera_;
 	delete test_gradient_;
 	delete ground_terrain_;
+	delete fir_tree_;
 	delete plane_;
 	delete wooden_bench_;
 	delete dir_light_object_reference_;
@@ -150,7 +152,6 @@ void MainGame::HandleCameraLook()
 
 	// Calculate Desired Rotation.
 	glm::vec2 camera_look = input_manager_->get_camera_look_input();
-	LogVec3(glm::vec3(camera_look, 0.0f));
 	camera_look *= kCameraLookSensitivity * delta_time_;
 
 	y_rotation += camera_look.x;
@@ -205,6 +206,8 @@ void MainGame::DrawGame()
 
 	// Draw all our GameObjects.
 	ground_terrain_->Draw(*main_camera_, &terrain_shader_);
+
+	fir_tree_->Draw(*main_camera_, active_shader_.get());
 	//plane_->Draw(*main_camera_, active_shader_.get());
 	wooden_bench_->Draw(*main_camera_, active_shader_.get());
 	dir_light_object_reference_->Draw(*main_camera_, active_shader_.get());

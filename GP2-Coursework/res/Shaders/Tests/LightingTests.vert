@@ -12,6 +12,7 @@ out VERTEX_OUT
 {
 	vec3 frag_pos; 
 	vec2 texture_coordinate;
+	vec3 vertex_normal;
 
 	mat3 TBN;
 } v_out;
@@ -30,6 +31,7 @@ void main()
 	tangent = normalize(tangent - dot(tangent, normal) * normal);
 	vec3 biTangent = cross(normal, tangent);
 
+	v_out.vertex_normal = normal;
 	v_out.TBN = transpose(mat3(tangent, biTangent, normal));
 
 

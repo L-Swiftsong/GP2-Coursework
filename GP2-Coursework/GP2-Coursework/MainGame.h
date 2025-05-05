@@ -76,6 +76,7 @@ private:
 	std::unique_ptr<InputManager> input_manager_;
 	
 	GameObject* ground_terrain_;
+	GameObject* fir_tree_;
 
 	GameObject* plane_;
 	GameObject* wooden_bench_;
