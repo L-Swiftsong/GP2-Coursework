@@ -158,6 +158,8 @@
     <None Include="..\res\Shaders\Tests\rimLighting.vert" />
     <None Include="..\res\Shaders\Tests\SkyboxTest.frag" />
     <None Include="..\res\Shaders\Tests\SkyboxTest.vert" />
+    <None Include="..\res\Shaders\Tests\TerrainTexture.frag" />
+    <None Include="..\res\Shaders\Tests\TerrainTexture.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

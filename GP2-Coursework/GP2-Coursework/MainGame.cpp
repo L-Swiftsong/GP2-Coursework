@@ -5,9 +5,8 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	game_display_(Display()),
 	input_manager_(std::make_unique<InputManager>()),
 	main_camera_(new Camera(glm::vec3(0.0f, 3.5f, 0.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
-	fog_shader_(			Shader("..\\res\\Shaders\\Tests\\fogShader.vert",		"..\\res\\Shaders\\Tests\\fogShader.frag")),
-	rim_lighting_shader_(	Shader("..\\res\\Shaders\\Tests\\rimLighting.vert",		"..\\res\\Shaders\\Tests\\rimLighting.frag")),
 	lighting_test_shader_(	Shader("..\\res\\Shaders\\Tests\\LightingTests.vert",	"..\\res\\Shaders\\Tests\\LightingTests.frag")),
+	terrain_shader_(		Shader("..\\res\\Shaders\\Tests\\TerrainTexture.vert",	"..\\res\\Shaders\\Tests\\TerrainTexture.frag")),
 	default_shader_(		Shader("..\\res\\Shaders\\DefaultTexture.vert", "..\\res\\Shaders\\DefaultTexture.frag")),
 
 	//skybox_(std::make_unique<Skybox>("..\\res\\Skyboxes\\TestSky", ".jpg")),
@@ -23,6 +22,11 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	//active_shader_ = std::make_unique<Shader>("..\\res\\Shaders\\Tests\\NormalMapping.vert", "..\\res\\Shaders\\Tests\\NormalMapping.frag");
 
 	// Setup Models.
+	ground_terrain_ = new GameObject("..\\res\\Models\\Terrain\\NewMeshTerrain.obj", glm::vec3(500.0f, 0.0f, -500.0f), glm::radians(glm::vec3(0.0f)), glm::vec3(1.0f),
+		std::vector<std::string>{"..\\res\\Models\\Terrain\\Texture_Grass_Diffuse.png", "..\\res\\Models\\Terrain\\Texture_Dirt_Diffuse.png", "..\\res\\Models\\Terrain\\Texture_Rock_Diffuse.png", "..\\res\\Models\\Terrain\\SplatAlpha 0.png"},
+		std::vector<std::string>{},
+		std::vector<std::string>{"..\\res\\Models\\Terrain\\Texture_Grass_Normal.png", "..\\res\\Models\\Terrain\\Texture_Dirt_Normal.png", "..\\res\\Models\\Terrain\\Texture_Rock_Normal.png"});
+
 	plane_ = new GameObject("..\\res\\Plane.obj", glm::vec3(0.0f), glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)), glm::vec3(1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
 	wooden_bench_ = new GameObject("..\\res\\Models\\Bench\\WoodenBench.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.5f));
 	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "brickwall.jpg", "", "brickwall_normal.jpg");
@@ -49,6 +53,7 @@ MainGame::~MainGame()
 {
 	delete main_camera_;
 	delete test_gradient_;
+	delete ground_terrain_;
 	delete plane_;
 	delete wooden_bench_;
 	delete dir_light_object_reference_;
@@ -67,14 +72,19 @@ void MainGame::GameLoop()
 	while (game_state_ != GameState::kExit)
 	{
 		CalculateDeltaTime();
+
+		// Process then Handle Input.
 		input_manager_->ProcessInput();
-		
 		HandleCameraMovement();
 		HandleCameraLook();
 
 		DrawGame();
 		//Collision(suzanne_.get_mesh()->get_sphere_pos(), suzanne_.get_mesh()->get_sphere_radius(), suzanne_2_.get_mesh()->get_sphere_pos(), suzanne_2_.get_mesh()->get_sphere_radius());
 		//playAudio(backGroundMusic, glm::vec3(0.0f,0.0f,0.0f));
+
+
+		// Increment the Counter.
+		counter_ = counter_ + (1.0f * delta_time_);
 	}
 
 	glfwTerminate();
@@ -140,6 +150,7 @@ void MainGame::HandleCameraLook()
 
 	// Calculate Desired Rotation.
 	glm::vec2 camera_look = input_manager_->get_camera_look_input();
+	LogVec3(glm::vec3(camera_look, 0.0f));
 	camera_look *= kCameraLookSensitivity * delta_time_;
 
 	y_rotation += camera_look.x;
@@ -159,23 +170,6 @@ void MainGame::HandleCameraLook()
 }
 
 
-void MainGame::LinkFogShader()
-{
-	//fogShader.setMat4("u_pm", myCamera.getProjection());
-	//fogShader.setMat4("u_vm", myCamera.getProjection());
-	fog_shader_.set_float("maxDist", 20.0f);
-	fog_shader_.set_float("minDist", 0.0f);
-	fog_shader_.set_vec_3("fogColor", glm::vec3(0.0f, 0.0f, 0.0f));
-}
-void MainGame::LinkRimShader()
-{
-	rim_lighting_shader_.set_vec_3("cameraPos", main_camera_->get_transform()->get_pos());
-	rim_lighting_shader_.set_vec_3("lightDir", glm::vec3(1.0, 0.0, 1.0));
-	rim_lighting_shader_.set_vec_4("lightColour", glm::vec4(1.0, 1.0, 1.0, 1.0));
-	rim_lighting_shader_.set_vec_4("rimColour", glm::vec4(1.0, 1.0, 1.0, 1.0));
-	//rimLightingShader.setParam<glm::vec3>("lightDirection", glm::vec3(0.0f, 0.5f, 0.5f));
-	//rimLightingShader.setParam("lightColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-}
 void MainGame::LinkLightingTestsShader()
 {
 	lighting_test_shader_.set_vec_3("cameraPos", main_camera_->get_transform()->get_pos());
@@ -190,7 +184,7 @@ void MainGame::LinkLightingTestsShader()
 	// Setup the Point Lights.
 	for (int i = 0; i < point_lights_.size(); ++i)
 	{
-		point_lights_[i].UpdateShader(lighting_test_shader_);
+		//point_lights_[i].UpdateShader(lighting_test_shader_);
 	}
 }
 
@@ -200,30 +194,25 @@ void MainGame::DrawGame()
 
 	CalculateLightingValues();
 
-	LinkFogShader();
-	LinkRimShader();
 	LinkLightingTestsShader();
 
-	// Draw the skybox (Done before other objects as for some reason doing it after causes other shaders to fail).
-	skybox_->Draw(*main_camera_, day_lerp_time);
 
 	//active_shader_->Bind();
-	//active_shader_->set_vec_3("lightPos", glm::vec3(0.0f, 0.5f, 0.0f));
-	//active_shader_->set_vec_3("viewPos", main_camera_->get_transform()->get_pos());
+	terrain_shader_.set_vec_3("light_dir", directional_lights_[0].get_direction());
+	terrain_shader_.set_vec_3("view_pos", main_camera_->get_transform()->get_pos());
 
 
 
-	// Draw the GameObject.
-	// Note: The 'lighting_tests_shader_' seems to only work when drawn after everything else.
-	plane_->Draw(*main_camera_, active_shader_.get());
+	// Draw all our GameObjects.
+	ground_terrain_->Draw(*main_camera_, &terrain_shader_);
+	//plane_->Draw(*main_camera_, active_shader_.get());
 	wooden_bench_->Draw(*main_camera_, active_shader_.get());
 	dir_light_object_reference_->Draw(*main_camera_, active_shader_.get());
+	three_axies_->Draw(*main_camera_, &default_shader_);
 
-	//three_axies_->Draw(*main_camera_, &default_shader_);
 
-
-	// Increment the Counter.
-	counter_ = counter_ + (1.0f * delta_time_);
+	// Draw the skybox.
+	skybox_->Draw(*main_camera_, day_lerp_time);
 
 	glEnableClientState(GL_COLOR_ARRAY); 
 	glEnd();
@@ -252,7 +241,7 @@ void MainGame::CalculateLightingValues()
 
 	// (Debug) Display our sunlight direction.
 	glm::vec3 desired_direction = -kMiddayLightDirection * sun_light_dir_;
-	//dir_light_object_reference_->get_transform()->set_pos(desired_direction * 5.0f); // Shows the direction the light is shining FROM.
+	dir_light_object_reference_->get_transform()->set_pos(desired_direction * 5.0f); // Shows the direction the light is shining FROM.
 }
 
 

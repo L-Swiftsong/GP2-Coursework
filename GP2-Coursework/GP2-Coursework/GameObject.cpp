@@ -1,13 +1,13 @@
 #pragma once
 #include "GameObject.h"
 
-GameObject::GameObject(const std::string mesh_file_path) : GameObject(mesh_file_path, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))
+GameObject::GameObject(const std::string& mesh_file_path) : GameObject(mesh_file_path, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f))
 {}
-GameObject::GameObject(const std::string mesh_file_path, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) :
+GameObject::GameObject(const std::string& mesh_file_path, const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale) :
 	model_(new Model(mesh_file_path)),
 	transform_(new Transform(position, rotation, scale))
 {}
-GameObject::GameObject(const std::string mesh_file_path, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, const std::string& diffuse_texture_path, const std::string& specular_texture_path, const std::string& normal_texture_path) :
+GameObject::GameObject(const std::string& mesh_file_path, const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale, const std::string& diffuse_texture_path, const std::string& specular_texture_path, const std::string& normal_texture_path) :
 	transform_(new Transform(position, rotation, scale))
 {
 	std::vector<std::shared_ptr<Texture>> textureOverrides;
@@ -17,6 +17,20 @@ GameObject::GameObject(const std::string mesh_file_path, glm::vec3 position, glm
 		textureOverrides.push_back(std::make_shared<Texture>(TextureType::kSpecular, specular_texture_path));
 	if (normal_texture_path != "")
 		textureOverrides.push_back(std::make_shared<Texture>(TextureType::kNormal, normal_texture_path));
+
+	model_ = new Model(mesh_file_path, textureOverrides);
+}
+GameObject::GameObject(const std::string& mesh_file_path, const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale,
+	const std::vector<std::string>& diffuse_texture_paths, const std::vector<std::string>& specular_texture_paths, const std::vector<std::string>& normal_texture_paths) :
+	transform_(new Transform(position, rotation, scale))
+{
+	std::vector<std::shared_ptr<Texture>> textureOverrides;
+	for (int i = 0; i < diffuse_texture_paths.size(); ++i)
+		textureOverrides.push_back(std::make_shared<Texture>(TextureType::kDiffuse, diffuse_texture_paths[i]));
+	for (int i = 0; i < specular_texture_paths.size(); ++i)
+		textureOverrides.push_back(std::make_shared<Texture>(TextureType::kSpecular, specular_texture_paths[i]));
+	for (int i = 0; i < normal_texture_paths.size(); ++i)
+		textureOverrides.push_back(std::make_shared<Texture>(TextureType::kNormal, normal_texture_paths[i]));
 
 	model_ = new Model(mesh_file_path, textureOverrides);
 }

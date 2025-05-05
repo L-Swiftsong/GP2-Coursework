@@ -38,6 +38,7 @@ public:
 	// ------------------------------------------------------------------------
 	void set_bool(const std::string& name, bool value) const
 	{
+		glUseProgram(shader_id_);
 		glUniform1i(glGetUniformLocation(shader_id_, name.c_str()), (int)value);
 
 		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
@@ -49,6 +50,7 @@ public:
 	// ------------------------------------------------------------------------
 	void set_int(const std::string& name, int value) const
 	{
+		glUseProgram(shader_id_);
 		glUniform1i(glGetUniformLocation(shader_id_, name.c_str()), value);
 
 		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
@@ -60,17 +62,19 @@ public:
 	// ------------------------------------------------------------------------
 	void set_float(const std::string& name, float value) const
 	{
+		glUseProgram(shader_id_);
 		glUniform1f(glGetUniformLocation(shader_id_, name.c_str()), value);
 
-		//if ((glGetUniformLocation(shaderID, name.c_str()) == -1))
-		//{
-		//	std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
-		//	__debugbreak();
-		//}
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		{
+			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
+			__debugbreak();
+		}
 	}
 	// ------------------------------------------------------------------------
 	void set_vec_2(const std::string& name, const glm::vec2& value) const
 	{
+		glUseProgram(shader_id_);
 		glUniform2fv(glGetUniformLocation(shader_id_, name.c_str()), 1, &value[0]);
 
 		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
@@ -81,6 +85,7 @@ public:
 	}
 	void set_vec_2(const std::string& name, float x, float y) const
 	{
+		glUseProgram(shader_id_);
 		glUniform2f(glGetUniformLocation(shader_id_, name.c_str()), x, y);
 
 		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
@@ -92,6 +97,7 @@ public:
 	// ------------------------------------------------------------------------
 	void set_vec_3(const std::string& name, const glm::vec3& value) const
 	{
+		glUseProgram(shader_id_);
 		glUniform3fv(glGetUniformLocation(shader_id_, name.c_str()), 1, &value[0]);
 
 		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
@@ -102,6 +108,7 @@ public:
 	}
 	void set_vec_3(const std::string& name, float x, float y, float z) const
 	{
+		glUseProgram(shader_id_);
 		glUniform3f(glGetUniformLocation(shader_id_, name.c_str()), x, y, z);
 
 		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
@@ -113,6 +120,7 @@ public:
 	// ------------------------------------------------------------------------
 	void set_vec_4(const std::string& name, const glm::vec4& value) const
 	{
+		glUseProgram(shader_id_);
 		glUniform4fv(glGetUniformLocation(shader_id_, name.c_str()), 1, &value[0]);
 
 		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
@@ -123,6 +131,7 @@ public:
 	}
 	void set_vec_4(const std::string& name, float x, float y, float z, float w)
 	{
+		glUseProgram(shader_id_);
 		glUniform4f(glGetUniformLocation(shader_id_, name.c_str()), x, y, z, w);
 
 		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
@@ -134,6 +143,7 @@ public:
 	// ------------------------------------------------------------------------
 	void set_mat_2(const std::string& name, const glm::mat2& mat) const
 	{
+		glUseProgram(shader_id_);
 		glUniformMatrix2fv(glGetUniformLocation(shader_id_, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 
 		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
@@ -145,6 +155,7 @@ public:
 	// ------------------------------------------------------------------------
 	void set_mat_3(const std::string& name, const glm::mat3& mat) const
 	{
+		glUseProgram(shader_id_);
 		glUniformMatrix3fv(glGetUniformLocation(shader_id_, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 
 		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
@@ -156,6 +167,7 @@ public:
 	// ------------------------------------------------------------------------
 	void set_mat_4(const std::string& name, const glm::mat4& mat) const
 	{
+		glUseProgram(shader_id_);
 		glUniformMatrix4fv(glGetUniformLocation(shader_id_, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 
 		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))

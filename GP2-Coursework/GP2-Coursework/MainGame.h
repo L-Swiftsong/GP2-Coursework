@@ -59,8 +59,6 @@ private:
 	void DrawGame();
 
 
-	void LinkFogShader();
-	void LinkRimShader();
 	void LinkLightingTestsShader();
 
 	bool Collision(glm::vec3 m1Pos, float m1Rad, glm::vec3 m2Pos, float m2Rad);
@@ -77,6 +75,8 @@ private:
 	GameState game_state_;
 	std::unique_ptr<InputManager> input_manager_;
 	
+	GameObject* ground_terrain_;
+
 	GameObject* plane_;
 	GameObject* wooden_bench_;
 	GameObject* dir_light_object_reference_;
@@ -99,9 +99,8 @@ private:
 
 	// Shaders.
 	std::unique_ptr<Shader> active_shader_;
-	Shader fog_shader_;
-	Shader rim_lighting_shader_;
 	Shader lighting_test_shader_;
+	Shader terrain_shader_;
 	Shader default_shader_;
 	//Audio audioDevice;
 

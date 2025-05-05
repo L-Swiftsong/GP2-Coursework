@@ -60,6 +60,9 @@
     <ClCompile Include="Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h">
@@ -116,6 +119,9 @@
     <ClInclude Include="DirectionalLight.h">
       <Filter>Header Files\Lights</Filter>
     </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\res\Shaders\Tests\fogShader.frag">
@@ -159,6 +165,12 @@
     </None>
     <None Include="..\res\Shaders\DefaultTexture.vert">
       <Filter>Resource Files\Debug</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\TerrainTexture.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\TerrainTexture.vert">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
 </Project>
