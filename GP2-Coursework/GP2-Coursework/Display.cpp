@@ -37,6 +37,9 @@ void Display::SwapBuffer()
 
 void Display::ClearDisplay(float r, float g, float b, float a)
 {
+	// (Temp).
+	glViewport(0, 0, screen_width_, screen_height_);
+
 	// Clear colour and depth buffer - set colour to colour defined in glClearColor.
 	glClearColor(r, g, b, a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

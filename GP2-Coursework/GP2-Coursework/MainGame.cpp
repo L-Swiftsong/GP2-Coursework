@@ -5,9 +5,11 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	game_display_(Display()),
 	input_manager_(std::make_unique<InputManager>()),
 	main_camera_(new Camera(glm::vec3(0.0f, 3.5f, 0.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
+	depth_buffer_shader_(	Shader("..\\res\\Shaders\\RenderToDepth.vert",	"..\\res\\Shaders\\RenderToDepth.frag")),
 	lighting_test_shader_(	Shader("..\\res\\Shaders\\Tests\\LightingTests.vert",	"..\\res\\Shaders\\Tests\\LightingTests.frag")),
 	terrain_shader_(		Shader("..\\res\\Shaders\\Tests\\TerrainTexture.vert",	"..\\res\\Shaders\\Tests\\TerrainTexture.frag")),
 	default_shader_(		Shader("..\\res\\Shaders\\DefaultTexture.vert", "..\\res\\Shaders\\DefaultTexture.frag")),
+	basic_shadows_(			Shader("..\\res\\Shaders\\Tests\\BasicShadows.vert", "..\\res\\Shaders\\Tests\\BasicShadows.frag")),
 
 	//skybox_(std::make_unique<Skybox>("..\\res\\Skyboxes\\TestSky", ".jpg")),
 	skybox_(std::make_unique<Skybox>("..\\res\\Skyboxes\\PolyverseSkies-NightSky", ".jpg")),
@@ -18,7 +20,7 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 {
 	//stbi_set_flip_vertically_on_load(true);
 
-	active_shader_ = std::make_unique<Shader>(lighting_test_shader_);
+	active_shader_ = std::make_unique<Shader>(basic_shadows_);
 	//active_shader_ = std::make_unique<Shader>("..\\res\\Shaders\\Tests\\NormalMapping.vert", "..\\res\\Shaders\\Tests\\NormalMapping.frag");
 
 	// Setup Models.
@@ -48,8 +50,9 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 		std::make_tuple(0.55f, NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT),	// Nighttime.
 	};
 	test_gradient_ = new Gradient(true, directional_light_values);
-}
 
+	InitialiseShadowMap();
+}
 MainGame::~MainGame()
 {
 	delete main_camera_;
@@ -61,6 +64,33 @@ MainGame::~MainGame()
 	delete dir_light_object_reference_;
 	delete three_axies_;
 }
+
+void MainGame::InitialiseShadowMap()
+{
+	// Generate our Framebuffer.
+	glGenFramebuffers(1, &depth_map_fbo);
+
+	// Generate the Depth Buffer Texture.
+	depth_map;
+	glGenTextures(1, &depth_map);
+	glBindTexture(GL_TEXTURE_2D, depth_map);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, kShadowTextureWidth, kShadowTextureHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float border_color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+
+	// Set the Framebuffer's Depth Buffer as our generated texture.
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_map, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 
 void MainGame::Run()
 {
@@ -80,6 +110,9 @@ void MainGame::GameLoop()
 		HandleCameraMovement();
 		HandleCameraLook();
 
+		CalculateLightingValues();
+
+		RenderDepthMap();
 		DrawGame();
 		//Collision(suzanne_.get_mesh()->get_sphere_pos(), suzanne_.get_mesh()->get_sphere_radius(), suzanne_2_.get_mesh()->get_sphere_pos(), suzanne_2_.get_mesh()->get_sphere_radius());
 		//playAudio(backGroundMusic, glm::vec3(0.0f,0.0f,0.0f));
@@ -189,26 +222,71 @@ void MainGame::LinkLightingTestsShader()
 	}
 }
 
+
+void MainGame::RenderDepthMap()
+{
+	glViewport(0, 0, kShadowTextureWidth, kShadowTextureHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	// Determine matrices for rendering from the light's point of view.
+	glm::mat4 light_projection, light_view, light_space_matrix;
+	const float kNearPlane = 0.1f, kFarPlane = 1000.0f; // Change to our camera's near & far clipping planes?
+	light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, kNearPlane, kFarPlane);
+	light_view = glm::lookAt(directional_lights_[0].get_direction() * -7.5f, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	light_space_matrix = light_projection * light_view;
+
+	depth_buffer_shader_.Bind();
+	depth_buffer_shader_.set_mat_4("light_space_matrix", light_space_matrix);
+
+	// Draw all our GameObjects.
+	ground_terrain_->Draw(*main_camera_, &depth_buffer_shader_);
+
+	fir_tree_->Draw(*main_camera_, &depth_buffer_shader_);
+	plane_->Draw(*main_camera_, &depth_buffer_shader_);
+	wooden_bench_->Draw(*main_camera_, &depth_buffer_shader_);
+	dir_light_object_reference_->Draw(*main_camera_, &depth_buffer_shader_);
+	three_axies_->Draw(*main_camera_, &depth_buffer_shader_);
+	
+
+	basic_shadows_.set_mat_4("light_space_matrix", light_space_matrix);
+	Mesh::s_shadows_depth_map = depth_map;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 void MainGame::DrawGame()
 {
 	game_display_.ClearDisplay(0.0f, 0.0f, 0.0f, 1.0f); // Sets our background colour.
 
-	CalculateLightingValues();
 
+	ConfigureShaders();
+	RenderScene();
+
+	
+	glEnableClientState(GL_COLOR_ARRAY); 
+	glEnd();
+
+	game_display_.SwapBuffer();
+}
+
+void MainGame::ConfigureShaders()
+{
 	LinkLightingTestsShader();
 
-
-	//active_shader_->Bind();
 	terrain_shader_.set_vec_3("light_dir", directional_lights_[0].get_direction());
 	terrain_shader_.set_vec_3("view_pos", main_camera_->get_transform()->get_pos());
 
-
-
+	basic_shadows_.set_vec_3("light_pos", directional_lights_[0].get_direction() * -7.5f);
+	basic_shadows_.set_vec_3("view_pos", main_camera_->get_transform()->get_pos());
+}
+void MainGame::RenderScene()
+{
 	// Draw all our GameObjects.
-	ground_terrain_->Draw(*main_camera_, &terrain_shader_);
+	//ground_terrain_->Draw(*main_camera_, &terrain_shader_);
+	ground_terrain_->Draw(*main_camera_, active_shader_.get());
 
 	fir_tree_->Draw(*main_camera_, active_shader_.get());
-	//plane_->Draw(*main_camera_, active_shader_.get());
+	plane_->Draw(*main_camera_, active_shader_.get());
 	wooden_bench_->Draw(*main_camera_, active_shader_.get());
 	dir_light_object_reference_->Draw(*main_camera_, active_shader_.get());
 	three_axies_->Draw(*main_camera_, &default_shader_);
@@ -216,11 +294,6 @@ void MainGame::DrawGame()
 
 	// Draw the skybox.
 	skybox_->Draw(*main_camera_, day_lerp_time);
-
-	glEnableClientState(GL_COLOR_ARRAY); 
-	glEnd();
-
-	game_display_.SwapBuffer();
 }
 
 

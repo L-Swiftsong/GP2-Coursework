@@ -1,5 +1,6 @@
 #include "Mesh.h"
 
+int Mesh::s_shadows_depth_map = -1;
 Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::shared_ptr<Texture>>& textures)
 {
 	this->vertices_ = vertices;
@@ -15,13 +16,14 @@ Mesh::~Mesh()
 void Mesh::Draw(const Shader& shader)
 {
     // bind appropriate textures
+    unsigned int i = 0;
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
     unsigned int metallicNr = 1;
     unsigned int roughnessNr = 1;
     unsigned int normalNr = 1;
     unsigned int displacementNr = 1;
-    for (unsigned int i = 0; i < textures_.size(); i++)
+    for (i = 0; i < textures_.size(); i++)
     {
         glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
 
@@ -45,7 +47,16 @@ void Mesh::Draw(const Shader& shader)
         glBindTexture(GL_TEXTURE_2D, textures_[i]->get_texture_id());
     }
 
+    // Set whether this mesh has at least 1 normal map bound to it.
     glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_normal"), normalNr > 1);
+
+    // Check for the depth texture & set it if it exists.
+    if (s_shadows_depth_map >= 0)
+    {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "shadow_map"), i);
+        glBindTexture(GL_TEXTURE_2D, s_shadows_depth_map);
+    }
 
 
     // draw mesh

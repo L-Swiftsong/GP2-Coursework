@@ -146,6 +146,10 @@
   <ItemGroup>
     <None Include="..\res\Shaders\DefaultTexture.frag" />
     <None Include="..\res\Shaders\DefaultTexture.vert" />
+    <None Include="..\res\Shaders\RenderToDepth.frag" />
+    <None Include="..\res\Shaders\RenderToDepth.vert" />
+    <None Include="..\res\Shaders\Tests\BasicShadows.frag" />
+    <None Include="..\res\Shaders\Tests\BasicShadows.vert" />
     <None Include="..\res\Shaders\Tests\fogShader.frag" />
     <None Include="..\res\Shaders\Tests\fogShader.vert" />
     <None Include="..\res\Shaders\Tests\LightingTests.frag" />

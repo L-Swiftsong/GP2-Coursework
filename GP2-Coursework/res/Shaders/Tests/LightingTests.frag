@@ -149,7 +149,8 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 view_dir)
 // Calculate Distance Attenuation: 'https://lisyarus.github.io/blog/posts/point-light-attenuation.html'.
 float CalcPointAttenuation(PointLight light, vec3 light_position)
 {
-    float distance = length(light_position - frag_pos);
+    float distance = length(light_position - 
+    frag_pos);
     float normalised_distance = distance / light.Radius;
 
     if (normalised_distance >= 1.0)

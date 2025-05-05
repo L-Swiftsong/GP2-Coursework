@@ -49,6 +49,8 @@ private:
 	const float kDayLength = 10.0f;
 	const glm::vec3 kSunRotationAxis = glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f));
 
+	void InitialiseShadowMap();
+
 
 	void GameLoop();
 	void CalculateDeltaTime();
@@ -56,7 +58,10 @@ private:
 	void HandleCameraMovement();
 	void HandleCameraLook();
 	
+	void RenderDepthMap();
 	void DrawGame();
+	void ConfigureShaders();
+	void RenderScene();
 
 
 	void LinkLightingTestsShader();
@@ -100,14 +105,23 @@ private:
 
 	// Shaders.
 	std::unique_ptr<Shader> active_shader_;
+	Shader depth_buffer_shader_;
 	Shader lighting_test_shader_;
 	Shader terrain_shader_;
 	Shader default_shader_;
+
+	Shader basic_shadows_;
 	//Audio audioDevice;
 
+	// Lights.
 	std::array<DirectionalLight, 1> directional_lights_;
 	std::array<PointLight, 1> point_lights_;
 
+	// Shadows.
+	const unsigned int kShadowTextureWidth = 1024, kShadowTextureHeight = 1024;
+	unsigned int depth_map_fbo, depth_map;
+
+	// Day/Night Cycle.
 	float day_percentage_time, day_lerp_time;
 	glm::quat sun_light_dir_;
 	glm::vec3 sun_diffuse_;

@@ -25,6 +25,9 @@
     <Filter Include="Header Files\Lights">
       <UniqueIdentifier>{1c01f3c5-736d-4d08-ad23-36508aab10f6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Tests">
+      <UniqueIdentifier>{c068cceb-03c2-4c4c-82ba-ac3ab393d13b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -124,34 +127,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\res\Shaders\Tests\fogShader.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\Shaders\Tests\fogShader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="..\res\Shaders\Tests\LightingTests.frag">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\res\Shaders\Tests\LightingTests.vert">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\Shaders\Tests\NormalMapping.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\Shaders\Tests\NormalMapping.vert">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\Shaders\Tests\NormalsTest.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\Shaders\Tests\NormalsTest.vert">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\Shaders\Tests\rimLighting.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\Shaders\Tests\rimLighting.vert">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\res\Shaders\Tests\SkyboxTest.frag">
@@ -171,6 +150,42 @@
     </None>
     <None Include="..\res\Shaders\Tests\TerrainTexture.vert">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\rimLighting.vert">
+      <Filter>Resource Files\Tests</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\NormalMapping.frag">
+      <Filter>Resource Files\Tests</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\NormalMapping.vert">
+      <Filter>Resource Files\Tests</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\NormalsTest.frag">
+      <Filter>Resource Files\Tests</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\NormalsTest.vert">
+      <Filter>Resource Files\Tests</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\rimLighting.frag">
+      <Filter>Resource Files\Tests</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\fogShader.vert">
+      <Filter>Resource Files\Tests</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\fogShader.frag">
+      <Filter>Resource Files\Tests</Filter>
+    </None>
+    <None Include="..\res\Shaders\RenderToDepth.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\RenderToDepth.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\BasicShadows.frag">
+      <Filter>Resource Files\Tests</Filter>
+    </None>
+    <None Include="..\res\Shaders\Tests\BasicShadows.vert">
+      <Filter>Resource Files\Tests</Filter>
     </None>
   </ItemGroup>
 </Project>
