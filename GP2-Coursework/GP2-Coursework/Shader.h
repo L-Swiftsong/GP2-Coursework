@@ -9,7 +9,7 @@
 class Shader
 {
 public:
-	Shader(const std::string& vertex_file, const std::string& fragment_file);
+	Shader(const std::string& vertex_file, const std::string& fragment_file, const char* geometry_file = nullptr);
 
 	void Bind(); //Set gpu to use our shaders
 	void Update(const Transform& transform, const Camera& camera);
@@ -192,7 +192,7 @@ protected:
 private:
 	Shader() = delete;
 
-	static const unsigned int kNumShaders = 2; // Number of shaders per shader object.
+	static const unsigned int kNumShaders = 3; // Number of shaders per shader object.
 
 
 	// Track the shader program.

@@ -58,7 +58,8 @@ private:
 	void HandleCameraMovement();
 	void HandleCameraLook();
 	
-	void RenderDepthMap();
+	void RenderDepthMap_PointLights();
+	void RenderDepthMap_DirectionalLights();
 	void DrawGame();
 	void ConfigureShaders();
 	void RenderScene();
@@ -105,11 +106,12 @@ private:
 
 	// Shaders.
 	std::unique_ptr<Shader> active_shader_;
-	Shader depth_buffer_shader_;
 	Shader lighting_test_shader_;
 	Shader terrain_shader_;
 	Shader default_shader_;
 
+	Shader depth_buffer_directional_light_shader_;
+	Shader depth_buffer_point_light_shader_;
 	Shader basic_shadows_;
 	//Audio audioDevice;
 
@@ -119,7 +121,7 @@ private:
 
 	// Shadows.
 	const unsigned int kShadowTextureWidth = 2048, kShadowTextureHeight = 2048;
-	unsigned int depth_map_fbo, depth_map;
+	unsigned int depth_map_fbo, depth_map, depth_cubemap_;
 
 	// Day/Night Cycle.
 	float day_percentage_time, day_lerp_time;

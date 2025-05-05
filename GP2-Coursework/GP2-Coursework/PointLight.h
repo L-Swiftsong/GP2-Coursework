@@ -28,6 +28,21 @@ public:
 		shader.set_float("pointLight.Falloff", falloff_);
 	}
 
+
+	// Getters & Setters.
+	inline void set_position(glm::vec3 new_position) { position_ = new_position; }
+	inline glm::vec3 get_position() { return position_; }
+
+	inline void set_diffuse(glm::vec3 new_diffuse) { diffuse_ = new_diffuse; }
+	inline glm::vec3 get_diffuse() { return diffuse_; }
+
+	inline void set_radius(float new_radius) { radius_ = new_radius; }
+	inline float get_radius() { return radius_; }
+	inline void set_max_intensity(float new_max_intensity) { max_intensity_ = new_max_intensity; }
+	inline float get_max_intensity() { return max_intensity_; }
+	inline void set_falloff(float new_falloff) { falloff_ = new_falloff; }
+	inline float get_falloff() { return falloff_; }
+
 private:
 	glm::vec3 position_;
 

@@ -1,10 +1,12 @@
 #include "Shader.h"
 
-Shader::Shader(const std::string& vertex_file, const std::string& fragment_file)
+Shader::Shader(const std::string& vertex_file, const std::string& fragment_file, const char* geometry_file)
 {
 	shader_id_ = glCreateProgram(); // create shader program (openGL saves as ref number)
 	shaders_[0] = CreateShader(LoadShader(vertex_file), GL_VERTEX_SHADER); // create vertex shader
 	shaders_[1] = CreateShader(LoadShader(fragment_file), GL_FRAGMENT_SHADER); // create fragment shader
+	if (geometry_file != nullptr)
+		shaders_[2] = CreateShader(LoadShader(geometry_file), GL_GEOMETRY_SHADER);
 
 	for (unsigned int i = 0; i < kNumShaders; i++)
 	{
@@ -14,6 +16,8 @@ Shader::Shader(const std::string& vertex_file, const std::string& fragment_file)
 	glBindAttribLocation(shader_id_, 0, "VertexPosition"); // associate attribute variable with our shader program attribute (in this case attribute vec3 position;)
 	glBindAttribLocation(shader_id_, 1, "VertexTexCoord");
 	glBindAttribLocation(shader_id_, 2, "VertexNormal");
+	glBindAttribLocation(shader_id_, 3, "Tangent");
+	glBindAttribLocation(shader_id_, 4, "Bitangent");
 
 	glLinkProgram(shader_id_); //create executables that will run on the GPU shaders
 	CheckShaderError(shader_id_, GL_LINK_STATUS, true, "Error: Shader program linking failed"); // cheack for error

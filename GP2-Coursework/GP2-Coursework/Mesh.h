@@ -17,7 +17,7 @@ public:
 
 	void Draw(const Shader& shader);
 
-	static int s_shadows_depth_map;
+	static int s_shadows_depth_map, s_shadows_depth_cubemap;
 
 
 private:

@@ -28,6 +28,9 @@
     <Filter Include="Resource Files\Tests">
       <UniqueIdentifier>{c068cceb-03c2-4c4c-82ba-ac3ab393d13b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\DepthRendering">
+      <UniqueIdentifier>{3d4bcee9-c212-479c-8d67-931044f91d86}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -175,17 +178,26 @@
     <None Include="..\res\Shaders\Tests\fogShader.frag">
       <Filter>Resource Files\Tests</Filter>
     </None>
-    <None Include="..\res\Shaders\RenderToDepth.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\Shaders\RenderToDepth.vert">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="..\res\Shaders\Tests\BasicShadows.frag">
       <Filter>Resource Files\Tests</Filter>
     </None>
     <None Include="..\res\Shaders\Tests\BasicShadows.vert">
       <Filter>Resource Files\Tests</Filter>
+    </None>
+    <None Include="..\res\Shaders\DepthRendering\RenderToDepth_DirectionalLight.frag">
+      <Filter>Resource Files\DepthRendering</Filter>
+    </None>
+    <None Include="..\res\Shaders\DepthRendering\RenderToDepth_DirectionalLight.vert">
+      <Filter>Resource Files\DepthRendering</Filter>
+    </None>
+    <None Include="..\res\Shaders\DepthRendering\RenderToDepth_PointLight.frag">
+      <Filter>Resource Files\DepthRendering</Filter>
+    </None>
+    <None Include="..\res\Shaders\DepthRendering\RenderToDepth_PointLight.gs">
+      <Filter>Resource Files\DepthRendering</Filter>
+    </None>
+    <None Include="..\res\Shaders\DepthRendering\RenderToDepth_PointLight.vert">
+      <Filter>Resource Files\DepthRendering</Filter>
     </None>
   </ItemGroup>
 </Project>

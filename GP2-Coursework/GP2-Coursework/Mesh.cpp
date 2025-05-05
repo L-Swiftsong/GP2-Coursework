@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-int Mesh::s_shadows_depth_map = -1;
+int Mesh::s_shadows_depth_map = -1, Mesh::s_shadows_depth_cubemap = -1;
 Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::shared_ptr<Texture>>& textures)
 {
 	this->vertices_ = vertices;
@@ -54,8 +54,16 @@ void Mesh::Draw(const Shader& shader)
     if (s_shadows_depth_map >= 0)
     {
         glActiveTexture(GL_TEXTURE0 + i);
-        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "shadow_map"), i);
+        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "directional_shadow_map"), i);
         glBindTexture(GL_TEXTURE_2D, s_shadows_depth_map);
+        ++i;
+    }
+    if (s_shadows_depth_cubemap >= 0)
+    {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "point_shadow_map"), i);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, s_shadows_depth_cubemap);
+        ++i;
     }
 
 
