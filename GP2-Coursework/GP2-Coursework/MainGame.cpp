@@ -228,6 +228,7 @@ void MainGame::RenderDepthMap()
 	glViewport(0, 0, kShadowTextureWidth, kShadowTextureHeight);
 	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
 	glClear(GL_DEPTH_BUFFER_BIT);
+	glCullFace(GL_FRONT);
 
 	// Determine matrices for rendering from the light's point of view.
 	glm::mat4 light_projection, light_view, light_space_matrix;
@@ -252,6 +253,9 @@ void MainGame::RenderDepthMap()
 	basic_shadows_.set_mat_4("light_space_matrix", light_space_matrix);
 	Mesh::s_shadows_depth_map = depth_map;
 
+
+	// Revert any changes we made for rendering the depth map.
+	glCullFace(GL_BACK);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 void MainGame::DrawGame()

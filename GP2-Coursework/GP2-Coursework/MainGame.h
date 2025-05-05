@@ -118,7 +118,7 @@ private:
 	std::array<PointLight, 1> point_lights_;
 
 	// Shadows.
-	const unsigned int kShadowTextureWidth = 1024, kShadowTextureHeight = 1024;
+	const unsigned int kShadowTextureWidth = 2048, kShadowTextureHeight = 2048;
 	unsigned int depth_map_fbo, depth_map;
 
 	// Day/Night Cycle.
