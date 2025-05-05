@@ -77,6 +77,7 @@ void main()
     // Calculate and output our lighting.
     vec3 lighting = (ambient + (1.0f - shadow_strength) * (diffuse + specular)) * base_color;
     FragColor = vec4(lighting, 1.0f);
+    //FragColor = vec4(vec3(1.0f - shadow_strength), 1.0f);
 }
 
 

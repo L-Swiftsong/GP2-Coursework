@@ -121,7 +121,8 @@ private:
 
 	// Shadows.
 	const unsigned int kShadowTextureWidth = 2048, kShadowTextureHeight = 2048;
-	unsigned int depth_map_fbo, depth_map, depth_cubemap_;
+	unsigned int depth_map_fbo_, depth_map;
+	unsigned int depth_cubemap_fbo_, depth_cubemap_;
 
 	// Day/Night Cycle.
 	float day_percentage_time, day_lerp_time;

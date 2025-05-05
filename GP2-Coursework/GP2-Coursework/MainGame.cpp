@@ -69,8 +69,10 @@ MainGame::~MainGame()
 void MainGame::InitialiseShadowMap()
 {
 	// Generate our Framebuffer.
-	glGenFramebuffers(1, &depth_map_fbo);
+	glGenFramebuffers(1, &depth_map_fbo_);
+	glGenFramebuffers(1, &depth_cubemap_fbo_);
 
+	// ----- Texture 2D (Directional Lights) -----
 	// Generate the Depth Buffer Texture.
 	glGenTextures(1, &depth_map);
 	glBindTexture(GL_TEXTURE_2D, depth_map);
@@ -83,7 +85,16 @@ void MainGame::InitialiseShadowMap()
 	float border_color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
 
-	// Generate the Depth Buffer Texture (Cubemap).
+	// Set the Framebuffer's Depth Buffer as our generated texture.
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo_);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_map, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	// ----- Cubemap (Point Lights) -----
+	// Generate the Depth Buffer Texture.
 	glGenTextures(1, &depth_cubemap_);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depth_cubemap_);
 	for(unsigned int i = 0; i < 6; ++i)
@@ -96,7 +107,7 @@ void MainGame::InitialiseShadowMap()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	// Set the Framebuffer's Depth Buffer as our generated texture.
-	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_cubemap_fbo_);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_cubemap_, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
@@ -127,7 +138,7 @@ void MainGame::GameLoop()
 		dir_light_object_reference_->get_transform()->set_pos(point_lights_[0].get_position());
 
 		RenderDepthMap_PointLights();
-		//RenderDepthMap_DirectionalLights();
+		RenderDepthMap_DirectionalLights();
 		DrawGame();
 		//Collision(suzanne_.get_mesh()->get_sphere_pos(), suzanne_.get_mesh()->get_sphere_radius(), suzanne_2_.get_mesh()->get_sphere_pos(), suzanne_2_.get_mesh()->get_sphere_radius());
 		//playAudio(backGroundMusic, glm::vec3(0.0f,0.0f,0.0f));
@@ -241,7 +252,7 @@ void MainGame::LinkLightingTestsShader()
 void MainGame::RenderDepthMap_PointLights()
 {
 	glViewport(0, 0, kShadowTextureWidth, kShadowTextureHeight);
-	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_cubemap_fbo_);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glCullFace(GL_FRONT);
 
@@ -273,7 +284,7 @@ void MainGame::RenderDepthMap_PointLights()
 	ground_terrain_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
 
 	fir_tree_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
-	plane_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
+	//plane_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
 	wooden_bench_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
 	//dir_light_object_reference_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
 	three_axies_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
@@ -289,15 +300,14 @@ void MainGame::RenderDepthMap_PointLights()
 void MainGame::RenderDepthMap_DirectionalLights()
 {
 	glViewport(0, 0, kShadowTextureWidth, kShadowTextureHeight);
-	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo_);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glCullFace(GL_FRONT);
 
 
 	// Determine matrices for rendering from the light's point of view.
 	glm::mat4 light_projection, light_view, light_space_matrix;
-	const float kNearPlane = 0.1f, kFarPlane = 1000.0f; // Change to our camera's near & far clipping planes?
-	light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, kNearPlane, kFarPlane);
+	light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, main_camera_->get_near_clip(), main_camera_->get_far_clip());
 	light_view = glm::lookAt(directional_lights_[0].get_direction() * -7.5f, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	light_space_matrix = light_projection * light_view;
 
@@ -309,7 +319,7 @@ void MainGame::RenderDepthMap_DirectionalLights()
 	ground_terrain_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 
 	fir_tree_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
-	plane_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
+	//plane_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 	wooden_bench_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 	dir_light_object_reference_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 	three_axies_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
@@ -353,6 +363,7 @@ void MainGame::ConfigureShaders()
 	for (int i = 0; i < directional_lights_.size(); ++i)
 	{
 		//directional_lights_[i].UpdateShader(basic_shadows_);
+		//basic_shadows_.set_vec_3("directional_lights.Direction", directional_lights_[i].get_direction());
 	}
 
 	// Setup the Point Lights.
@@ -369,7 +380,7 @@ void MainGame::RenderScene()
 	ground_terrain_->Draw(*main_camera_, active_shader_.get());
 
 	fir_tree_->Draw(*main_camera_, active_shader_.get());
-	plane_->Draw(*main_camera_, active_shader_.get());
+	//plane_->Draw(*main_camera_, active_shader_.get());
 	wooden_bench_->Draw(*main_camera_, active_shader_.get());
 	dir_light_object_reference_->Draw(*main_camera_, active_shader_.get());
 	three_axies_->Draw(*main_camera_, &default_shader_);
