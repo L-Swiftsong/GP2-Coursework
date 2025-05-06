@@ -22,14 +22,12 @@ public:
 
 	const virtual void UpdateShader(const Shader& shader, const int& light_index) override
 	{
-		glUseProgram(shader.get_shader_id());
+		shader.set_vec_3("point_lights[" + std::to_string(light_index) + "].Position", position_, true);
+		shader.set_vec_3("point_lights[" + std::to_string(light_index) + "].Diffuse", diffuse_, true);
 
-		glUniform3fv(glGetUniformLocation(shader.get_shader_id(), ("point_lights[" + std::to_string(light_index) + "].Position").c_str()), 1, &position_[0]);
-		glUniform3fv(glGetUniformLocation(shader.get_shader_id(), ("point_lights[" + std::to_string(light_index) + "].Diffuse").c_str()), 1, &diffuse_[0]);
-
-		glUniform1f(glGetUniformLocation(shader.get_shader_id(), ("point_lights[" + std::to_string(light_index) + "].Radius").c_str()), radius_);
-		glUniform1f(glGetUniformLocation(shader.get_shader_id(), ("point_lights[" + std::to_string(light_index) + "].MaxIntensity").c_str()), max_intensity_);
-		glUniform1f(glGetUniformLocation(shader.get_shader_id(), ("point_lights[" + std::to_string(light_index) + "].Falloff").c_str()), falloff_);
+		shader.set_float("point_lights[" + std::to_string(light_index) + "].Radius", radius_, true);
+		shader.set_float("point_lights[" + std::to_string(light_index) + "].MaxIntensity", max_intensity_, true);
+		shader.set_float("point_lights[" + std::to_string(light_index) + "].Falloff", falloff_, true);
 	}
 
 

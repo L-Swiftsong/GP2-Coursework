@@ -34,8 +34,10 @@ in VERTEX_OUT
 
 uniform DirectionalLight[1] directional_lights;
 uniform PointLight[2] point_lights;
+
 uniform vec3 camera_pos;
 uniform float far_plane;
+uniform vec3 ambient_color = vec3(0.35f, 0.35f, 0.87f);
 
 
 // PBR Textures.
@@ -65,10 +67,10 @@ const float PI = 3.14159265359;
 
 
 // Function Declarations.
-vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir);
+vec3 CalculateDirectionalLighting(DirectionalLight light, vec3 normal, vec3 viewDir);
 
 float CalcPointAttenuation(PointLight light, vec3 light_position);
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir);
+vec3 CalculatePointLighting(PointLight light, vec3 normal, vec3 viewDir);
 
 
 vec3 CalculatePBRLighting(vec3 light_dir, vec3 H, vec3 radiance, vec3 normal, vec3 view_dir, float shadow_strength);
@@ -124,11 +126,11 @@ void main()
 	vec3 lighting = ambient * albedo;
     for(int i = 0; i < directional_lights.length(); ++i)
     {
-        lighting += CalcDirectionalLight(directional_lights[i], calculated_normal, calculated_view_dir);
+        lighting += CalculateDirectionalLighting(directional_lights[i], calculated_normal, calculated_view_dir);
     }
     for(int i = 0; i < point_lights.length(); ++i)
     {
-        lighting += CalcPointLight(point_lights[i], calculated_normal, calculated_view_dir);
+        lighting += CalculatePointLighting(point_lights[i], calculated_normal, calculated_view_dir);
     }
 
     vec3 color = lighting;
@@ -140,7 +142,7 @@ void main()
 
 
 // Function Definitions.
-vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 view_dir)
+vec3 CalculateDirectionalLighting(DirectionalLight light, vec3 normal, vec3 view_dir)
 {
     // Calculate per-light radiance.
     vec3 light_dir = normalize(has_normal ? (f_in.TBN * -light.Direction) : -light.Direction);
@@ -154,7 +156,7 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 view_dir)
     // Calculate and return our PBR Lighting Value.
     return CalculatePBRLighting(light_dir, H, radiance, normal, view_dir, shadow_strength);
 }
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 view_dir)
+vec3 CalculatePointLighting(PointLight light, vec3 normal, vec3 view_dir)
 {
     vec3 light_pos = has_normal ? (f_in.TBN * light.Position) : light.Position;
 

@@ -41,7 +41,7 @@ void Mesh::Draw(const Shader& shader)
         }
 
         // now set the sampler to the correct texture unit
-        glUniform1i(glGetUniformLocation(shader.get_shader_id(), name.c_str()), i);
+        shader.set_int(name, i, true);
 
         // and finally bind the texture
         glBindTexture(GL_TEXTURE_2D, textures_[i]->get_texture_id());
@@ -51,25 +51,25 @@ void Mesh::Draw(const Shader& shader)
     // Metallic.
     if (metallicNr == 1)
     {
-        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_metallic"), false);
+        shader.set_bool("has_metallic", false, true);
         ++i; // We're unsure why, but our models without roughness maps dissapear if we don't increment 'i' here. ¯\_(*-*)_/¯
     }
     else
     {
-        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_metallic"), true);
+        shader.set_bool("has_metallic", true, true);
     }
     // Roughness.
     if (roughnessNr == 1)
     {
-        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_roughness"), false);
+        shader.set_bool("has_roughness", false, true);
         ++i; // We're unsure why, but our models without roughness maps dissapear if we don't increment 'i' here. ¯\_(*-*)_/¯
     }
     else
     {
-        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_roughness"), true);
+        shader.set_bool("has_roughness", true, true);
     }
     // Normal.
-    glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_normal"), normalNr > 1);
+    shader.set_bool("has_normal", normalNr > 1, true);
 
 
     // Check for the depth texture & set it if it exists.
@@ -77,11 +77,12 @@ void Mesh::Draw(const Shader& shader)
     {
         if (s_shadows_depth_maps[shadow_map_index] < 0)
         {
+            // The depth map is invalid/unset.
             continue;
         }
 
         glActiveTexture(GL_TEXTURE0 + i);
-        glUniform1i(glGetUniformLocation(shader.get_shader_id(), ("directional_lights[" + std::to_string(shadow_map_index) + "].shadow_map").c_str()), i);
+        shader.set_int("directional_lights[" + std::to_string(shadow_map_index) + "].shadow_map", i, true);
         glBindTexture(GL_TEXTURE_2D, s_shadows_depth_maps[shadow_map_index]);
         ++i;
     }
@@ -89,11 +90,12 @@ void Mesh::Draw(const Shader& shader)
     {
         if (s_shadows_depth_cubemaps[shadow_map_index] < 0)
         {
+            // The depth map is invalid/unset.
             continue;
         }
 
         glActiveTexture(GL_TEXTURE0 + i);
-        glUniform1i(glGetUniformLocation(shader.get_shader_id(), ("point_lights[" + std::to_string(shadow_map_index) + "].shadow_map").c_str()), i);
+        shader.set_int("point_lights[" + std::to_string(shadow_map_index) + "].shadow_map", i, true);
         glBindTexture(GL_TEXTURE_CUBE_MAP, s_shadows_depth_cubemaps[shadow_map_index]);
         ++i;
     }

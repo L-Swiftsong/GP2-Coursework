@@ -285,9 +285,10 @@ void MainGame::RenderDepthMap_PointLights(const int& point_light_index)
 	};
 
 
-	depth_buffer_point_light_shader_.Bind();
 	for (unsigned int i = 0; i < 6; ++i)
+	{
 		depth_buffer_point_light_shader_.set_mat_4("shadow_matrices[" + std::to_string(i) + "]", shadow_transforms[i]);
+	}
 	depth_buffer_point_light_shader_.set_float("far_plane", main_camera_->get_far_clip());
 	depth_buffer_point_light_shader_.set_vec_3("light_pos", point_lights_[point_light_index].get_position());
 
@@ -324,7 +325,6 @@ void MainGame::RenderDepthMap_DirectionalLights(const int& directional_light_ind
 	light_view = glm::lookAt(directional_lights_[directional_light_index].get_direction() * -7.5f, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	light_space_matrix = light_projection * light_view;
 
-	depth_buffer_directional_light_shader_.Bind();
 	depth_buffer_directional_light_shader_.set_mat_4("light_space_matrix", light_space_matrix);
 
 
@@ -340,11 +340,10 @@ void MainGame::RenderDepthMap_DirectionalLights(const int& directional_light_ind
 	three_axies_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 
 
-	basic_shadows_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix);
-	terrain_shader_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix);
+	basic_shadows_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix, true);
+	terrain_shader_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix, true);
+	lighting_test_shader_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix, true);
 
-	lighting_test_shader_.Bind();
-	glUniformMatrix4fv(glGetUniformLocation(lighting_test_shader_.get_shader_id(), ("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix").c_str()), 1, GL_FALSE, &light_space_matrix[0][0]);
 	Mesh::s_shadows_depth_maps[directional_light_index] = directional_lights_[directional_light_index].shadow_map;
 
 
@@ -375,17 +374,14 @@ void MainGame::ConfigureShaders()
 	float far_clip = main_camera_->get_far_clip();
 	glm::vec3 camera_pos = main_camera_->get_transform()->get_pos();
 
-	lighting_test_shader_.Bind();
-	glUniform1f(glGetUniformLocation(lighting_test_shader_.get_shader_id(), "far_plane"), far_clip);
-	glUniform3fv(glGetUniformLocation(lighting_test_shader_.get_shader_id(), "camera_pos"), 1, &camera_pos[0]);
-	//lighting_test_shader_.set_float("far_plane", main_camera_->get_far_clip());
-	//lighting_test_shader_.set_vec_3("camera_pos", main_camera_->get_transform()->get_pos());
+	lighting_test_shader_.set_float("far_plane", far_clip, true);
+	lighting_test_shader_.set_vec_3("camera_pos", camera_pos, true);
 
-	terrain_shader_.set_float("far_plane", main_camera_->get_far_clip());
-	terrain_shader_.set_vec_3("view_pos", main_camera_->get_transform()->get_pos());
+	terrain_shader_.set_float("far_plane", far_clip, true);
+	terrain_shader_.set_vec_3("view_pos", camera_pos, true);
 
-	basic_shadows_.set_float("far_plane", main_camera_->get_far_clip());
-	basic_shadows_.set_vec_3("view_pos", main_camera_->get_transform()->get_pos());
+	basic_shadows_.set_float("far_plane", far_clip, true);
+	basic_shadows_.set_vec_3("view_pos", camera_pos, true);
 	
 
 	// Setup the Directional Lights.

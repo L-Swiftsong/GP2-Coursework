@@ -36,141 +36,141 @@ public:
 		}
 	}*/
 	// ------------------------------------------------------------------------
-	void set_bool(const std::string& name, bool value) const
+	void set_bool(const std::string& name, bool value, const bool& ignore_errors = false) const
 	{
 		glUseProgram(shader_id_);
 		glUniform1i(glGetUniformLocation(shader_id_, name.c_str()), (int)value);
 
-		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1) && !ignore_errors)
 		{
 			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
 			__debugbreak();
 		}
 	}
 	// ------------------------------------------------------------------------
-	void set_int(const std::string& name, int value) const
+	void set_int(const std::string& name, int value, const bool& ignore_errors = false) const
 	{
 		glUseProgram(shader_id_);
 		glUniform1i(glGetUniformLocation(shader_id_, name.c_str()), value);
 
-		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1) && !ignore_errors)
 		{
 			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
 			__debugbreak();
 		}
 	}
 	// ------------------------------------------------------------------------
-	void set_float(const std::string& name, float value) const
+	void set_float(const std::string& name, float value, const bool& ignore_errors = false) const
 	{
 		glUseProgram(shader_id_);
 		glUniform1f(glGetUniformLocation(shader_id_, name.c_str()), value);
 
-		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1) && !ignore_errors)
 		{
 			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
 			__debugbreak();
 		}
 	}
 	// ------------------------------------------------------------------------
-	void set_vec_2(const std::string& name, const glm::vec2& value) const
+	void set_vec_2(const std::string& name, const glm::vec2& value, const bool& ignore_errors = false) const
 	{
 		glUseProgram(shader_id_);
 		glUniform2fv(glGetUniformLocation(shader_id_, name.c_str()), 1, &value[0]);
 
-		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1) && !ignore_errors)
 		{
 			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
 			__debugbreak();
 		}
 	}
-	void set_vec_2(const std::string& name, float x, float y) const
+	void set_vec_2(const std::string& name, float x, float y, const bool& ignore_errors = false) const
 	{
 		glUseProgram(shader_id_);
 		glUniform2f(glGetUniformLocation(shader_id_, name.c_str()), x, y);
 
-		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1) && !ignore_errors)
 		{
 			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
 			__debugbreak();
 		}
 	}
 	// ------------------------------------------------------------------------
-	void set_vec_3(const std::string& name, const glm::vec3& value) const
+	void set_vec_3(const std::string& name, const glm::vec3& value, const bool& ignore_errors = false) const
 	{
 		glUseProgram(shader_id_);
 		glUniform3fv(glGetUniformLocation(shader_id_, name.c_str()), 1, &value[0]);
 
-		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1) && !ignore_errors)
 		{
 			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
 			__debugbreak();
 		}
 	}
-	void set_vec_3(const std::string& name, float x, float y, float z) const
+	void set_vec_3(const std::string& name, float x, float y, float z, const bool& ignore_errors = false) const
 	{
 		glUseProgram(shader_id_);
 		glUniform3f(glGetUniformLocation(shader_id_, name.c_str()), x, y, z);
 
-		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1) && !ignore_errors)
 		{
 			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
 			__debugbreak();
 		}
 	}
 	// ------------------------------------------------------------------------
-	void set_vec_4(const std::string& name, const glm::vec4& value) const
+	void set_vec_4(const std::string& name, const glm::vec4& value, const bool& ignore_errors = false) const
 	{
 		glUseProgram(shader_id_);
 		glUniform4fv(glGetUniformLocation(shader_id_, name.c_str()), 1, &value[0]);
 
-		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1) && !ignore_errors)
 		{
 			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
 			__debugbreak();
 		}
 	}
-	void set_vec_4(const std::string& name, float x, float y, float z, float w)
+	void set_vec_4(const std::string& name, float x, float y, float z, float w, const bool& ignore_errors = false)
 	{
 		glUseProgram(shader_id_);
 		glUniform4f(glGetUniformLocation(shader_id_, name.c_str()), x, y, z, w);
 
-		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1) && !ignore_errors)
 		{
 			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
 			__debugbreak();
 		}
 	}
 	// ------------------------------------------------------------------------
-	void set_mat_2(const std::string& name, const glm::mat2& mat) const
+	void set_mat_2(const std::string& name, const glm::mat2& mat, const bool& ignore_errors = false) const
 	{
 		glUseProgram(shader_id_);
 		glUniformMatrix2fv(glGetUniformLocation(shader_id_, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 
-		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1) && !ignore_errors)
 		{
 			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
 			__debugbreak();
 		}
 	}
 	// ------------------------------------------------------------------------
-	void set_mat_3(const std::string& name, const glm::mat3& mat) const
+	void set_mat_3(const std::string& name, const glm::mat3& mat, const bool& ignore_errors = false) const
 	{
 		glUseProgram(shader_id_);
 		glUniformMatrix3fv(glGetUniformLocation(shader_id_, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 
-		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1) && !ignore_errors)
 		{
 			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
 			__debugbreak();
 		}
 	}
 	// ------------------------------------------------------------------------
-	void set_mat_4(const std::string& name, const glm::mat4& mat) const
+	void set_mat_4(const std::string& name, const glm::mat4& mat, const bool& ignore_errors = false) const
 	{
 		glUseProgram(shader_id_);
 		glUniformMatrix4fv(glGetUniformLocation(shader_id_, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 
-		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1))
+		if ((glGetUniformLocation(shader_id_, name.c_str()) == -1) && !ignore_errors)
 		{
 			std::cerr << "Unable to load shader: " << name.c_str() << std::endl;
 			__debugbreak();
