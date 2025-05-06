@@ -33,11 +33,13 @@ void InputManager::ProcessInput(Display* display)
 
 				case SDLK_LSHIFT: sprint_held_ = true; break;
 
-
 				// Mouse Lock Toggling.
 				case SDLK_ESCAPE:
 					toggle_mouse_lock_performed = true;
 					break;
+
+				// Other.
+				case SDLK_q: speedup_time_held_ = true; break;
 			}
 			break;
 		// Mouse Movement.
@@ -57,6 +59,9 @@ void InputManager::ProcessInput(Display* display)
 				case SDLK_LCTRL: if (camera_movement_input_.y < 0.0f) { camera_movement_input_.y = 0.0f; } break;
 
 				case SDLK_LSHIFT: sprint_held_ = false; break;
+
+				// Other.
+				case SDLK_q: speedup_time_held_ = false; break;
 			}
 			break;
 		}
@@ -120,6 +125,8 @@ void InputManager::PrintKeyInfo(SDL_KeyboardEvent* key)
 const glm::vec3 InputManager::get_camera_movement_input_normalized() { return SafeNormalizeVec3(camera_movement_input_); }
 const glm::vec2 InputManager::get_camera_look_input() { return camera_look_input_; }
 const bool InputManager::get_sprint_held() { return sprint_held_; }
+
+const bool InputManager::get_speedup_time_held() { return speedup_time_held_; }
 
 
 const glm::vec3 InputManager::SafeNormalizeVec3(const glm::vec3& vector)

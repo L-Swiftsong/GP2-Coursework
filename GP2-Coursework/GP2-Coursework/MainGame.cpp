@@ -112,7 +112,7 @@ void MainGame::GameLoop()
 
 
 		// Increment the Counter.
-		counter_ = counter_ + (1.0f * delta_time_);
+		counter_ = counter_ + ((input_manager_->get_speedup_time_held() ? kTimeSpeedupValue : 1.0f) * delta_time_);
 	}
 
 	glfwTerminate();

@@ -49,7 +49,7 @@ public:
 
 private:
 	const glm::vec3 kMiddayLightDirection = glm::vec3(0.0f, -1.0f, 0.0f);
-	const float kDayLength = 10.0f;
+	const float kDayLength = 120.0f; // The length of a full day+night cycle (In seconds).
 	const glm::vec3 kSunRotationAxis = glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f));
 
 
@@ -123,6 +123,7 @@ private:
 	glm::vec3 sun_diffuse_;
 
 
+	const float kTimeSpeedupValue = 5.0f;
 	float counter_ = 0.0f;
 	float previous_time_since_start_ = 0.0f, current_time_since_start_ = 0.0f, delta_time_ = 0.0f;
 };

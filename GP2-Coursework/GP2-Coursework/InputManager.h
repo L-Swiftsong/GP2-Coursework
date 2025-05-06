@@ -19,6 +19,8 @@ public:
 	const glm::vec2 get_camera_look_input();
 	const bool get_sprint_held();
 
+	const bool get_speedup_time_held();
+
 private:
 	void PrintKeyInfo(SDL_KeyboardEvent* key);
 
@@ -28,6 +30,9 @@ private:
 	glm::vec3 camera_movement_input_;
 	glm::vec2 camera_look_input_;
 	bool sprint_held_;
+
+
+	bool speedup_time_held_;
 
 
 	const glm::vec2 kVector2None = glm::vec2(0.0f);
