@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-int Mesh::s_shadows_depth_map = -1, Mesh::s_shadows_depth_cubemap = -1;
+std::vector<int> Mesh::s_shadows_depth_maps = std::vector<int>(), Mesh::s_shadows_depth_cubemaps = std::vector<int>();
 Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::shared_ptr<Texture>>& textures)
 {
 	this->vertices_ = vertices;
@@ -51,18 +51,28 @@ void Mesh::Draw(const Shader& shader)
     glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_normal"), normalNr > 1);
 
     // Check for the depth texture & set it if it exists.
-    if (s_shadows_depth_map >= 0)
+    for (int shadow_map_index = 0; shadow_map_index < s_shadows_depth_maps.size(); ++shadow_map_index)
     {
+        if (s_shadows_depth_maps[shadow_map_index] < 0)
+        {
+            continue;
+        }
+
         glActiveTexture(GL_TEXTURE0 + i);
-        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "directional_shadow_map"), i);
-        glBindTexture(GL_TEXTURE_2D, s_shadows_depth_map);
+        glUniform1i(glGetUniformLocation(shader.get_shader_id(), ("directional_lights[" + std::to_string(shadow_map_index) + "].shadow_map").c_str()), i);
+        glBindTexture(GL_TEXTURE_2D, s_shadows_depth_maps[shadow_map_index]);
         ++i;
     }
-    if (s_shadows_depth_cubemap >= 0)
+    for (int shadow_map_index = 0; shadow_map_index < s_shadows_depth_cubemaps.size(); ++shadow_map_index)
     {
+        if (s_shadows_depth_cubemaps[shadow_map_index] < 0)
+        {
+            continue;
+        }
+
         glActiveTexture(GL_TEXTURE0 + i);
-        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "point_shadow_map"), i);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, s_shadows_depth_cubemap);
+        glUniform1i(glGetUniformLocation(shader.get_shader_id(), ("point_lights[" + std::to_string(shadow_map_index) + "].shadow_map").c_str()), i);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, s_shadows_depth_cubemaps[shadow_map_index]);
         ++i;
     }
 

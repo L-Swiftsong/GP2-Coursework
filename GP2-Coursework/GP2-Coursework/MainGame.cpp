@@ -42,7 +42,10 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 
 	// Setup Lights.
 	directional_lights_[0] = DirectionalLight(kMiddayLightDirection, MIDDAY_DIRECTIONAL_LIGHT_AMBIENT, 1.0f);
+	Mesh::s_shadows_depth_maps = std::vector<int>(directional_lights_.size(), -1);
+
 	point_lights_[0] = PointLight(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(1.0f), 3.0f, 1.0f, 0.5f);
+	Mesh::s_shadows_depth_cubemaps = std::vector<int>(point_lights_.size(), -1);
 
 
 	std::vector<std::tuple<float, glm::vec3>> directional_light_values
@@ -290,7 +293,7 @@ void MainGame::RenderDepthMap_PointLights()
 	three_axies_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
 	
 
-	Mesh::s_shadows_depth_cubemap = depth_cubemap_;
+	Mesh::s_shadows_depth_cubemaps[0] = depth_cubemap_;
 
 
 	// Revert any changes we made for rendering the depth map.
@@ -327,7 +330,7 @@ void MainGame::RenderDepthMap_DirectionalLights()
 
 
 	basic_shadows_.set_mat_4("light_space_matrix", light_space_matrix);
-	Mesh::s_shadows_depth_map = depth_map;
+	Mesh::s_shadows_depth_maps[0] = depth_map;
 
 
 	// Revert any changes we made for rendering the depth map.
@@ -364,16 +367,16 @@ void MainGame::ConfigureShaders()
 	for (int i = 0; i < directional_lights_.size(); ++i)
 	{
 		//directional_lights_[i].UpdateShader(basic_shadows_);
-		basic_shadows_.set_vec_3("directional_lights.Direction", directional_lights_[i].get_direction());
-		basic_shadows_.set_vec_3("directional_lights.Diffuse", directional_lights_[i].get_diffuse());
+		basic_shadows_.set_vec_3("directional_lights[" + std::to_string(i) + "].Direction", directional_lights_[i].get_direction());
+		basic_shadows_.set_vec_3("directional_lights[" + std::to_string(i) + "].Diffuse", directional_lights_[i].get_diffuse());
 	}
 
 	// Setup the Point Lights.
 	for (int i = 0; i < point_lights_.size(); ++i)
 	{
 		//point_lights_[i].UpdateShader(basic_shadows_);
-		basic_shadows_.set_vec_3("point_lights.Position", point_lights_[i].get_position());
-		basic_shadows_.set_vec_3("point_lights.Diffuse", point_lights_[i].get_diffuse());
+		basic_shadows_.set_vec_3("point_lights[" + std::to_string(i) + "].Position", point_lights_[i].get_position());
+		basic_shadows_.set_vec_3("point_lights[" + std::to_string(i) + "].Diffuse", point_lights_[i].get_diffuse());
 	}
 }
 void MainGame::RenderScene()
