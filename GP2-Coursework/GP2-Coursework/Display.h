@@ -7,6 +7,10 @@
 #include <string>
 
 
+// 1024x768
+#define DEFAULT_SCREEN_WIDTH 1280
+#define DEFAULT_SCREEN_HEIGHT 720
+
 class Display
 {
 public:
@@ -15,8 +19,11 @@ public:
 	void SwapBuffer();
 	void ClearDisplay(float r, float g, float b, float a);
 
-	float get_screen_width();
-	float get_screen_height();
+
+	void WindowSizeChanged();
+
+	int get_screen_width() const;
+	int get_screen_height() const;
 
 private:
 	void ReturnError(std::string error_string);
@@ -24,7 +31,7 @@ private:
 	
 	SDL_GLContext gl_context_; //global variable to hold the context
 	SDL_Window* sdl_window_; //holds pointer to out window
-	float screen_width_;
-	float screen_height_;
+	int screen_width_;
+	int screen_height_;
 };
 

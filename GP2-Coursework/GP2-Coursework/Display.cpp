@@ -7,8 +7,8 @@ Display::Display()
 	sdl_window_ = nullptr;
 	gl_context_ = nullptr;
 
-	screen_width_ = 1024.0f;
-	screen_height_ = 768.0f;
+	screen_width_ = DEFAULT_SCREEN_WIDTH;
+	screen_height_ = DEFAULT_SCREEN_HEIGHT;
 
 	InitDisplay();
 }
@@ -60,7 +60,7 @@ void Display::InitDisplay()
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	// Create window.
-	sdl_window_ = SDL_CreateWindow("Game Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (int)screen_width_, (int)screen_height_, SDL_WINDOW_OPENGL);
+	sdl_window_ = SDL_CreateWindow("Game Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (int)screen_width_, (int)screen_height_, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
 	if (sdl_window_ == nullptr)
 	{
@@ -94,5 +94,12 @@ void Display::InitDisplay()
 }
 
 
-float Display::get_screen_width() { return screen_width_; }
-float Display::get_screen_height() { return screen_height_; }
+void Display::WindowSizeChanged()
+{
+	SDL_GetWindowSize(sdl_window_, &screen_width_, &screen_height_);
+	glViewport(0, 0, screen_width_, screen_height_);
+}
+
+
+int Display::get_screen_width() const { return screen_width_; }
+int Display::get_screen_height() const { return screen_height_; }

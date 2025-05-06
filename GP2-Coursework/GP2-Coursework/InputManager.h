@@ -2,6 +2,8 @@
 
 #include <SDL\SDL.h>
 #include <glm/gtx/transform.hpp>
+#include "MainGame.h"
+#include "Display.h"
 
 // For Debugging.
 #include <string>
@@ -10,7 +12,7 @@
 class InputManager
 {
 public:
-	void ProcessInput();
+	void ProcessInput(Display* display);
 
 
 	const glm::vec3 get_camera_movement_input_normalized();

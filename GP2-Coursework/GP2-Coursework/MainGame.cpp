@@ -1,7 +1,8 @@
 #include "MainGame.h"
 
 
-MainGame::MainGame() : game_state_(GameState::kPlay),
+GameState MainGame::game_state = GameState::kPlay;
+MainGame::MainGame() :
 	game_display_(Display()),
 	input_manager_(std::make_unique<InputManager>()),
 	main_camera_(new Camera(glm::vec3(0.0f, 3.5f, 0.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
@@ -19,6 +20,8 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	sun_diffuse_(MIDDAY_DIRECTIONAL_LIGHT_AMBIENT),
 	counter_(0.0f)
 {
+	game_state = GameState::kPlay;
+
 	//stbi_set_flip_vertically_on_load(true);
 
 	active_shader_ = std::make_unique<Shader>(lighting_test_shader_);
@@ -58,8 +61,6 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 		std::make_tuple(0.55f, NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT),	// Nighttime.
 	};
 	test_gradient_ = new Gradient(true, directional_light_values);
-
-	InitialiseShadowMap();
 }
 MainGame::~MainGame()
 {
@@ -73,54 +74,6 @@ MainGame::~MainGame()
 	delete three_axies_;
 }
 
-void MainGame::InitialiseShadowMap()
-{
-	/*// Generate our Framebuffer.
-	glGenFramebuffers(1, &depth_map_fbo_);
-	glGenFramebuffers(1, &depth_cubemap_fbo_);
-
-	// ----- Texture 2D (Directional Lights) -----
-	// Generate the Depth Buffer Texture.
-	glGenTextures(1, &depth_map);
-	glBindTexture(GL_TEXTURE_2D, depth_map);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, kShadowTextureWidth, kShadowTextureHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	float border_color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
-
-	// Set the Framebuffer's Depth Buffer as our generated texture.
-	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo_);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_map, 0);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-	// ----- Cubemap (Point Lights) -----
-	// Generate the Depth Buffer Texture.
-	glGenTextures(1, &depth_cubemap_);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, depth_cubemap_);
-	for(unsigned int i = 0; i < 6; ++i)
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, kShadowTextureWidth, kShadowTextureHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-	// Set the Framebuffer's Depth Buffer as our generated texture.
-	glBindFramebuffer(GL_FRAMEBUFFER, depth_cubemap_fbo_);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_cubemap_, 0);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
-}
-
 
 void MainGame::Run()
 {
@@ -131,12 +84,12 @@ void MainGame::Run()
 void MainGame::GameLoop()
 {
 	previous_time_since_start_ = glfwGetTime();
-	while (game_state_ != GameState::kExit)
+	while (game_state != GameState::kExit)
 	{
 		CalculateDeltaTime();
 
 		// Process then Handle Input.
-		input_manager_->ProcessInput();
+		input_manager_->ProcessInput(&game_display_);
 		HandleCameraMovement();
 		HandleCameraLook();
 

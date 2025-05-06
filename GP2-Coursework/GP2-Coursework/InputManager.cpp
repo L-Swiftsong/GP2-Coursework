@@ -1,16 +1,24 @@
 #include "InputManager.h"
 
 
-void InputManager::ProcessInput()
+void InputManager::ProcessInput(Display* display)
 {
 	SDL_Event event;
+	bool toggle_mouse_lock_performed = false;
 
 	while (SDL_PollEvent(&event)) //get and process events
 	{
+
 		switch (event.type)
 		{
 		case SDL_QUIT:
-			//game_state_ = GameState::kExit;
+			MainGame::game_state = GameState::kExit;
+			break;
+		case SDL_WINDOWEVENT:
+			if (event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+			{
+				display->WindowSizeChanged();
+			}
 			break;
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym)
@@ -24,6 +32,12 @@ void InputManager::ProcessInput()
 				case SDLK_LCTRL: camera_movement_input_.y = -1.0f; break;
 
 				case SDLK_LSHIFT: sprint_held_ = true; break;
+
+
+				// Mouse Lock Toggling.
+				case SDLK_ESCAPE:
+					toggle_mouse_lock_performed = true;
+					break;
 			}
 			break;
 		// Mouse Movement.
@@ -48,9 +62,17 @@ void InputManager::ProcessInput()
 		}
 	}
 
+	// Camera look input.
 	int x, y;
 	SDL_GetRelativeMouseState(&x, &y);
 	camera_look_input_ = glm::vec2(x, y);
+
+
+	// Mouse lock toggling.
+	if (toggle_mouse_lock_performed)
+	{
+		SDL_SetRelativeMouseMode(SDL_GetRelativeMouseMode() == SDL_TRUE ? SDL_FALSE : SDL_TRUE);
+	}
 }
 
 void InputManager::PrintKeyInfo(SDL_KeyboardEvent* key)

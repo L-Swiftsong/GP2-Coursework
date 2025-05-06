@@ -26,6 +26,10 @@
 
 enum class GameState {kPlay, kExit};
 
+// Forward declarations to prevent cyclical dependency errors.
+class InputManager;
+
+
 // Lighting Definitions.
 #define MORNING_DIRECTIONAL_LIGHT_AMBIENT glm::vec3(1.0f, 0.537f, 0.055f)
 #define MIDDAY_DIRECTIONAL_LIGHT_AMBIENT glm::vec3(1.0f, 0.931f, 0.872f)
@@ -41,12 +45,12 @@ public:
 
 	void Run();
 
+	static GameState game_state;
+
 private:
 	const glm::vec3 kMiddayLightDirection = glm::vec3(0.0f, -1.0f, 0.0f);
 	const float kDayLength = 10.0f;
 	const glm::vec3 kSunRotationAxis = glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f));
-
-	void InitialiseShadowMap();
 
 
 	void GameLoop();
@@ -75,7 +79,6 @@ private:
 
 
 	Display game_display_;
-	GameState game_state_;
 	std::unique_ptr<InputManager> input_manager_;
 	
 	GameObject* ground_terrain_;
@@ -113,6 +116,7 @@ private:
 	Shader depth_buffer_point_light_shader_;
 	Shader basic_shadows_;
 	//Audio audioDevice;
+
 
 	// Lights.
 	std::array<DirectionalLight, 1> directional_lights_;
