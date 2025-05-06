@@ -13,7 +13,6 @@ MainGame::MainGame() :
 	default_shader_(		Shader("..\\res\\Shaders\\DefaultTexture.vert", "..\\res\\Shaders\\DefaultTexture.frag")),
 	basic_shadows_(			Shader("..\\res\\Shaders\\Tests\\BasicShadows.vert", "..\\res\\Shaders\\Tests\\BasicShadows.frag")),
 
-	//skybox_(std::make_unique<Skybox>("..\\res\\Skyboxes\\TestSky", ".jpg")),
 	skybox_(std::make_unique<Skybox>("..\\res\\Skyboxes\\PolyverseSkies-NightSky", ".jpg")),
 
 	sun_light_dir_(glm::quat(glm::vec3(0.0f, 1.0f, 0.0f))),
@@ -21,18 +20,17 @@ MainGame::MainGame() :
 	counter_(0.0f)
 {
 	game_state = GameState::kPlay;
-
 	//stbi_set_flip_vertically_on_load(true);
 
+
 	active_shader_ = std::make_unique<Shader>(lighting_test_shader_);
-	//active_shader_ = std::make_unique<Shader>("..\\res\\Shaders\\Tests\\NormalMapping.vert", "..\\res\\Shaders\\Tests\\NormalMapping.frag");
+
 
 	// Setup Models.
 	ground_terrain_ = new GameObject("..\\res\\Models\\Terrain\\NewMeshTerrain.obj", glm::vec3(500.0f, 0.0f, -500.0f), glm::radians(glm::vec3(0.0f)), glm::vec3(1.0f),
 		std::vector<std::string>{"..\\res\\Models\\Terrain\\Texture_Grass_Diffuse.png", "..\\res\\Models\\Terrain\\Texture_Dirt_Diffuse.png", "..\\res\\Models\\Terrain\\Texture_Rock_Diffuse.png", "..\\res\\Models\\Terrain\\SplatAlpha 0.png"},
 		std::vector<std::string>{},
 		std::vector<std::string>{"..\\res\\Models\\Terrain\\Texture_Grass_Normal.png", "..\\res\\Models\\Terrain\\Texture_Dirt_Normal.png", "..\\res\\Models\\Terrain\\Texture_Rock_Normal.png"});
-	//fir_tree_ = new GameObject("..\\res\\Models\\Trees\\LowPolyFirTree.obj", glm::vec3(0.0f, 0.0f, -5.0f), glm::radians(glm::vec3(0.0f)), glm::vec3(1.0f));
 	fir_tree_ = new GameObject("..\\res\\Models\\Trees\\LowPolyFirTree.obj", glm::vec3(0.0f, 0.0f, -5.0f), glm::radians(glm::vec3(0.0f)), glm::vec3(1.0f), "..\\res\\Models\\Trees\\LowPolyFirTree_Diffuse.png", "", "");
 
 	plane_ = new GameObject("..\\res\\Plane.obj", glm::vec3(0.0f), glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)), glm::vec3(1.0f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg");
@@ -54,6 +52,7 @@ MainGame::MainGame() :
 	Mesh::s_shadows_depth_cubemaps = std::vector<int>(point_lights_.size(), -1);
 
 
+	// Setup the daylight gradient.
 	std::vector<std::tuple<float, glm::vec3>> directional_light_values
 	{
 		std::make_tuple(0.25f, MIDDAY_DIRECTIONAL_LIGHT_AMBIENT),		// Midday.
@@ -71,6 +70,8 @@ MainGame::~MainGame()
 	delete plane_;
 	delete wooden_bench_;
 	delete dir_light_object_reference_;
+	delete point_light_object_reference_0_;
+	delete point_light_object_reference_1_;
 	delete three_axies_;
 }
 
@@ -93,6 +94,7 @@ void MainGame::GameLoop()
 		HandleCameraMovement();
 		HandleCameraLook();
 
+		// Calculate lighting.
 		CalculateLightingValues();
 		point_lights_[0].set_position(glm::vec3(0.0f, 1.5f, glm::sin(counter_ / 2.0f) * 2.0f));
 		point_lights_[1].set_position(glm::vec3(glm::sin(counter_ / 2.0f) * 2.0f, 1.5f, 0.0f));
@@ -107,8 +109,6 @@ void MainGame::GameLoop()
 
 		// Draw the scene.
 		DrawGame();
-		//Collision(suzanne_.get_mesh()->get_sphere_pos(), suzanne_.get_mesh()->get_sphere_radius(), suzanne_2_.get_mesh()->get_sphere_pos(), suzanne_2_.get_mesh()->get_sphere_radius());
-		//playAudio(backGroundMusic, glm::vec3(0.0f,0.0f,0.0f));
 
 
 		// Increment the Counter.
@@ -124,40 +124,6 @@ void MainGame::CalculateDeltaTime()
 	delta_time_ = current_time_since_start_ - previous_time_since_start_;
 	previous_time_since_start_ = current_time_since_start_;
 }
-
-bool MainGame::Collision(glm::vec3 m1Pos, float m1Rad, glm::vec3 m2Pos, float m2Rad)
-{
-	float distance = glm::sqrt((m2Pos.x - m1Pos.x)*(m2Pos.x - m1Pos.x) + (m2Pos.y - m1Pos.y)*(m2Pos.y - m1Pos.y) + (m2Pos.z - m1Pos.z)*(m2Pos.z - m1Pos.z));
-
-	if (distance < (m1Rad + m2Rad))
-	{
-		//audioDevice.setlistener(myCamera.getPos(), m1Pos); //add bool to mesh
-		//playAudio(whistle, m1Pos);
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-//void MainGame::playAudio(unsigned int Source, glm::vec3 pos)
-//{
-//	
-//	ALint state; 
-//	alGetSourcei(Source, AL_SOURCE_STATE, &state);
-//	/*
-//	Possible values of state
-//	AL_INITIAL
-//	AL_STOPPED
-//	AL_PLAYING
-//	AL_PAUSED
-//	*/
-//	if (AL_PLAYING != state)
-//	{
-//		audioDevice.playSound(Source, pos);
-//	}
-//}
 
 
 void MainGame::HandleCameraMovement()
@@ -190,29 +156,12 @@ void MainGame::HandleCameraLook()
 
 
 	// Apply our rotation.
-	// Note: For some reason we are having errors if we don't reset our rotation before applying our current.
+	// Note: For some reason we are getting an incorrect rotation if we alter our current value directly,
+	//		both for when adding this frame's change or by setting euler angles for x_rotation & y_rotation.
+	//		Instead, we're resetting our rotation to 0 each frame and then rotating along our desired axies.
 	camera_transform->set_euler_angles(0.0f, 0.0f, 0.0f);
 	camera_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(x_rotation), Transform::kLocalSpace);
 	camera_transform->Rotate(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(y_rotation), Transform::kWorldSpace);
-}
-
-
-void MainGame::LinkLightingTestsShader()
-{
-	/*lighting_test_shader_.set_vec_3("cameraPos", main_camera_->get_transform()->get_pos());
-
-
-	// Setup the Directional Lights.
-	for (int i = 0; i < directional_lights_.size(); ++i)
-	{
-		//directional_lights_[i].UpdateShader(lighting_test_shader_);
-	}
-
-	// Setup the Point Lights.
-	for (int i = 0; i < point_lights_.size(); ++i)
-	{
-		//point_lights_[i].UpdateShader(lighting_test_shader_);
-	}*/
 }
 
 
@@ -293,6 +242,7 @@ void MainGame::RenderDepthMap_DirectionalLights(const int& directional_light_ind
 	three_axies_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 
 
+	// Link our Light Space Matrix for this light.
 	basic_shadows_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix, true);
 	terrain_shader_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix, true);
 	lighting_test_shader_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix, true);
@@ -321,8 +271,6 @@ void MainGame::DrawGame()
 
 void MainGame::ConfigureShaders()
 {
-	LinkLightingTestsShader();
-
 	// Setup the Point Light Shadow Paramters.
 	float far_clip = main_camera_->get_far_clip();
 	glm::vec3 camera_pos = main_camera_->get_transform()->get_pos();

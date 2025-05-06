@@ -66,11 +66,6 @@ private:
 	void RenderScene();
 
 
-	void LinkLightingTestsShader();
-
-	bool Collision(glm::vec3 m1Pos, float m1Rad, glm::vec3 m2Pos, float m2Rad);
-	//void playAudio(unsigned int Source, glm::vec3 pos);
-
 	void CalculateLightingValues();
 
 	inline glm::vec3 ToDegrees(const glm::vec3& vector);

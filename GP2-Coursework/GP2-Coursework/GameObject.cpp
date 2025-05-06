@@ -7,7 +7,8 @@ GameObject::GameObject(const std::string& mesh_file_path, const glm::vec3& posit
 	model_(new Model(mesh_file_path)),
 	transform_(new Transform(position, rotation, scale))
 {}
-GameObject::GameObject(const std::string& mesh_file_path, const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale, const std::string& diffuse_texture_path, const std::string& specular_texture_path, const std::string& normal_texture_path) :
+GameObject::GameObject(const std::string& mesh_file_path, const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale,
+	const std::string& diffuse_texture_path, const std::string& specular_texture_path, const std::string& normal_texture_path) :
 	transform_(new Transform(position, rotation, scale))
 {
 	std::vector<std::shared_ptr<Texture>> textureOverrides;
@@ -44,10 +45,12 @@ GameObject::~GameObject()
 
 void GameObject::Draw(const Camera& camera, Shader* shader)
 {
+	// Bind and update our rendering shader.
 	shader->Bind();
 	shader->Update(*transform_, camera);
+
+	// Draw the model associated with this GO.
 	model_->Draw(*shader);
-	//mesh_->UpdateSphereData(*transform_->get_pos(), 0.62f);
 }
 
 

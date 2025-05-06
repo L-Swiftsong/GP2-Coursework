@@ -11,7 +11,7 @@ Texture::Texture(const GLuint& texture_id, const TextureType& texture_type, cons
 
 Texture::~Texture()
 {
-	glDeleteTextures(1, &texture_id_); // number of and address of textures
+	glDeleteTextures(1, &texture_id_); // Number of and address of textures
 }
 
 
@@ -42,7 +42,7 @@ void Texture::SetupTexture(Texture* texture)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // linear filtering for minification (texture is smaller than area)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear filtering for magnifcation (texture is larger)
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData); //Target, Mipmapping Level, Pixel Format, Width, Height, Border Size, Input Format, Data Type of Texture, Image Data
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData); // Target, Mipmapping Level, Pixel Format, Width, Height, Border Size, Input Format, Data Type of Texture, Image Data.
 
 	stbi_image_free(imageData);
 

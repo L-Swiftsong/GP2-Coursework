@@ -3,10 +3,8 @@
 Skybox::Skybox(const std::string& file_name_no_extensions, const std::string& file_extension) :
 	skybox_texture_day_(std::move(Cubemap::CreateCubemapTexture("..\\res\\Skyboxes\\PolyverseSkies-BlueSky", file_extension))),
 	skybox_texture_night_(std::move(Cubemap::CreateCubemapTexture(file_name_no_extensions, file_extension))),
-	//skybox_texture_(std::move(Cubemap::CreateCubemapTextureFromSingle(file_name_no_extensions, file_extension))),
 	skybox_shader_(std::make_unique<Shader>(SKYBOX_VERTEX_SHADER_PATH, SKYBOX_FRAGMENT_SHADER_PATH))
 {
-	unsigned int skybox_ebo;
 	glGenVertexArrays(1, &vertex_array_object_);
 	glGenBuffers(1, &vertex_buffer_object_);
 
@@ -18,7 +16,6 @@ Skybox::Skybox(const std::string& file_name_no_extensions, const std::string& fi
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
 Skybox::~Skybox()
@@ -37,15 +34,14 @@ void Skybox::Draw(const Camera& camera, const float& blend_value)
 	skybox_shader_->set_mat_4("viewMatrix", view);
 	skybox_shader_->set_mat_4("projectionMatrix", camera.get_projection());
 
-
 	skybox_shader_->set_float("skybox_blend_value", blend_value);
 
 
-	// Draw the skybox cube.
+	// Prepare to draw the skybox cube.
 	glBindVertexArray(vertex_array_object_);
 
 
-	// Bind the Day & Night Cubemaps.
+	// Bind the Day (skybox1) & Night (skybox2) Cubemaps.
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_texture_day_->get_texture_id());
 	skybox_shader_->set_int("skybox1", 0);
