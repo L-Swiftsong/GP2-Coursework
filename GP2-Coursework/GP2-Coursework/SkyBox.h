@@ -16,14 +16,18 @@ public:
 	Skybox(const std::string& file_name_no_extensions, const std::string& file_extension);
 	~Skybox();
 
-	void Draw(const Camera& camera, const float& blend_value);
+	void Draw(const Camera& camera, const float& blend_value, const glm::quat& sun_light_direction);
 
 
 private:
 	std::unique_ptr<Texture> skybox_texture_day_;
 	std::unique_ptr<Texture> skybox_texture_night_;
+	std::unique_ptr<Texture> skybox_sun_and_moon_texture_;
 	std::unique_ptr<Shader> skybox_shader_;
 	unsigned int vertex_array_object_, vertex_buffer_object_;
+
+
+	inline float InverseLerp(float a, float b, float v);
 
 
 	const float skyboxVertices[108] = {

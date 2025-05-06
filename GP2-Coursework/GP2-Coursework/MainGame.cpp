@@ -317,7 +317,7 @@ void MainGame::RenderScene()
 
 
 	// Draw the skybox.
-	skybox_->Draw(*main_camera_, day_lerp_time);
+	skybox_->Draw(*main_camera_, day_percentage_time, sun_light_dir_);
 }
 
 
