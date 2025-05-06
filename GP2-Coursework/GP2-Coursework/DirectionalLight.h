@@ -21,10 +21,11 @@ public:
 	}
 
 
-	const virtual void UpdateShader(const Shader& shader) override
+	const virtual void UpdateShader(const Shader& shader, const int& light_index) override
 	{
-		shader.set_vec_3("directionalLight.Direction", direction_);
-		shader.set_vec_3("directionalLight.Diffuse", diffuse_ * intensity_);
+		glUseProgram(shader.get_shader_id());
+		glUniform3fv(glGetUniformLocation(shader.get_shader_id(), ("directional_lights[" + std::to_string(light_index) + "].Direction").c_str()), 1, &direction_[0]);
+		glUniform3fv(glGetUniformLocation(shader.get_shader_id(), ("directional_lights[" + std::to_string(light_index) + "].Diffuse").c_str()), 1, &(diffuse_ * intensity_)[0]);
 	}
 
 

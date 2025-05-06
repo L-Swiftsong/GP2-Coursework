@@ -251,7 +251,7 @@ void MainGame::LinkLightingTestsShader()
 	// Setup the Directional Lights.
 	for (int i = 0; i < directional_lights_.size(); ++i)
 	{
-		directional_lights_[i].UpdateShader(lighting_test_shader_);
+		//directional_lights_[i].UpdateShader(lighting_test_shader_);
 	}
 
 	// Setup the Point Lights.
@@ -367,6 +367,7 @@ void MainGame::ConfigureShaders()
 {
 	LinkLightingTestsShader();
 
+	// Setup the Point Light Shadow Paramters.
 	terrain_shader_.set_float("far_plane", main_camera_->get_far_clip());
 	terrain_shader_.set_vec_3("view_pos", main_camera_->get_transform()->get_pos());
 
@@ -377,25 +378,15 @@ void MainGame::ConfigureShaders()
 	// Setup the Directional Lights.
 	for (int i = 0; i < directional_lights_.size(); ++i)
 	{
-		//directional_lights_[i].UpdateShader(terrain_shader_);
-		//directional_lights_[i].UpdateShader(basic_shadows_);
-		terrain_shader_.set_vec_3("directional_lights[" + std::to_string(i) + "].Direction", directional_lights_[i].get_direction());
-		terrain_shader_.set_vec_3("directional_lights[" + std::to_string(i) + "].Diffuse", directional_lights_[i].get_diffuse());
-
-		basic_shadows_.set_vec_3("directional_lights[" + std::to_string(i) + "].Direction", directional_lights_[i].get_direction());
-		basic_shadows_.set_vec_3("directional_lights[" + std::to_string(i) + "].Diffuse", directional_lights_[i].get_diffuse());
+		directional_lights_[i].UpdateShader(terrain_shader_, i);
+		directional_lights_[i].UpdateShader(basic_shadows_, i);
 	}
 
 	// Setup the Point Lights.
 	for (int i = 0; i < point_lights_.size(); ++i)
 	{
-		//point_lights_[i].UpdateShader(terrain_shader_);
-		//point_lights_[i].UpdateShader(basic_shadows_);
-		terrain_shader_.set_vec_3("point_lights[" + std::to_string(i) + "].Position", point_lights_[i].get_position());
-		terrain_shader_.set_vec_3("point_lights[" + std::to_string(i) + "].Diffuse", point_lights_[i].get_diffuse());
-
-		basic_shadows_.set_vec_3("point_lights[" + std::to_string(i) + "].Position", point_lights_[i].get_position());
-		basic_shadows_.set_vec_3("point_lights[" + std::to_string(i) + "].Diffuse", point_lights_[i].get_diffuse());
+		point_lights_[i].UpdateShader(terrain_shader_, i);
+		point_lights_[i].UpdateShader(basic_shadows_, i);
 	}
 }
 void MainGame::RenderScene()

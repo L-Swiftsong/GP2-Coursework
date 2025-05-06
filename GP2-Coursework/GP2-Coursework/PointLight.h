@@ -20,15 +20,16 @@ public:
 		InitialiseShadowMap();
 	}
 
-	const virtual void UpdateShader(const Shader& shader) override
+	const virtual void UpdateShader(const Shader& shader, const int& light_index) override
 	{
-		shader.set_vec_3("pointLight.Position", position_);
+		glUseProgram(shader.get_shader_id());
 
-		shader.set_vec_3("pointLight.Diffuse", diffuse_);
+		glUniform3fv(glGetUniformLocation(shader.get_shader_id(), ("point_lights[" + std::to_string(light_index) + "].Position").c_str()), 1, &position_[0]);
+		glUniform3fv(glGetUniformLocation(shader.get_shader_id(), ("point_lights[" + std::to_string(light_index) + "].Diffuse").c_str()), 1, &diffuse_[0]);
 
-		shader.set_float("pointLight.Radius", radius_);
-		shader.set_float("pointLight.MaxIntensity", max_intensity_);
-		shader.set_float("pointLight.Falloff", falloff_);
+		glUniform1f(glGetUniformLocation(shader.get_shader_id(), ("point_lights[" + std::to_string(light_index) + "].Radius").c_str()), radius_);
+		glUniform1f(glGetUniformLocation(shader.get_shader_id(), ("point_lights[" + std::to_string(light_index) + "].MaxIntensity").c_str()), max_intensity_);
+		glUniform1f(glGetUniformLocation(shader.get_shader_id(), ("point_lights[" + std::to_string(light_index) + "].Falloff").c_str()), falloff_);
 	}
 
 
