@@ -34,7 +34,8 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	plane_ = new GameObject("..\\res\\Plane.obj", glm::vec3(0.0f), glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)), glm::vec3(1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
 	wooden_bench_ = new GameObject("..\\res\\Models\\Bench\\WoodenBench.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
 	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "brickwall.jpg", "", "brickwall_normal.jpg");
-	point_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "brickwall.jpg", "", "brickwall_normal.jpg");
+	point_light_object_reference_0_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "brickwall.jpg", "", "brickwall_normal.jpg");
+	point_light_object_reference_1_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "brickwall.jpg", "", "brickwall_normal.jpg");
 	three_axies_ = new GameObject("..\\res\\Models\\ThreeAxies.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.25f));
 
 	main_camera_->get_transform()->set_euler_angles(ToRadians(glm::vec3(0.0f, 180.0f, 0.0f)));
@@ -45,6 +46,7 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 	Mesh::s_shadows_depth_maps = std::vector<int>(directional_lights_.size(), -1);
 
 	point_lights_[0] = PointLight(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(1.0f), 3.0f, 1.0f, 0.5f);
+	point_lights_[1] = PointLight(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(1.0f), 3.0f, 1.0f, 0.5f);
 	Mesh::s_shadows_depth_cubemaps = std::vector<int>(point_lights_.size(), -1);
 
 
@@ -72,7 +74,7 @@ MainGame::~MainGame()
 
 void MainGame::InitialiseShadowMap()
 {
-	// Generate our Framebuffer.
+	/*// Generate our Framebuffer.
 	glGenFramebuffers(1, &depth_map_fbo_);
 	glGenFramebuffers(1, &depth_cubemap_fbo_);
 
@@ -115,7 +117,7 @@ void MainGame::InitialiseShadowMap()
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_cubemap_, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 }
 
 
@@ -139,10 +141,17 @@ void MainGame::GameLoop()
 
 		CalculateLightingValues();
 		point_lights_[0].set_position(glm::vec3(0.0f, 1.5f, glm::sin(counter_ / 2.0f) * 2.0f));
-		point_light_object_reference_->get_transform()->set_pos(point_lights_[0].get_position());
+		point_lights_[1].set_position(glm::vec3(glm::sin(counter_ / 2.0f) * 2.0f, 1.5f, 0.0f));
+		point_light_object_reference_0_->get_transform()->set_pos(point_lights_[0].get_position());
+		point_light_object_reference_1_->get_transform()->set_pos(point_lights_[1].get_position());
 
-		RenderDepthMap_PointLights();
-		RenderDepthMap_DirectionalLights();
+		// Render our depth maps.
+		for(unsigned int i = 0; i < point_lights_.size(); ++i)
+			RenderDepthMap_PointLights(i);
+		for(unsigned int i = 0; i < directional_lights_.size(); ++i)
+			RenderDepthMap_DirectionalLights(i);
+
+		// Draw the scene.
 		DrawGame();
 		//Collision(suzanne_.get_mesh()->get_sphere_pos(), suzanne_.get_mesh()->get_sphere_radius(), suzanne_2_.get_mesh()->get_sphere_pos(), suzanne_2_.get_mesh()->get_sphere_radius());
 		//playAudio(backGroundMusic, glm::vec3(0.0f,0.0f,0.0f));
@@ -253,17 +262,17 @@ void MainGame::LinkLightingTestsShader()
 }
 
 
-void MainGame::RenderDepthMap_PointLights()
+void MainGame::RenderDepthMap_PointLights(const int& point_light_index)
 {
-	glViewport(0, 0, kShadowTextureWidth, kShadowTextureHeight);
-	glBindFramebuffer(GL_FRAMEBUFFER, depth_cubemap_fbo_);
+	glViewport(0, 0, Light::kShadowTextureWidth, Light::kShadowTextureHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, point_lights_[point_light_index].shadow_map_fbo);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glCullFace(GL_FRONT);
 
 	// Determine matrices for rendering from the light's point of view.
-	const float kAspect = (float)kShadowTextureWidth / (float)kShadowTextureHeight;
+	const float kAspect = (float)Light::kShadowTextureWidth / (float)Light::kShadowTextureHeight;
 	glm::mat4 shadow_projection_matrix = glm::perspective(glm::radians(90.0f), kAspect, main_camera_->get_near_clip(), main_camera_->get_far_clip());
-	glm::vec3 light_pos = point_lights_[0].get_position();
+	glm::vec3 light_pos = point_lights_[point_light_index].get_position();
 	std::vector<glm::mat4> shadow_transforms
 	{
 		shadow_projection_matrix * glm::lookAt(light_pos, light_pos + glm::vec3(1.0f, 0.0f, 0.0f),	glm::vec3(0.0f, -1.0f, 0.0f)), // Left.
@@ -279,7 +288,7 @@ void MainGame::RenderDepthMap_PointLights()
 	for (unsigned int i = 0; i < 6; ++i)
 		depth_buffer_point_light_shader_.set_mat_4("shadow_matrices[" + std::to_string(i) + "]", shadow_transforms[i]);
 	depth_buffer_point_light_shader_.set_float("far_plane", main_camera_->get_far_clip());
-	depth_buffer_point_light_shader_.set_vec_3("light_pos", point_lights_[0].get_position());
+	depth_buffer_point_light_shader_.set_vec_3("light_pos", point_lights_[point_light_index].get_position());
 
 
 	// Draw all our GameObjects.
@@ -293,17 +302,17 @@ void MainGame::RenderDepthMap_PointLights()
 	three_axies_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
 	
 
-	Mesh::s_shadows_depth_cubemaps[0] = depth_cubemap_;
+	Mesh::s_shadows_depth_cubemaps[point_light_index] = point_lights_[point_light_index].shadow_map;
 
 
 	// Revert any changes we made for rendering the depth map.
 	glCullFace(GL_BACK);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-void MainGame::RenderDepthMap_DirectionalLights()
+void MainGame::RenderDepthMap_DirectionalLights(const int& directional_light_index)
 {
-	glViewport(0, 0, kShadowTextureWidth, kShadowTextureHeight);
-	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo_);
+	glViewport(0, 0, Light::kShadowTextureWidth, Light::kShadowTextureHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, directional_lights_[directional_light_index].shadow_map_fbo);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glCullFace(GL_FRONT);
 
@@ -311,7 +320,7 @@ void MainGame::RenderDepthMap_DirectionalLights()
 	// Determine matrices for rendering from the light's point of view.
 	glm::mat4 light_projection, light_view, light_space_matrix;
 	light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, main_camera_->get_near_clip(), main_camera_->get_far_clip());
-	light_view = glm::lookAt(directional_lights_[0].get_direction() * -7.5f, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	light_view = glm::lookAt(directional_lights_[directional_light_index].get_direction() * -7.5f, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	light_space_matrix = light_projection * light_view;
 
 	depth_buffer_directional_light_shader_.Bind();
@@ -325,12 +334,13 @@ void MainGame::RenderDepthMap_DirectionalLights()
 	//plane_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 	wooden_bench_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 	dir_light_object_reference_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
-	point_light_object_reference_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
+	point_light_object_reference_0_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
+	point_light_object_reference_1_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 	three_axies_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 
 
-	basic_shadows_.set_mat_4("light_space_matrix", light_space_matrix);
-	Mesh::s_shadows_depth_maps[0] = depth_map;
+	basic_shadows_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix);
+	Mesh::s_shadows_depth_maps[directional_light_index] = directional_lights_[directional_light_index].shadow_map;
 
 
 	// Revert any changes we made for rendering the depth map.
@@ -389,7 +399,8 @@ void MainGame::RenderScene()
 	//plane_->Draw(*main_camera_, active_shader_.get());
 	wooden_bench_->Draw(*main_camera_, active_shader_.get());
 	dir_light_object_reference_->Draw(*main_camera_, active_shader_.get());
-	point_light_object_reference_->Draw(*main_camera_, active_shader_.get());
+	point_light_object_reference_0_->Draw(*main_camera_, active_shader_.get());
+	point_light_object_reference_1_->Draw(*main_camera_, active_shader_.get());
 	three_axies_->Draw(*main_camera_, &default_shader_);
 
 

@@ -58,8 +58,8 @@ private:
 	void HandleCameraMovement();
 	void HandleCameraLook();
 	
-	void RenderDepthMap_PointLights();
-	void RenderDepthMap_DirectionalLights();
+	void RenderDepthMap_PointLights(const int& point_light_index);
+	void RenderDepthMap_DirectionalLights(const int& directional_light_index);
 	void DrawGame();
 	void ConfigureShaders();
 	void RenderScene();
@@ -87,7 +87,8 @@ private:
 	GameObject* plane_;
 	GameObject* wooden_bench_;
 	GameObject* dir_light_object_reference_;
-	GameObject* point_light_object_reference_;
+	GameObject* point_light_object_reference_0_;
+	GameObject* point_light_object_reference_1_;
 	GameObject* three_axies_;
 
 	Camera* main_camera_;
@@ -118,12 +119,7 @@ private:
 
 	// Lights.
 	std::array<DirectionalLight, 1> directional_lights_;
-	std::array<PointLight, 1> point_lights_;
-
-	// Shadows.
-	const unsigned int kShadowTextureWidth = 2048, kShadowTextureHeight = 2048;
-	unsigned int depth_map_fbo_, depth_map;
-	unsigned int depth_cubemap_fbo_, depth_cubemap_;
+	std::array<PointLight, 2> point_lights_;
 
 	// Day/Night Cycle.
 	float day_percentage_time, day_lerp_time;

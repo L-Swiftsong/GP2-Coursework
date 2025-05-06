@@ -7,7 +7,8 @@ struct DirectionalLight
 	vec3 Direction;
 
 	vec3 Diffuse;
-
+    
+	mat4 light_space_matrix;
     sampler2D shadow_map;
 };
 struct PointLight
@@ -30,14 +31,13 @@ in VERTEX_OUT
 	vec3 frag_pos;
 	vec3 normal;
 	vec2 texture_coordinate;
-	vec4 frag_pos_light_space;
 } f_in;
 
 
 uniform sampler2D texture_diffuse1;
 
 uniform DirectionalLight[1] directional_lights;
-uniform PointLight[1] point_lights;
+uniform PointLight[2] point_lights;
 
 uniform vec3 view_pos;
 uniform float far_plane;
@@ -50,7 +50,7 @@ vec3 normal;
 
 // Function Pre-Definitions.
 float CalculateShadowStrength_PointLight(PointLight light, vec3 frag_pos);
-float CalculateShadowStrength_DirectionalLight(DirectionalLight light, vec4 frag_pos_light_space);
+float CalculateShadowStrength_DirectionalLight(DirectionalLight light);
 
 vec3 CalculateDirectionalLighting(DirectionalLight light);
 vec3 CalculatePointLighting(PointLight light);
@@ -111,8 +111,11 @@ float CalculateShadowStrength_PointLight(PointLight light, vec3 frag_pos)
 
     return shadow_strength;
 }
-float CalculateShadowStrength_DirectionalLight(DirectionalLight light, vec4 frag_pos_light_space)
+float CalculateShadowStrength_DirectionalLight(DirectionalLight light)
 {
+    // Calculate our fragment's position in the light's space.
+    vec4 frag_pos_light_space = light.light_space_matrix * vec4(f_in.frag_pos, 1.0f);
+
     // Perform Perspective Divide.
     vec3 projected_coordinates = frag_pos_light_space.xyz / frag_pos_light_space.w;
     projected_coordinates = (projected_coordinates * 0.5f) + 0.5f; // Convert to the range [0, 1].
@@ -162,7 +165,7 @@ vec3 CalculateDirectionalLighting(DirectionalLight light)
     vec3 specular = specular_strength * light.Diffuse;
 
     // Calculate our Shadow Strength for this light.
-    float shadow_strength = CalculateShadowStrength_DirectionalLight(light, f_in.frag_pos_light_space);
+    float shadow_strength = CalculateShadowStrength_DirectionalLight(light);
 
     // Calculate and output this light's output.
     vec3 lighting_output = ((1.0f - shadow_strength) * (diffuse + specular)) * base_color;
