@@ -340,6 +340,7 @@ void MainGame::RenderDepthMap_DirectionalLights(const int& directional_light_ind
 
 
 	basic_shadows_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix);
+	terrain_shader_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix);
 	Mesh::s_shadows_depth_maps[directional_light_index] = directional_lights_[directional_light_index].shadow_map;
 
 
@@ -366,7 +367,7 @@ void MainGame::ConfigureShaders()
 {
 	LinkLightingTestsShader();
 
-	terrain_shader_.set_vec_3("light_dir", directional_lights_[0].get_direction());
+	terrain_shader_.set_float("far_plane", main_camera_->get_far_clip());
 	terrain_shader_.set_vec_3("view_pos", main_camera_->get_transform()->get_pos());
 
 	basic_shadows_.set_float("far_plane", main_camera_->get_far_clip());
@@ -376,7 +377,11 @@ void MainGame::ConfigureShaders()
 	// Setup the Directional Lights.
 	for (int i = 0; i < directional_lights_.size(); ++i)
 	{
+		//directional_lights_[i].UpdateShader(terrain_shader_);
 		//directional_lights_[i].UpdateShader(basic_shadows_);
+		terrain_shader_.set_vec_3("directional_lights[" + std::to_string(i) + "].Direction", directional_lights_[i].get_direction());
+		terrain_shader_.set_vec_3("directional_lights[" + std::to_string(i) + "].Diffuse", directional_lights_[i].get_diffuse());
+
 		basic_shadows_.set_vec_3("directional_lights[" + std::to_string(i) + "].Direction", directional_lights_[i].get_direction());
 		basic_shadows_.set_vec_3("directional_lights[" + std::to_string(i) + "].Diffuse", directional_lights_[i].get_diffuse());
 	}
@@ -384,7 +389,11 @@ void MainGame::ConfigureShaders()
 	// Setup the Point Lights.
 	for (int i = 0; i < point_lights_.size(); ++i)
 	{
+		//point_lights_[i].UpdateShader(terrain_shader_);
 		//point_lights_[i].UpdateShader(basic_shadows_);
+		terrain_shader_.set_vec_3("point_lights[" + std::to_string(i) + "].Position", point_lights_[i].get_position());
+		terrain_shader_.set_vec_3("point_lights[" + std::to_string(i) + "].Diffuse", point_lights_[i].get_diffuse());
+
 		basic_shadows_.set_vec_3("point_lights[" + std::to_string(i) + "].Position", point_lights_[i].get_position());
 		basic_shadows_.set_vec_3("point_lights[" + std::to_string(i) + "].Diffuse", point_lights_[i].get_diffuse());
 	}
@@ -392,8 +401,7 @@ void MainGame::ConfigureShaders()
 void MainGame::RenderScene()
 {
 	// Draw all our GameObjects.
-	//ground_terrain_->Draw(*main_camera_, &terrain_shader_);
-	ground_terrain_->Draw(*main_camera_, active_shader_.get());
+	ground_terrain_->Draw(*main_camera_, &terrain_shader_);
 
 	fir_tree_->Draw(*main_camera_, active_shader_.get());
 	//plane_->Draw(*main_camera_, active_shader_.get());

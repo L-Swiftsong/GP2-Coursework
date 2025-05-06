@@ -7,26 +7,25 @@ layout (location = 3) in vec3 Tangent;
 
 out VERTEX_OUT
 {
-	vec3 FragPos;
-	vec2 TexCoords;
+	vec3 frag_pos;
+	vec2 texture_coordinates;
 
-	vec3 TangentLightDir;
-	vec3 TangentViewPos;
-	vec3 TangentFragPos;
+	mat3 TBN;
+	vec3 tangent_view_pos;
+	vec3 tangent_frag_pos;
 } v_out;
 
 uniform mat4 modelMatrix;
 uniform mat4 transform;
 
-uniform vec3 light_dir;
 uniform vec3 view_pos;
 
 
 void main()
 {
 	// Fragment Position.
-	v_out.FragPos = vec3(modelMatrix * vec4(VertexPosition, 1.0f));
-	v_out.TexCoords = TextureCoordinates;
+	v_out.frag_pos = vec3(modelMatrix * vec4(VertexPosition, 1.0f));
+	v_out.texture_coordinates = TextureCoordinates;
 
 	// Calculate the TBN Matrix.
 	mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
@@ -35,10 +34,9 @@ void main()
 	tangent = normalize(tangent - dot(tangent, normal) * normal);
 	vec3 biTangent = cross(normal, tangent);
 
-	mat3 TBN = transpose(mat3(tangent, biTangent, normal));
-	v_out.TangentLightDir = normalize(TBN * -light_dir);
-	v_out.TangentViewPos = TBN * view_pos;
-	v_out.TangentFragPos = TBN * v_out.FragPos;
+	v_out.TBN = transpose(mat3(tangent, biTangent, normal));
+	v_out.tangent_view_pos = v_out.TBN * view_pos;
+	v_out.tangent_frag_pos = v_out.TBN * v_out.frag_pos;
 
 
 	// Output Position.
