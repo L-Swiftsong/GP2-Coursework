@@ -6,6 +6,9 @@ struct DirectionalLight
 	vec3 Direction;
 
 	vec3 Diffuse;
+    
+	mat4 light_space_matrix;
+    sampler2D shadow_map;
 };
 struct PointLight
 {
@@ -16,6 +19,8 @@ struct PointLight
     float Radius;
     float MaxIntensity;
     float Falloff;
+
+    samplerCube shadow_map;
 };
 
 in VERTEX_OUT
@@ -27,17 +32,22 @@ in VERTEX_OUT
 	mat3 TBN;
 } f_in;
 
-uniform vec3 cameraPos;
-uniform DirectionalLight directionalLight;
-uniform PointLight pointLight;
+uniform DirectionalLight[1] directional_lights;
+uniform PointLight[2] point_lights;
+uniform vec3 camera_pos;
+uniform float far_plane;
 
+
+// PBR Textures.
 uniform sampler2D texture_diffuse1;
-uniform sampler2D texture_specular1;
-uniform sampler2D texture_metallic1;
-uniform sampler2D texture_roughness1;
-uniform sampler2D texture_normal1;
-uniform sampler2D texture_displacement1;
 
+uniform sampler2D texture_metallic1;
+uniform bool has_metallic;
+
+uniform sampler2D texture_roughness1;
+uniform bool has_roughness;
+
+uniform sampler2D texture_normal1;
 uniform bool has_normal;
 
 
@@ -46,8 +56,9 @@ float metallic;
 float roughness;
 vec3 zero_angle_surface_reflection;
 
-vec3 view_pos;
-vec3 frag_pos;
+vec3 calculated_view_pos;
+vec3 calculated_frag_pos;
+vec3 calculated_normal;
 
 
 const float PI = 3.14159265359;
@@ -60,7 +71,7 @@ float CalcPointAttenuation(PointLight light, vec3 light_position);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir);
 
 
-vec3 CalculatePBRLighting(vec3 light_dir, vec3 H, vec3 radiance, vec3 normal, vec3 view_dir);
+vec3 CalculatePBRLighting(vec3 light_dir, vec3 H, vec3 radiance, vec3 normal, vec3 view_dir, float shadow_strength);
 
 float DistributionGGX(vec3 normal, vec3 H, float roughness);
 float GeometrySchlickGGX(float normalDotView, float roughness);
@@ -71,46 +82,56 @@ float clamp01(float value) { return clamp(value, 0.0, 1.0); }
 float sqr(float x) { return x * x; }
 
 
+float CalculateShadowStrength_PointLight(PointLight light);
+float CalculateShadowStrength_DirectionalLight(DirectionalLight light);
+
+
+
 void main() 
 {
     // Determine unlit colour/metallic/roughness values.
     albedo = pow(texture(texture_diffuse1, f_in.texture_coordinate).rgb, vec3(2.2));
-    metallic = texture(texture_metallic1, f_in.texture_coordinate).r;
-    roughness = texture(texture_roughness1, f_in.texture_coordinate).r;
+    metallic = has_metallic ? texture(texture_metallic1, f_in.texture_coordinate).r : 0.0f;
+    roughness = has_roughness ? texture(texture_roughness1, f_in.texture_coordinate).r : 1.0f;
 
     zero_angle_surface_reflection = mix(vec3(0.04), albedo, metallic);
-    
+
 
     // Determine normal using normal map.
-    vec3 normal;
     if (!has_normal)
     {
         // We don't have an assigned normal map.
-        normal = f_in.vertex_normal;
-        //FragColor = vec4(normal, 1.0f);
-        //return;
+        calculated_normal = f_in.vertex_normal;
     }
     else
     {
         // We have an assigned normal map.
-	    normal = texture(texture_normal1, f_in.texture_coordinate).rgb;
-    	normal = normalize((normal * 2.0f) - 1.0f);
+	    calculated_normal = texture(texture_normal1, f_in.texture_coordinate).rgb;
+    	calculated_normal = normalize((calculated_normal * 2.0f) - 1.0f);
     }
 
 
     // Calculate our view direction.
-    view_pos = has_normal ? f_in.TBN * cameraPos : cameraPos;
-    frag_pos = has_normal ? f_in.TBN * f_in.frag_pos : f_in.frag_pos;
-    vec3 view_dir = normalize(view_pos - frag_pos);
+    calculated_view_pos = has_normal ? (f_in.TBN * camera_pos) : camera_pos;
+    calculated_frag_pos = has_normal ? (f_in.TBN * f_in.frag_pos) : f_in.frag_pos;
+    vec3 calculated_view_dir = normalize(calculated_view_pos - calculated_frag_pos);
 
-
-	vec3 lighting_output = CalcDirectionalLight(directionalLight, normal, view_dir);
-    lighting_output += CalcPointLight(pointLight, normal, view_dir);
 
     // Calculate Ambient Lighting (Temp).
-    vec3 ambient = vec3(0.03) * albedo;
+    vec3 ambient = vec3(0.0f);
 
-    vec3 color = lighting_output;
+
+	vec3 lighting = ambient * albedo;
+    for(int i = 0; i < directional_lights.length(); ++i)
+    {
+        lighting += CalcDirectionalLight(directional_lights[i], calculated_normal, calculated_view_dir);
+    }
+    for(int i = 0; i < point_lights.length(); ++i)
+    {
+        lighting += CalcPointLight(point_lights[i], calculated_normal, calculated_view_dir);
+    }
+
+    vec3 color = lighting;
     color = color / (color + vec3(1.0));    // HDR Tonemapping.
     color = pow(color, vec3(1.0/2.2));      // Gamma Correction.
 
@@ -121,36 +142,44 @@ void main()
 // Function Definitions.
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 view_dir)
 {
-	// Calculate per-light radiance.
+    // Calculate per-light radiance.
     vec3 light_dir = normalize(has_normal ? (f_in.TBN * -light.Direction) : -light.Direction);
 	vec3 H = normalize(view_dir + light_dir);
     vec3 radiance = light.Diffuse;
 
+    // Calculate our shadow strength.
+    float shadow_strength = CalculateShadowStrength_DirectionalLight(light);
+
+
     // Calculate and return our PBR Lighting Value.
-    return CalculatePBRLighting(light_dir, H, radiance, normal, view_dir);
+    return CalculatePBRLighting(light_dir, H, radiance, normal, view_dir, shadow_strength);
 }
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 view_dir)
 {
     vec3 light_pos = has_normal ? (f_in.TBN * light.Position) : light.Position;
 
     // Calculate per-light radiance.
-	vec3 light_dir = normalize(light_pos - frag_pos);
+	vec3 light_dir = normalize(light_pos - calculated_frag_pos);
 	vec3 H = normalize(view_dir + light_dir);
 
     // Determine our radiance.
     float attenuation = CalcPointAttenuation(light, light_pos);
     vec3 radiance = light.Diffuse * attenuation;
 
+
+    // Calculate our shadow strength.
+    float shadow_strength = CalculateShadowStrength_PointLight(light);
+
+
     // Calculate and return our PBR Lighting Value.
-    return CalculatePBRLighting(light_dir, H, radiance, normal, view_dir);
+    return CalculatePBRLighting(light_dir, H, radiance, normal, view_dir, shadow_strength);
 }
 
 
 // Calculate Distance Attenuation: 'https://lisyarus.github.io/blog/posts/point-light-attenuation.html'.
 float CalcPointAttenuation(PointLight light, vec3 light_position)
 {
-    float distance = length(light_position - 
-    frag_pos);
+    float distance = length(light_position - calculated_frag_pos);
     float normalised_distance = distance / light.Radius;
 
     if (normalised_distance >= 1.0)
@@ -165,7 +194,7 @@ float CalcPointAttenuation(PointLight light, vec3 light_position)
 
 
 // ----------------------------------------------------------------------------
-vec3 CalculatePBRLighting(vec3 light_dir, vec3 H, vec3 radiance, vec3 normal, vec3 view_dir)
+vec3 CalculatePBRLighting(vec3 light_dir, vec3 H, vec3 radiance, vec3 normal, vec3 view_dir, float shadow_strength)
 {
     // Cook-torrance brdf.
     float normal_distribution = DistributionGGX(normal, H, roughness);
@@ -191,8 +220,14 @@ vec3 CalculatePBRLighting(vec3 light_dir, vec3 H, vec3 radiance, vec3 normal, ve
     // Scale light by the dot between the Normal and Light Direction.
     float normal_dot_light_dir = max(dot(normal, light_dir), 0.0);
 
-    // Add to ourgoing radiance LO.
-    return (diffuse_contribution * albedo / PI + specular) * radiance * normal_dot_light_dir;
+    // Calculate our non-shadow output colour.
+    vec3 output_color = (diffuse_contribution * albedo / PI + specular) * radiance * normal_dot_light_dir;
+
+    // Apply shadows.
+    output_color *= (1.0f - shadow_strength);
+
+    // Return our output colour.
+    return output_color;
 }
 
 
@@ -213,21 +248,21 @@ float DistributionGGX(vec3 normal, vec3 H, float roughness)
 // ----------------------------------------------------------------------------
 float GeometrySchlickGGX(float normal_dot_view, float roughness)
 {
-    float r = (roughness + 1.0);
-    float k = (r*r) / 8.0;
+    float r = (roughness + 1.0f);
+    float k = (r * r) / 8.0f;
 
     float nom   = normal_dot_view;
-    float denom = normal_dot_view * (1.0 - k) + k;
+    float denom = normal_dot_view * (1.0f - k) + k;
 
     return nom / denom;
 }
 // ----------------------------------------------------------------------------
 float GeometrySmith(vec3 normal, vec3 view_dir, vec3 light_dir, float roughness)
 {
-    float normal_dot_light_dir = max(dot(normal, light_dir), 0.0);
+    float normal_dot_light_dir = max(dot(normal, light_dir), 0.0f);
     float ggx1 = GeometrySchlickGGX(normal_dot_light_dir, roughness);
 
-    float normal_dot_view = max(dot(normal, view_dir), 0.0);
+    float normal_dot_view = max(dot(normal, view_dir), 0.0f);
     float ggx2 = GeometrySchlickGGX(normal_dot_view, roughness);
 
     return ggx1 * ggx2;
@@ -236,4 +271,80 @@ float GeometrySmith(vec3 normal, vec3 view_dir, vec3 light_dir, float roughness)
 vec3 FresnelSchlick(float cos_theta, vec3 zero_angle_surface_reflection)
 {
     return zero_angle_surface_reflection + (1.0 - zero_angle_surface_reflection) * pow(clamp(1.0 - cos_theta, 0.0, 1.0), 5.0);
+}
+
+
+
+// ----- Shadows -----
+// Array of offset directions for sampling.
+vec3 grid_sampling_disk[20] = vec3[]
+(
+   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
+float CalculateShadowStrength_PointLight(PointLight light)
+{
+    vec3 frag_to_light = f_in.frag_pos - light.Position;
+
+    float current_depth = length(frag_to_light);
+
+    float shadow_strength = 0.0f;
+    float bias = 0.0001f;
+    int samples = 20;
+    float view_distance = length(camera_pos - f_in.frag_pos);
+    float disk_radius = (1.0 + (view_distance / far_plane)) / 50.0f;
+    for(int i = 0; i < samples; ++i)
+    {
+        float closest_depth = texture(light.shadow_map, frag_to_light + grid_sampling_disk[i] * disk_radius).r;
+        closest_depth *= far_plane;   // Undo our 0 to 1 range mapping.
+        if(current_depth - bias > closest_depth)
+            shadow_strength += 1.0f;
+    }
+    shadow_strength /= float(samples);
+        
+    // display closestDepth as debug (to visualize depth cubemap)
+    //FragColor = vec4(vec3(1.0f - shadow_strength), 1.0f);
+
+    return shadow_strength;
+}
+float CalculateShadowStrength_DirectionalLight(DirectionalLight light)
+{
+    // Calculate our fragment's position in the light's space.
+    vec4 frag_pos_light_space = light.light_space_matrix * vec4(f_in.frag_pos, 1.0f);
+
+    // Perform Perspective Divide.
+    vec3 projected_coordinates = frag_pos_light_space.xyz / frag_pos_light_space.w;
+    projected_coordinates = (projected_coordinates * 0.5f) + 0.5f; // Convert to the range [0, 1].
+
+    // Prevent shadows appearing if we are outside the shadow's far view plane.
+    if (projected_coordinates.z > 1.0f)
+    {
+        return 0.0f;
+    }
+
+
+    float closest_depth = texture(light.shadow_map, projected_coordinates.xy).r;
+    float current_depth = projected_coordinates.z;
+
+    // Calculate our bias to remove shadowing artifacts (Shadow Acne).
+    float min_bias = 0.00001f;
+
+    // Calculate our shadow strength, using 'Percentage-Closer Filtering' to make our shadows less jagged.
+    float shadow_strength = 0.0f;
+    vec2 texel_size = 1.0f / textureSize(light.shadow_map, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float pfc_depth = texture(light.shadow_map, projected_coordinates.xy + vec2(x, y) * texel_size).r;
+            shadow_strength += (current_depth - min_bias) > pfc_depth ? 1.0f : 0.0f;
+        }
+    }
+    shadow_strength /= 9.0f;
+
+    // Return our calculated shadow strength.
+    return shadow_strength;
 }

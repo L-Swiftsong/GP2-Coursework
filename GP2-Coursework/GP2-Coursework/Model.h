@@ -38,7 +38,7 @@ private:
 
 	std::vector<std::shared_ptr<Texture>> PrepareMaterialTextures(const aiMaterial* mat, const aiTextureType type, const TextureType texture_type);
 	void LoadMaterialTextures(const std::string& directory);
-	GLuint TextureFromFile(const std::string& file_path, const std::string& directory);
+	GLuint TextureFromFile(const std::string& file_name, const std::string& directory);
 
 
 	std::vector<std::shared_ptr<Texture>> textures_loaded_;

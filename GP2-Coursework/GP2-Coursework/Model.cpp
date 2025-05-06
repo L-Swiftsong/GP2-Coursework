@@ -243,7 +243,7 @@ std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMat
         for (unsigned int j = 0; j < textures_loaded_.size(); ++j)
         {
 
-            if (std::strcmp(textures_loaded_[j]->get_file_path().data(), str.C_Str()) == 0)
+            if (std::strcmp(textures_loaded_[j]->get_file_name().data(), str.C_Str()) == 0)
             {
                 // A texture with the same filepath has already been loaded, continue to next one (Optimization).
                 textures.push_back(textures_loaded_[j]);
@@ -255,7 +255,8 @@ std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMat
         if (!skip)
         {
             // The texture hasn't been loaded already. Load it but we defer initilising it till after the whole model has loaded.
-            std::shared_ptr<Texture> texture = std::make_shared<Texture>(texture_type, str.C_Str());
+            std::string file_path = this->directory_ + '\\' + str.C_Str();
+            std::shared_ptr<Texture> texture = std::make_shared<Texture>(texture_type, file_path, str.C_Str());
             textures.push_back(texture);
 
             std::cout << "Loaded Texture: " << str.C_Str() << std::endl;
@@ -272,7 +273,8 @@ void Model::LoadMaterialTextures(const std::string& directory)
 {
     for (unsigned int i = 0; i < textures_loaded_.size(); ++i)
     {
-        textures_loaded_[i]->set_texture_id(TextureFromFile(textures_loaded_[i]->get_file_path(), directory));
+        Texture::SetupTexture(textures_loaded_[i].get());
+        //textures_loaded_[i]->set_texture_id(TextureFromFile(textures_loaded_[i]->get_file_path(), directory));
     }
 }
 GLuint Model::TextureFromFile(const std::string& file_name, const std::string& directory)

@@ -21,7 +21,7 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 {
 	//stbi_set_flip_vertically_on_load(true);
 
-	active_shader_ = std::make_unique<Shader>(basic_shadows_);
+	active_shader_ = std::make_unique<Shader>(lighting_test_shader_);
 	//active_shader_ = std::make_unique<Shader>("..\\res\\Shaders\\Tests\\NormalMapping.vert", "..\\res\\Shaders\\Tests\\NormalMapping.frag");
 
 	// Setup Models.
@@ -29,13 +29,14 @@ MainGame::MainGame() : game_state_(GameState::kPlay),
 		std::vector<std::string>{"..\\res\\Models\\Terrain\\Texture_Grass_Diffuse.png", "..\\res\\Models\\Terrain\\Texture_Dirt_Diffuse.png", "..\\res\\Models\\Terrain\\Texture_Rock_Diffuse.png", "..\\res\\Models\\Terrain\\SplatAlpha 0.png"},
 		std::vector<std::string>{},
 		std::vector<std::string>{"..\\res\\Models\\Terrain\\Texture_Grass_Normal.png", "..\\res\\Models\\Terrain\\Texture_Dirt_Normal.png", "..\\res\\Models\\Terrain\\Texture_Rock_Normal.png"});
-	fir_tree_ = new GameObject("..\\res\\Models\\Trees\\LowPolyFirTree.obj", glm::vec3(0.0f, 0.0f, -5.0f), glm::radians(glm::vec3(0.0f)), glm::vec3(1.0f));
+	//fir_tree_ = new GameObject("..\\res\\Models\\Trees\\LowPolyFirTree.obj", glm::vec3(0.0f, 0.0f, -5.0f), glm::radians(glm::vec3(0.0f)), glm::vec3(1.0f));
+	fir_tree_ = new GameObject("..\\res\\Models\\Trees\\LowPolyFirTree.obj", glm::vec3(0.0f, 0.0f, -5.0f), glm::radians(glm::vec3(0.0f)), glm::vec3(1.0f), "..\\res\\Models\\Trees\\LowPolyFirTree_Diffuse.png", "", "");
 
-	plane_ = new GameObject("..\\res\\Plane.obj", glm::vec3(0.0f), glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)), glm::vec3(1.0f), "brickwall.jpg", "", "brickwall_normal.jpg");
+	plane_ = new GameObject("..\\res\\Plane.obj", glm::vec3(0.0f), glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)), glm::vec3(1.0f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg");
 	wooden_bench_ = new GameObject("..\\res\\Models\\Bench\\WoodenBench.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
-	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "brickwall.jpg", "", "brickwall_normal.jpg");
-	point_light_object_reference_0_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "brickwall.jpg", "", "brickwall_normal.jpg");
-	point_light_object_reference_1_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "brickwall.jpg", "", "brickwall_normal.jpg");
+	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg");
+	point_light_object_reference_0_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg");
+	point_light_object_reference_1_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg");
 	three_axies_ = new GameObject("..\\res\\Models\\ThreeAxies.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.25f));
 
 	main_camera_->get_transform()->set_euler_angles(ToRadians(glm::vec3(0.0f, 180.0f, 0.0f)));
@@ -245,7 +246,7 @@ void MainGame::HandleCameraLook()
 
 void MainGame::LinkLightingTestsShader()
 {
-	lighting_test_shader_.set_vec_3("cameraPos", main_camera_->get_transform()->get_pos());
+	/*lighting_test_shader_.set_vec_3("cameraPos", main_camera_->get_transform()->get_pos());
 
 
 	// Setup the Directional Lights.
@@ -258,7 +259,7 @@ void MainGame::LinkLightingTestsShader()
 	for (int i = 0; i < point_lights_.size(); ++i)
 	{
 		//point_lights_[i].UpdateShader(lighting_test_shader_);
-	}
+	}*/
 }
 
 
@@ -341,6 +342,9 @@ void MainGame::RenderDepthMap_DirectionalLights(const int& directional_light_ind
 
 	basic_shadows_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix);
 	terrain_shader_.set_mat_4("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix", light_space_matrix);
+
+	lighting_test_shader_.Bind();
+	glUniformMatrix4fv(glGetUniformLocation(lighting_test_shader_.get_shader_id(), ("directional_lights[" + std::to_string(directional_light_index) + "].light_space_matrix").c_str()), 1, GL_FALSE, &light_space_matrix[0][0]);
 	Mesh::s_shadows_depth_maps[directional_light_index] = directional_lights_[directional_light_index].shadow_map;
 
 
@@ -368,6 +372,15 @@ void MainGame::ConfigureShaders()
 	LinkLightingTestsShader();
 
 	// Setup the Point Light Shadow Paramters.
+	float far_clip = main_camera_->get_far_clip();
+	glm::vec3 camera_pos = main_camera_->get_transform()->get_pos();
+
+	lighting_test_shader_.Bind();
+	glUniform1f(glGetUniformLocation(lighting_test_shader_.get_shader_id(), "far_plane"), far_clip);
+	glUniform3fv(glGetUniformLocation(lighting_test_shader_.get_shader_id(), "camera_pos"), 1, &camera_pos[0]);
+	//lighting_test_shader_.set_float("far_plane", main_camera_->get_far_clip());
+	//lighting_test_shader_.set_vec_3("camera_pos", main_camera_->get_transform()->get_pos());
+
 	terrain_shader_.set_float("far_plane", main_camera_->get_far_clip());
 	terrain_shader_.set_vec_3("view_pos", main_camera_->get_transform()->get_pos());
 
@@ -378,6 +391,7 @@ void MainGame::ConfigureShaders()
 	// Setup the Directional Lights.
 	for (int i = 0; i < directional_lights_.size(); ++i)
 	{
+		directional_lights_[i].UpdateShader(lighting_test_shader_, i);
 		directional_lights_[i].UpdateShader(terrain_shader_, i);
 		directional_lights_[i].UpdateShader(basic_shadows_, i);
 	}
@@ -385,6 +399,7 @@ void MainGame::ConfigureShaders()
 	// Setup the Point Lights.
 	for (int i = 0; i < point_lights_.size(); ++i)
 	{
+		point_lights_[i].UpdateShader(lighting_test_shader_, i);
 		point_lights_[i].UpdateShader(terrain_shader_, i);
 		point_lights_[i].UpdateShader(basic_shadows_, i);
 	}
@@ -397,9 +412,10 @@ void MainGame::RenderScene()
 	fir_tree_->Draw(*main_camera_, active_shader_.get());
 	//plane_->Draw(*main_camera_, active_shader_.get());
 	wooden_bench_->Draw(*main_camera_, active_shader_.get());
-	dir_light_object_reference_->Draw(*main_camera_, active_shader_.get());
-	point_light_object_reference_0_->Draw(*main_camera_, active_shader_.get());
-	point_light_object_reference_1_->Draw(*main_camera_, active_shader_.get());
+
+	dir_light_object_reference_->Draw(*main_camera_, &default_shader_);
+	point_light_object_reference_0_->Draw(*main_camera_, &default_shader_);
+	point_light_object_reference_1_->Draw(*main_camera_, &default_shader_);
 	three_axies_->Draw(*main_camera_, &default_shader_);
 
 

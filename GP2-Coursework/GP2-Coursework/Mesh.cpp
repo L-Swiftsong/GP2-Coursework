@@ -47,8 +47,30 @@ void Mesh::Draw(const Shader& shader)
         glBindTexture(GL_TEXTURE_2D, textures_[i]->get_texture_id());
     }
 
-    // Set whether this mesh has at least 1 normal map bound to it.
+    // Set whether this mesh has at least of each map bound to it.
+    // Metallic.
+    if (metallicNr == 1)
+    {
+        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_metallic"), false);
+        ++i; // We're unsure why, but our models without roughness maps dissapear if we don't increment 'i' here. ¯\_(*-*)_/¯
+    }
+    else
+    {
+        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_metallic"), true);
+    }
+    // Roughness.
+    if (roughnessNr == 1)
+    {
+        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_roughness"), false);
+        ++i; // We're unsure why, but our models without roughness maps dissapear if we don't increment 'i' here. ¯\_(*-*)_/¯
+    }
+    else
+    {
+        glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_roughness"), true);
+    }
+    // Normal.
     glUniform1i(glGetUniformLocation(shader.get_shader_id(), "has_normal"), normalNr > 1);
+
 
     // Check for the depth texture & set it if it exists.
     for (int shadow_map_index = 0; shadow_map_index < s_shadows_depth_maps.size(); ++shadow_map_index)

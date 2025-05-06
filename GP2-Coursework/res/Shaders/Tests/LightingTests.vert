@@ -26,13 +26,12 @@ void main()
 	
 	// Calculate the TBN Matrix.
 	mat3 normalMatrix = mat3(transpose(inverse(modelMatrix)));
-	vec3 normal = normalize(normalMatrix * VertexNormal);
+	v_out.vertex_normal = normalize(normalMatrix * VertexNormal);
 	vec3 tangent = normalize(normalMatrix * Tangent);
-	tangent = normalize(tangent - dot(tangent, normal) * normal);
-	vec3 biTangent = cross(normal, tangent);
+	tangent = normalize(tangent - dot(tangent, v_out.vertex_normal) * v_out.vertex_normal);
+	vec3 biTangent = cross(v_out.vertex_normal, tangent);
 
-	v_out.vertex_normal = normal;
-	v_out.TBN = transpose(mat3(tangent, biTangent, normal));
+	v_out.TBN = transpose(mat3(tangent, biTangent, v_out.vertex_normal));
 
 
 	// Output Position.
