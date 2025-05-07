@@ -36,6 +36,8 @@ class InputManager;
 #define EVENING_DIRECTIONAL_LIGHT_AMBIENT glm::vec3(1.0f, 0.537f, 0.055f)
 #define NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT glm::vec3(0.791, 0.855f, 1.0f)
 
+#define LANTERN_LIGHT_LOCAL_POSITION glm::vec3(0.0f, 0.15f, 0.0f)
+
 
 class MainGame
 {
@@ -81,10 +83,14 @@ private:
 
 	GameObject* plane_;
 	GameObject* wooden_bench_;
+	GameObject* hanging_lantern_;
+	GameObject* lantern_;
+
 	GameObject* dir_light_object_reference_;
 	GameObject* point_light_object_reference_0_;
 	GameObject* point_light_object_reference_1_;
 	GameObject* three_axies_;
+
 
 	Camera* main_camera_;
 	Gradient* test_gradient_;

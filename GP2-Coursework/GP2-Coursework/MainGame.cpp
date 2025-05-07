@@ -35,9 +35,12 @@ MainGame::MainGame() :
 
 	plane_ = new GameObject("..\\res\\Plane.obj", glm::vec3(0.0f), glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)), glm::vec3(1.0f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg");
 	wooden_bench_ = new GameObject("..\\res\\Models\\Bench\\WoodenBench.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+	hanging_lantern_ = new GameObject("..\\res\\Models\\Lanterns\\HangingLantern.obj", glm::vec3(0.5f, 0.45f, 0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+	lantern_ = new GameObject("..\\res\\Models\\Lanterns\\Lantern.obj", glm::vec3(-0.5f, 0.45f, 0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+
 	dir_light_object_reference_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg");
-	point_light_object_reference_0_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg");
-	point_light_object_reference_1_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.25f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg");
+	point_light_object_reference_0_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.05f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg");
+	point_light_object_reference_1_ = new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.05f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg");
 	three_axies_ = new GameObject("..\\res\\Models\\ThreeAxies.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.25f));
 
 	main_camera_->get_transform()->set_euler_angles(ToRadians(glm::vec3(0.0f, 180.0f, 0.0f)));
@@ -55,8 +58,14 @@ MainGame::MainGame() :
 	// Setup our light references to be children of our lights.
 	point_light_object_reference_0_->get_transform()->set_parent(point_lights_[0].get_transform(), true);
 	point_light_object_reference_1_->get_transform()->set_parent(point_lights_[1].get_transform(), true);
+
 	dir_light_object_reference_->get_transform()->set_parent(directional_lights_[0].get_transform());
 	dir_light_object_reference_->get_transform()->set_local_pos(glm::vec3(0.0f, -5.0f, 0.0f));
+
+	point_lights_[0].get_transform()->set_parent(hanging_lantern_->get_transform());
+	point_lights_[0].get_transform()->set_local_pos(LANTERN_LIGHT_LOCAL_POSITION);
+	point_lights_[1].get_transform()->set_parent(lantern_->get_transform());
+	point_lights_[1].get_transform()->set_local_pos(LANTERN_LIGHT_LOCAL_POSITION);
 
 
 	// Setup the daylight gradient.
@@ -72,10 +81,14 @@ MainGame::~MainGame()
 {
 	delete main_camera_;
 	delete test_gradient_;
+	
 	delete ground_terrain_;
 	delete fir_tree_;
 	delete plane_;
 	delete wooden_bench_;
+	delete hanging_lantern_;
+	delete lantern_;
+
 	delete dir_light_object_reference_;
 	delete point_light_object_reference_0_;
 	delete point_light_object_reference_1_;
@@ -103,8 +116,6 @@ void MainGame::GameLoop()
 
 		// Calculate lighting.
 		CalculateLightingValues();
-		point_lights_[0].get_transform()->set_pos(glm::vec3(0.0f, 1.5f, glm::sin(counter_ / 2.0f) * 2.0f));
-		point_lights_[1].get_transform()->set_pos(glm::vec3(glm::sin(counter_ / 2.0f) * 2.0f, 1.5f, 0.0f));
 
 		// Render our depth maps.
 		for(unsigned int i = 0; i < point_lights_.size(); ++i)
@@ -206,6 +217,9 @@ void MainGame::RenderDepthMap_PointLights(const int& point_light_index)
 	fir_tree_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
 	//plane_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
 	wooden_bench_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
+	hanging_lantern_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
+	lantern_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
+
 	dir_light_object_reference_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
 	//point_light_object_reference_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
 	three_axies_->Draw(*main_camera_, &depth_buffer_point_light_shader_);
@@ -241,9 +255,12 @@ void MainGame::RenderDepthMap_DirectionalLights(const int& directional_light_ind
 	fir_tree_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 	//plane_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 	wooden_bench_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
+	hanging_lantern_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
+	lantern_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
+
 	dir_light_object_reference_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 	point_light_object_reference_0_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
-	point_light_object_reference_1_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
+	//point_light_object_reference_1_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 	three_axies_->Draw(*main_camera_, &depth_buffer_directional_light_shader_);
 
 
@@ -314,6 +331,8 @@ void MainGame::RenderScene()
 	fir_tree_->Draw(*main_camera_, active_shader_.get());
 	//plane_->Draw(*main_camera_, active_shader_.get());
 	wooden_bench_->Draw(*main_camera_, active_shader_.get());
+	hanging_lantern_->Draw(*main_camera_, active_shader_.get());
+	lantern_->Draw(*main_camera_, active_shader_.get());
 
 	dir_light_object_reference_->Draw(*main_camera_, &default_shader_);
 	point_light_object_reference_0_->Draw(*main_camera_, &default_shader_);
@@ -341,12 +360,7 @@ void MainGame::CalculateLightingValues()
 
 	// Update the sun directional light.
 	directional_lights_[0].set_direction(sun_light_dir_);
-	//directional_lights_[0].get_transform()->Rotate(kSunRotationAxis, glm::radians(90.0f * delta_time_), Transform::kWorldSpace);
 	directional_lights_[0].set_diffuse(sun_diffuse_);
-
-
-	// (Debug) Display our sunlight direction.
-	//dir_light_object_reference_->get_transform()->set_pos(-(directional_lights_[0].get_direction()) * 5.0f); // Shows the direction the light is shining FROM.
 }
 
 
