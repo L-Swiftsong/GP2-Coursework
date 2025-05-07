@@ -5,32 +5,41 @@
 struct DirectionalLight : Light
 {
 public:
-	DirectionalLight() :
-		direction_(glm::vec3(0.0f, -1.0f, 0.0f)),
+	DirectionalLight() : Light(),
 		diffuse_(glm::vec3(1.0f)),
 		intensity_(0.8f)
 	{
+		set_direction(glm::vec3(0.0f, -1.0f, 0.0f));
 		InitialiseShadowMap();
 	}
-	DirectionalLight(glm::vec3 direction, glm::vec3 diffuse, float intensity) :
-		direction_(direction),
+	DirectionalLight(glm::vec3 direction, glm::vec3 diffuse, float intensity) : Light(),
 		diffuse_(diffuse),
 		intensity_(intensity)
 	{
+		set_direction(direction);
 		InitialiseShadowMap();
 	}
 
 
 	const virtual void UpdateShader(const Shader& shader, const int& light_index) override
 	{
-		shader.set_vec_3("directional_lights[" + std::to_string(light_index) + "].Direction", direction_, true);
+		shader.set_vec_3("directional_lights[" + std::to_string(light_index) + "].Direction", get_direction(), true);
 		shader.set_vec_3("directional_lights[" + std::to_string(light_index) + "].Diffuse", diffuse_ * intensity_, true);
 	}
 
 
 	// Getters & Setters.
-	inline void set_direction(glm::vec3 new_direction) { direction_ = new_direction; }
-	inline glm::vec3 get_direction() { return direction_; }
+	inline void set_direction(glm::quat new_direction)
+	{
+		transform_->set_rot(new_direction);
+	}
+	inline void set_direction(glm::vec3 new_direction)
+	{
+		const glm::vec3 kWorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::quat world_up_to_desired_direction_rotation = glm::rotation(kWorldUp, new_direction);
+		transform_->set_rot(world_up_to_desired_direction_rotation);
+	}
+	inline glm::vec3 get_direction() { return -transform_->get_up(); }
 
 	inline void set_diffuse(glm::vec3 new_diffuse) { diffuse_ = new_diffuse; }
 	inline glm::vec3 get_diffuse() { return diffuse_; }
@@ -40,8 +49,6 @@ public:
 
 
 private:
-	glm::vec3 direction_;
-
 	glm::vec3 diffuse_;
 	float intensity_;
 

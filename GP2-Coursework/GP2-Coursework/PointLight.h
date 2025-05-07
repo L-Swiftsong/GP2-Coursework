@@ -5,15 +5,13 @@
 struct PointLight : Light
 {
 public:
-	PointLight() :
-		position_(glm::vec3(0.0f)),
+	PointLight() : Light(),
 		diffuse_(glm::vec3(0.8f)),
 		radius_ (3.0f), max_intensity_(1.0f), falloff_(0.5f)
 	{
 		InitialiseShadowMap();
 	}
-	PointLight(glm::vec3 position, glm::vec3 diffuse, float radius, float max_intensity, float falloff) :
-		position_(position),
+	PointLight(glm::vec3 position, glm::vec3 diffuse, float radius, float max_intensity, float falloff) : Light(position),
 		diffuse_(diffuse),
 		radius_(radius), max_intensity_(max_intensity), falloff_(falloff)
 	{
@@ -22,7 +20,7 @@ public:
 
 	const virtual void UpdateShader(const Shader& shader, const int& light_index) override
 	{
-		shader.set_vec_3("point_lights[" + std::to_string(light_index) + "].Position", position_, true);
+		shader.set_vec_3("point_lights[" + std::to_string(light_index) + "].Position", transform_->get_pos(), true);
 		shader.set_vec_3("point_lights[" + std::to_string(light_index) + "].Diffuse", diffuse_, true);
 
 		shader.set_float("point_lights[" + std::to_string(light_index) + "].Radius", radius_, true);
@@ -32,9 +30,6 @@ public:
 
 
 	// Getters & Setters.
-	inline void set_position(glm::vec3 new_position) { position_ = new_position; }
-	inline glm::vec3 get_position() { return position_; }
-
 	inline void set_diffuse(glm::vec3 new_diffuse) { diffuse_ = new_diffuse; }
 	inline glm::vec3 get_diffuse() { return diffuse_; }
 
@@ -46,8 +41,6 @@ public:
 	inline float get_falloff() { return falloff_; }
 
 private:
-	glm::vec3 position_;
-
 	glm::vec3 diffuse_;
 
 	float radius_;

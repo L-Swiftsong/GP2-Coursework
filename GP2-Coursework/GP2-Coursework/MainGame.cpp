@@ -52,6 +52,13 @@ MainGame::MainGame() :
 	Mesh::s_shadows_depth_cubemaps = std::vector<int>(point_lights_.size(), -1);
 
 
+	// Setup our light references to be children of our lights.
+	point_light_object_reference_0_->get_transform()->set_parent(point_lights_[0].get_transform(), true);
+	point_light_object_reference_1_->get_transform()->set_parent(point_lights_[1].get_transform(), true);
+	dir_light_object_reference_->get_transform()->set_parent(directional_lights_[0].get_transform());
+	dir_light_object_reference_->get_transform()->set_local_pos(glm::vec3(0.0f, -5.0f, 0.0f));
+
+
 	// Setup the daylight gradient.
 	std::vector<std::tuple<float, glm::vec3>> directional_light_values
 	{
@@ -96,10 +103,8 @@ void MainGame::GameLoop()
 
 		// Calculate lighting.
 		CalculateLightingValues();
-		point_lights_[0].set_position(glm::vec3(0.0f, 1.5f, glm::sin(counter_ / 2.0f) * 2.0f));
-		point_lights_[1].set_position(glm::vec3(glm::sin(counter_ / 2.0f) * 2.0f, 1.5f, 0.0f));
-		point_light_object_reference_0_->get_transform()->set_pos(point_lights_[0].get_position());
-		point_light_object_reference_1_->get_transform()->set_pos(point_lights_[1].get_position());
+		point_lights_[0].get_transform()->set_pos(glm::vec3(0.0f, 1.5f, glm::sin(counter_ / 2.0f) * 2.0f));
+		point_lights_[1].get_transform()->set_pos(glm::vec3(glm::sin(counter_ / 2.0f) * 2.0f, 1.5f, 0.0f));
 
 		// Render our depth maps.
 		for(unsigned int i = 0; i < point_lights_.size(); ++i)
@@ -175,7 +180,7 @@ void MainGame::RenderDepthMap_PointLights(const int& point_light_index)
 	// Determine matrices for rendering from the light's point of view.
 	const float kAspect = (float)Light::kShadowTextureWidth / (float)Light::kShadowTextureHeight;
 	glm::mat4 shadow_projection_matrix = glm::perspective(glm::radians(90.0f), kAspect, main_camera_->get_near_clip(), main_camera_->get_far_clip());
-	glm::vec3 light_pos = point_lights_[point_light_index].get_position();
+	glm::vec3 light_pos = point_lights_[point_light_index].get_transform()->get_pos();
 	std::vector<glm::mat4> shadow_transforms
 	{
 		shadow_projection_matrix * glm::lookAt(light_pos, light_pos + glm::vec3(1.0f, 0.0f, 0.0f),	glm::vec3(0.0f, -1.0f, 0.0f)), // Left.
@@ -192,7 +197,7 @@ void MainGame::RenderDepthMap_PointLights(const int& point_light_index)
 		depth_buffer_point_light_shader_.set_mat_4("shadow_matrices[" + std::to_string(i) + "]", shadow_transforms[i]);
 	}
 	depth_buffer_point_light_shader_.set_float("far_plane", main_camera_->get_far_clip());
-	depth_buffer_point_light_shader_.set_vec_3("light_pos", point_lights_[point_light_index].get_position());
+	depth_buffer_point_light_shader_.set_vec_3("light_pos", light_pos);
 
 
 	// Draw all our GameObjects.
@@ -332,16 +337,16 @@ void MainGame::CalculateLightingValues()
 
 	// Calculate our sunlight direction.
 	float desired_angle = std::fmod((360.0f * day_percentage_time), 360.0f);
-	sun_light_dir_ = glm::quat(ToRadians(kSunRotationAxis * desired_angle));
+	sun_light_dir_ = glm::angleAxis(glm::radians(desired_angle), glm::normalize(kSunRotationAxis));
 
 	// Update the sun directional light.
-	directional_lights_[0].set_direction(kMiddayLightDirection * sun_light_dir_);
+	directional_lights_[0].set_direction(sun_light_dir_);
+	//directional_lights_[0].get_transform()->Rotate(kSunRotationAxis, glm::radians(90.0f * delta_time_), Transform::kWorldSpace);
 	directional_lights_[0].set_diffuse(sun_diffuse_);
 
 
 	// (Debug) Display our sunlight direction.
-	glm::vec3 desired_direction = -kMiddayLightDirection * sun_light_dir_;
-	dir_light_object_reference_->get_transform()->set_pos(desired_direction * 5.0f); // Shows the direction the light is shining FROM.
+	//dir_light_object_reference_->get_transform()->set_pos(-(directional_lights_[0].get_direction()) * 5.0f); // Shows the direction the light is shining FROM.
 }
 
 

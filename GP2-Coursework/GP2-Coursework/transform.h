@@ -28,7 +28,7 @@ public:
 	}
 
 
-	// Position.
+	// ----- Position -----
 	inline glm::vec3 get_pos() const { return pos_; }
 	inline void set_pos(const glm::vec3& new_pos)
 	{
@@ -43,18 +43,36 @@ public:
 			this->get_child(i)->set_pos(this->get_child(i)->get_pos() + offset);
 		}
 	}
+	inline void set_local_pos(const glm::vec3& new_local_pos)
+	{
+		if (parent_ == nullptr)
+		{
+			// We have no parent. Treat our parent position as the origin (World coords).
+			this->set_pos(new_local_pos);
+			return;
+		}
+
+		// We have a parent.
+		// Determine our world offset from the parent (Includes rotation and scale).
+		glm::vec3 desired_parent_offset = new_local_pos * parent_->get_rot(); // Rotation.
+		desired_parent_offset *= parent_->get_scale();// Scale.
+		
+		// Set our position relative to their world position.
+		this->set_pos(parent_->get_pos() + desired_parent_offset);
+	}
+
 
 	// Rotation.
 	inline glm::quat get_rot() const { return rot_; }
 	inline glm::vec3 get_euler_angles() const { return glm::eulerAngles(rot_); }
 	inline void set_euler_angles(const float& pitch, const float& yaw, const float& roll) { this->set_rot(glm::quat(glm::vec3(pitch, yaw, roll))); }
-	inline void set_euler_angles(const glm::vec3& rot) { this->set_rot(glm::quat(rot)); }
-	inline void set_rot(const glm::quat& rot)
+	inline void set_euler_angles(const glm::vec3& new_rot) { this->set_rot(glm::quat(new_rot)); }
+	inline void set_rot(const glm::quat& new_rot)
 	{
-		glm::quat rotation_difference = Diff(rot_, rot);
+		glm::quat rotation_difference = Diff(rot_, new_rot);
 
 		// Set our rotation.
-		this->rot_ = rot;
+		this->rot_ = new_rot;
 
 		// Update our children's rotation.
 		for (int i = 0; i < this->GetChildCount(); ++i)
@@ -64,7 +82,7 @@ public:
 			// --- Child Position ---
 			// Determine position offset.
 			glm::vec3 parent_to_child_vector = child->get_pos() - this->get_pos();
-
+			
 			// Calculate the child's new relative position.
 			glm::vec3 new_parent_to_child_vector = rotation_difference * parent_to_child_vector;
 
@@ -74,7 +92,7 @@ public:
 
 			// --- Child Rotation ---
 			// Update the child's rotation.
-			glm::quat new_rot = Add(child->get_rot(), glm::inverse(rotation_difference));
+			glm::quat new_rot = Add(glm::inverse(rotation_difference), child->get_rot());
 			child->set_rot(new_rot);
 		}
 	}
@@ -150,7 +168,7 @@ public:
 	// Transform Hierarchy.
 	bool HasParent() const { return parent_ != nullptr; }
 	Transform* get_parent() const { return parent_; }
-	bool set_parent(Transform* new_parent)
+	bool set_parent(Transform* new_parent, bool reset_position = false)
 	{
 		// -- Error Prevention --
 		// We cannot set ourselves to our own parent.
@@ -177,6 +195,13 @@ public:
 
 		// Notify our new parent that we are now it's child.
 		parent_->AddChild(this);
+
+		// Zero our local position (If resired).
+		if (reset_position)
+		{
+			this->set_local_pos(glm::vec3(0.0f));
+		}
+
 		return true;
 	}
 	/*
@@ -230,13 +255,11 @@ public:
 		return false;*/
 	}
 
-
 protected:
 private:
 	const glm::vec3 kWorldForward = glm::vec3(0.0f, 0.0f, 1.0f);
 	const glm::vec3 kWorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	const glm::vec3 kWorldRight = glm::vec3(1.0f, 0.0f, 0.0f);
-
 
 	glm::vec3 pos_;
 	glm::quat rot_;
