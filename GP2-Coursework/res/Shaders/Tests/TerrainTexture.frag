@@ -58,7 +58,7 @@ uniform sampler2D texture_diffuse4;
 
 // Lighting.
 uniform DirectionalLight[1] directional_lights;
-uniform PointLight[2] point_lights;
+uniform PointLight[3] point_lights;
 
 uniform vec3 view_pos;
 uniform float far_plane;
@@ -364,17 +364,18 @@ float CalculateShadowStrength_DirectionalLight(DirectionalLight light)
     float min_bias = 0.00001f;
 
     // Calculate our shadow strength, using 'Percentage-Closer Filtering' to make our shadows less jagged.
+    const int kShadowBlurStrength = 3;
     float shadow_strength = 0.0f;
     vec2 texel_size = 1.0f / textureSize(light.shadow_map, 0);
-    for(int x = -1; x <= 1; ++x)
+    for(int x = -kShadowBlurStrength; x <= kShadowBlurStrength; ++x)
     {
-        for (int y = -1; y <= 1; ++y)
+        for (int y = -kShadowBlurStrength; y <= kShadowBlurStrength; ++y)
         {
             float pfc_depth = texture(light.shadow_map, projected_coordinates.xy + vec2(x, y) * texel_size).r;
             shadow_strength += (current_depth - min_bias) > pfc_depth ? 1.0f : 0.0f;
         }
     }
-    shadow_strength /= 9.0f;
+    shadow_strength /= ((kShadowBlurStrength * 2 + 1) * (kShadowBlurStrength * 2 + 1));
 
     // Return our calculated shadow strength.
     return shadow_strength;

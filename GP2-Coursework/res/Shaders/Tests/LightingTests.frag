@@ -33,7 +33,7 @@ in VERTEX_OUT
 } f_in;
 
 uniform DirectionalLight[1] directional_lights;
-uniform PointLight[2] point_lights;
+uniform PointLight[3] point_lights;
 
 uniform vec3 camera_pos;
 uniform float far_plane;

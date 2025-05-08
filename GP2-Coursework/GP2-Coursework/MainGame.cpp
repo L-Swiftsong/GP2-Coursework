@@ -26,54 +26,55 @@ MainGame::MainGame() :
 	active_shader_ = std::weak_ptr<Shader>(lighting_test_shader_);
 
 
-	// Setup GameObjects & Models.
+	// ----- Setup Lights ----------
+	directional_lights_[0] = DirectionalLight(kMiddayLightDirection, MIDDAY_DIRECTIONAL_LIGHT_AMBIENT, 1.0f);
+	Mesh::s_shadows_depth_maps = std::vector<int>(directional_lights_.size(), -1);
+
+	point_lights_[0] = PointLight(glm::vec3(0.0f), glm::vec3(1.0f), 3.0f, 1.0f, 0.5f);
+	point_lights_[1] = PointLight(glm::vec3(0.0f), glm::vec3(1.0f), 3.0f, 1.0f, 0.5f);
+	point_lights_[2] = PointLight(glm::vec3(0.0f), glm::vec3(1.0f), 3.0f, 1.0f, 0.5f);
+	Mesh::s_shadows_depth_cubemaps = std::vector<int>(point_lights_.size(), -1);
+
+
+	// ----- Setup GameObjects & Models -----
 	GameObject::PrepareForGameObjectLoad(9);
 	ground_terrain_ = (new GameObject("..\\res\\Models\\Terrain\\NewMeshTerrain.obj", glm::vec3(500.0f, 0.0f, -500.0f), glm::radians(glm::vec3(0.0f)), glm::vec3(1.0f),
 		std::vector<std::string>{"..\\res\\Models\\Terrain\\Texture_Grass_Diffuse.png", "..\\res\\Models\\Terrain\\Texture_Dirt_Diffuse.png", "..\\res\\Models\\Terrain\\Texture_Rock_Diffuse.png", "..\\res\\Models\\Terrain\\SplatAlpha 0.png"},
 		std::vector<std::string>{},
 		std::vector<std::string>{"..\\res\\Models\\Terrain\\Texture_Grass_Normal.png", "..\\res\\Models\\Terrain\\Texture_Dirt_Normal.png", "..\\res\\Models\\Terrain\\Texture_Rock_Normal.png"}))
 		->set_shader_override(terrain_shader_);
-	fir_tree_ = new GameObject("..\\res\\Models\\Trees\\LowPolyFirTree.obj", glm::vec3(0.0f, 0.0f, -5.0f), glm::radians(glm::vec3(0.0f)), glm::vec3(1.0f), "..\\res\\Models\\Trees\\LowPolyFirTree_Diffuse.png", "", "");
+	CreateTrees();
 
 	//plane_ = new GameObject("..\\res\\Plane.obj", glm::vec3(0.0f), glm::radians(glm::vec3(0.0f, 0.0f, 0.0f)), glm::vec3(1.0f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg");
-	wooden_bench_ = new GameObject("..\\res\\Models\\Bench\\WoodenBench.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
-	hanging_lantern_ = new GameObject("..\\res\\Models\\Lanterns\\HangingLantern.obj", glm::vec3(0.5f, 0.45f, 0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
-	lantern_ = new GameObject("..\\res\\Models\\Lanterns\\Lantern.obj", glm::vec3(-0.5f, 0.45f, 0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+	wooden_bench_ = new GameObject("..\\res\\Models\\Bench\\WoodenBench.obj", glm::vec3(2.7f, 0.0f, -0.4f), glm::radians(glm::vec3(0.0f, 140.0f, 0.0f)), glm::vec3(1.0f));
+	hanging_lantern_ = new GameObject("..\\res\\Models\\Lanterns\\HangingLantern.obj", glm::vec3(8.55f, 1.0f, 0.0f), glm::radians(glm::vec3(0.0f, 96.0f, 0.0f)), glm::vec3(1.0f));
+	bench_lantern_ = new GameObject("..\\res\\Models\\Lanterns\\Lantern.obj", glm::vec3(3.16f, 0.45f, -0.83f), glm::radians(glm::vec3(2.0f, 135.0f, 0.0f)), glm::vec3(1.0f));
+	floor_lantern_ = new GameObject("..\\res\\Models\\Lanterns\\Lantern.obj", glm::vec3(1.8f, 0.05f, 0.1f), glm::radians(glm::vec3(2.0f, 135.0f, 0.0f)), glm::vec3(1.0f));
 
-	dir_light_object_reference_ = (new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.25f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg"))
-		->set_shader_override(default_shader_);
-	point_light_object_reference_0_ = (new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.05f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg"))
-		->set_shader_override(default_shader_)
-		->set_draw_for_parent_shader(false);
-	point_light_object_reference_1_ = (new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.05f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg"))
-		->set_shader_override(default_shader_)
-		->set_draw_for_parent_shader(false);
+
+	// ----- Setup Reference/Debug Objects -----
+	// Point Lights.
+	point_light_object_references_.reserve(point_lights_.size());
+	for (int i = 0; i < point_lights_.size(); ++i)
+	{
+		point_light_object_references_.push_back((new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.05f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg"))
+			->set_shader_override(default_shader_)
+			->set_draw_for_parent_shader(false));
+
+		// Setup our light references to be children of our lights.
+		point_light_object_references_[i]->get_transform()->set_parent(point_lights_[i].get_transform(), true);
+	}
 	three_axies_ = (new GameObject("..\\res\\Models\\ThreeAxies.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.25f)))
 		->set_shader_override(default_shader_);
 
-	main_camera_->get_transform()->set_euler_angles(ToRadians(glm::vec3(0.0f, 180.0f, 0.0f)));
 
-
-	// Setup Lights.
-	directional_lights_[0] = DirectionalLight(kMiddayLightDirection, MIDDAY_DIRECTIONAL_LIGHT_AMBIENT, 1.0f);
-	Mesh::s_shadows_depth_maps = std::vector<int>(directional_lights_.size(), -1);
-
-	point_lights_[0] = PointLight(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(1.0f), 3.0f, 1.0f, 0.5f);
-	point_lights_[1] = PointLight(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(1.0f), 3.0f, 1.0f, 0.5f);
-	Mesh::s_shadows_depth_cubemaps = std::vector<int>(point_lights_.size(), -1);
-
-
-	// Setup our light references to be children of our lights.
-	point_light_object_reference_0_->get_transform()->set_parent(point_lights_[0].get_transform(), true);
-	point_light_object_reference_1_->get_transform()->set_parent(point_lights_[1].get_transform(), true);
-
-	dir_light_object_reference_->get_transform()->set_parent(directional_lights_[0].get_transform());
-	dir_light_object_reference_->get_transform()->set_local_pos(glm::vec3(0.0f, 5.0f, 0.0f));
-
+	// Parent our point lights to their respective lanterns.
 	point_lights_[0].get_transform()->set_parent(hanging_lantern_->get_transform());
 	point_lights_[0].get_transform()->set_local_pos(LANTERN_LIGHT_LOCAL_POSITION);
-	point_lights_[1].get_transform()->set_parent(lantern_->get_transform());
+	point_lights_[1].get_transform()->set_parent(bench_lantern_->get_transform());
 	point_lights_[1].get_transform()->set_local_pos(LANTERN_LIGHT_LOCAL_POSITION);
+	point_lights_[2].get_transform()->set_parent(floor_lantern_->get_transform());
+	point_lights_[2].get_transform()->set_local_pos(LANTERN_LIGHT_LOCAL_POSITION);
 
 
 	// Setup the daylight gradient.
@@ -120,8 +121,17 @@ void MainGame::GameLoop()
 		// Render our depth maps.
 		for(unsigned int i = 0; i < point_lights_.size(); ++i)
 			RenderDepthMap_PointLights(i);
-		for(unsigned int i = 0; i < directional_lights_.size(); ++i)
+		for (unsigned int i = 0; i < directional_lights_.size(); ++i)
+		{
+			if (glm::dot(directional_lights_[i].get_direction(), glm::vec3(0.0f, -1.0f, 0.0f)) < -0.1f)
+			{
+				// Below the horizon. No point in re-rendering shadows.
+				// If there is issues with shadows after the sun is under the horizon, remove this.
+				continue;
+			}
+
 			RenderDepthMap_DirectionalLights(i);
+		}
 
 		// Draw the scene.
 		DrawGame();
@@ -183,13 +193,13 @@ void MainGame::HandleCameraLook()
 
 void MainGame::RenderDepthMap_PointLights(const int& point_light_index)
 {
-	glViewport(0, 0, Light::kShadowTextureWidth, Light::kShadowTextureHeight);
+	glViewport(0, 0, PointLight::kShadowTextureWidth, PointLight::kShadowTextureHeight);
 	glBindFramebuffer(GL_FRAMEBUFFER, point_lights_[point_light_index].shadow_map_fbo);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glCullFace(GL_FRONT);
 
 	// Determine matrices for rendering from the light's point of view.
-	const float kAspect = (float)Light::kShadowTextureWidth / (float)Light::kShadowTextureHeight;
+	const float kAspect = (float)PointLight::kShadowTextureWidth / (float)PointLight::kShadowTextureHeight;
 	glm::mat4 shadow_projection_matrix = glm::perspective(glm::radians(90.0f), kAspect, main_camera_->get_near_clip(), main_camera_->get_far_clip());
 	glm::vec3 light_pos = point_lights_[point_light_index].get_transform()->get_pos();
 	std::vector<glm::mat4> shadow_transforms
@@ -225,17 +235,21 @@ void MainGame::RenderDepthMap_PointLights(const int& point_light_index)
 }
 void MainGame::RenderDepthMap_DirectionalLights(const int& directional_light_index)
 {
-	glViewport(0, 0, Light::kShadowTextureWidth, Light::kShadowTextureHeight);
+	glViewport(0, 0, DirectionalLight::kShadowTextureWidth, DirectionalLight::kShadowTextureHeight);
 	glBindFramebuffer(GL_FRAMEBUFFER, directional_lights_[directional_light_index].shadow_map_fbo);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glCullFace(GL_FRONT);
 
 
 	// Determine matrices for rendering from the light's point of view.
+	float kDirectionalLightDistance = 100.0f;
+	float kShadowMapArea = 50.0f; // Length of one side of the cube inside of which we capture shadow objects (Needs confirmation).
 	glm::mat4 light_projection, light_view, light_space_matrix;
-	light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, main_camera_->get_near_clip(), main_camera_->get_far_clip());
-	light_view = glm::lookAt(directional_lights_[directional_light_index].get_direction() * -7.5f, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	light_projection = glm::ortho(-kShadowMapArea, kShadowMapArea, -kShadowMapArea, kShadowMapArea, main_camera_->get_near_clip(), main_camera_->get_far_clip());
+	light_view = glm::lookAt(directional_lights_[directional_light_index].get_direction() * -kDirectionalLightDistance, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	light_space_matrix = light_projection * light_view;
+
 
 	depth_buffer_directional_light_shader_->set_mat_4("light_space_matrix", light_space_matrix);
 
@@ -346,4 +360,61 @@ inline glm::vec3 MainGame::ToRadians(const glm::vec3& vector)
 inline void MainGame::LogVec3(const glm::vec3& vector)
 {
 	std::cout << vector.x << "," << vector.y << "," << vector.z << std::endl;
+}
+
+
+void MainGame::CreateTrees()
+{
+	const std::string kFirTreeModelPath = "..\\res\\Models\\Trees\\LowPolyFirTree.obj";
+	const std::string kTreeCsvPath = "..\\res\\TreeLocations.csv";
+	const int kTreeCount = 49;
+	fir_trees_.reserve(kTreeCount);
+
+	// File Pointer.
+	std::fstream file_in;
+
+	// Open the CSV File.
+	file_in.open(kTreeCsvPath, std::ios::in);
+
+	// Rad the data from the file.
+	std::string line, word, temp;
+	int j = 0;
+	while (!file_in.eof())
+	{
+		// Read an entire csv row.
+		std::getline(file_in, line);
+
+		// Used for breaking up entries.
+		std::stringstream s(line);
+
+		// Read every column data of a row and store it in the variable 'word'.
+		int i = 0;
+	glm::vec3 pos, rot, scale;
+		while (std::getline(s, word, ','))
+		{
+			switch (i)
+			{
+			// Pos.
+			case 0: pos.x = std::stof(word); break;
+			case 1: pos.y = std::stof(word); break;
+			case 2: pos.z = std::stof(word); break;
+
+			// Rot.
+			case 3: rot.x = std::stof(word); break;
+			case 4: rot.y = std::stof(word); break;
+			case 5: rot.z = std::stof(word); break;
+
+			// Scale.
+			case 6: scale.x = std::stof(word); break;
+			case 7: scale.y = std::stof(word); break;
+			case 8: scale.z = std::stof(word); break;
+			}
+			++i;
+		}
+
+		// Create the tree.
+		fir_trees_.push_back(new GameObject(kFirTreeModelPath, pos, glm::radians(rot), scale, "..\\res\\Models\\Trees\\LowPolyFirTree_Diffuse.png", "", ""));
+	}
+
+	file_in.close();
 }

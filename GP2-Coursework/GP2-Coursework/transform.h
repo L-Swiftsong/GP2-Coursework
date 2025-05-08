@@ -156,8 +156,7 @@ public:
 		glm::vec3 rotated_point = point + (position_orientation_quaternion * (this->get_pos() - point));
 		this->set_pos(rotated_point);
 
-
-		// Rotate the desired axis of rotation based on our current rotation.
+		// Transform the desired axis of rotation based on our current rotation.
 		rotation_axis = rot_ * rotation_axis;
 
 		// Apply our rotation.

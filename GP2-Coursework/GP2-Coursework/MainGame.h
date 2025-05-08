@@ -24,6 +24,11 @@
 #include <string>
 #include <algorithm>
 
+// File Reading.
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
 enum class GameState {kPlay, kExit};
 
 // Forward declarations to prevent cyclical dependency errors.
@@ -67,6 +72,8 @@ private:
 	void ConfigureShaders();
 	void RenderScene();
 
+	void CreateTrees();
+
 
 	void CalculateLightingValues();
 
@@ -79,14 +86,16 @@ private:
 	std::unique_ptr<InputManager> input_manager_;
 	
 	GameObject* ground_terrain_;
-	GameObject* fir_tree_;
+	std::vector<GameObject*> fir_trees_;
 
 	GameObject* plane_;
 	GameObject* wooden_bench_;
 	GameObject* hanging_lantern_;
-	GameObject* lantern_;
+	GameObject* bench_lantern_;
+	GameObject* floor_lantern_;
 
 	GameObject* dir_light_object_reference_;
+	std::vector<GameObject*> point_light_object_references_;
 	GameObject* point_light_object_reference_0_;
 	GameObject* point_light_object_reference_1_;
 	GameObject* three_axies_;
@@ -121,7 +130,7 @@ private:
 
 	// Lights.
 	std::array<DirectionalLight, 1> directional_lights_;
-	std::array<PointLight, 2> point_lights_;
+	std::array<PointLight, 3> point_lights_;
 
 	// Day/Night Cycle.
 	float day_percentage_time, day_lerp_time;

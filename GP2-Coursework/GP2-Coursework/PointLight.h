@@ -27,6 +27,8 @@ public:
 		shader->set_float("point_lights[" + std::to_string(light_index) + "].MaxIntensity", max_intensity_, true);
 		shader->set_float("point_lights[" + std::to_string(light_index) + "].Falloff", falloff_, true);
 	}
+	static const unsigned int kShadowTextureWidth = 2048, kShadowTextureHeight = 2048;
+
 
 
 	// Getters & Setters.
@@ -58,7 +60,7 @@ private:
 		glGenTextures(1, &shadow_map);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, shadow_map);
 		for (unsigned int i = 0; i < 6; ++i)
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, Light::kShadowTextureWidth, Light::kShadowTextureHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, PointLight::kShadowTextureWidth, PointLight::kShadowTextureHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

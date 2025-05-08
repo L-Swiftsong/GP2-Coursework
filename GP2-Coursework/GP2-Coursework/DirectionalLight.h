@@ -26,6 +26,7 @@ public:
 		shader->set_vec_3("directional_lights[" + std::to_string(light_index) + "].Direction", get_direction(), true);
 		shader->set_vec_3("directional_lights[" + std::to_string(light_index) + "].Diffuse", diffuse_ * intensity_, true);
 	}
+	static const unsigned int kShadowTextureWidth = 8192, kShadowTextureHeight = 8192; // Currently Very high Value. Set lower to reduce memory usage.
 
 
 	// Getters & Setters.
@@ -60,7 +61,7 @@ private:
 		// Generate the Depth Buffer Texture.
 		glGenTextures(1, &shadow_map);
 		glBindTexture(GL_TEXTURE_2D, shadow_map);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, Light::kShadowTextureWidth, Light::kShadowTextureHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, DirectionalLight::kShadowTextureWidth, DirectionalLight::kShadowTextureHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
