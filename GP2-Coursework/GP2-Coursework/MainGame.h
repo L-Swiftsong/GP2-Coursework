@@ -56,7 +56,7 @@ public:
 
 private:
 	const glm::vec3 kMiddayLightDirection = glm::vec3(0.0f, -1.0f, 0.0f);
-	const float kDayLength = 120.0f; // The length of a full day+night cycle (In seconds).
+	const float kDayLength = 240.0f; // The length of a full day+night cycle (In seconds).
 	const glm::vec3 kSunRotationAxis = glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f));
 
 
@@ -77,8 +77,6 @@ private:
 
 	void CalculateLightingValues();
 
-	inline glm::vec3 ToDegrees(const glm::vec3& vector);
-	inline glm::vec3 ToRadians(const glm::vec3& vector);
 	inline void LogVec3(const glm::vec3& vector);
 
 
@@ -129,7 +127,7 @@ private:
 
 
 	// Lights.
-	std::array<DirectionalLight, 1> directional_lights_;
+	std::array<DirectionalLight, 2> directional_lights_;
 	std::array<PointLight, 3> point_lights_;
 
 	// Day/Night Cycle.
@@ -138,7 +136,7 @@ private:
 	glm::vec3 sun_diffuse_;
 
 
-	const float kTimeSpeedupValue = 5.0f;
+	const float kTimeSpeedupValue = 10.0f;
 	float counter_ = 0.0f;
 	float previous_time_since_start_ = 0.0f, current_time_since_start_ = 0.0f, delta_time_ = 0.0f;
 };

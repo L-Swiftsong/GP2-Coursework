@@ -28,11 +28,13 @@ MainGame::MainGame() :
 
 	// ----- Setup Lights ----------
 	directional_lights_[0] = DirectionalLight(kMiddayLightDirection, MIDDAY_DIRECTIONAL_LIGHT_AMBIENT, 1.0f);
+	directional_lights_[1] = DirectionalLight(-kMiddayLightDirection, NIGHTTIME_DIRECTIONAL_LIGHT_AMBIENT, 0.01f);
 	Mesh::s_shadows_depth_maps = std::vector<int>(directional_lights_.size(), -1);
 
-	point_lights_[0] = PointLight(glm::vec3(0.0f), glm::vec3(1.0f), 3.0f, 1.0f, 0.5f);
-	point_lights_[1] = PointLight(glm::vec3(0.0f), glm::vec3(1.0f), 3.0f, 1.0f, 0.5f);
-	point_lights_[2] = PointLight(glm::vec3(0.0f), glm::vec3(1.0f), 3.0f, 1.0f, 0.5f);
+	for (int i = 0; i < point_lights_.size(); ++i)
+	{
+		point_lights_[i] = PointLight(glm::vec3(0.0f), glm::vec3(0.965f, 0.882f, 0.678f), 5.0f, 2.0f, 1.0f);
+	}
 	Mesh::s_shadows_depth_cubemaps = std::vector<int>(point_lights_.size(), -1);
 
 
@@ -53,19 +55,19 @@ MainGame::MainGame() :
 
 
 	// ----- Setup Reference/Debug Objects -----
-	// Point Lights.
+	// Point Light References.
 	point_light_object_references_.reserve(point_lights_.size());
 	for (int i = 0; i < point_lights_.size(); ++i)
 	{
-		point_light_object_references_.push_back((new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.05f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg"))
+		point_light_object_references_.push_back((new GameObject("..\\res\\IcoSphere.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.025f), "..\\res\\brickwall.jpg", "", "..\\res\\brickwall_normal.jpg"))
 			->set_shader_override(default_shader_)
 			->set_draw_for_parent_shader(false));
 
 		// Setup our light references to be children of our lights.
 		point_light_object_references_[i]->get_transform()->set_parent(point_lights_[i].get_transform(), true);
 	}
-	three_axies_ = (new GameObject("..\\res\\Models\\ThreeAxies.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.25f)))
-		->set_shader_override(default_shader_);
+	/*three_axies_ = (new GameObject("..\\res\\Models\\ThreeAxies.obj", glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.25f)))
+		->set_shader_override(default_shader_);*/
 
 
 	// Parent our point lights to their respective lanterns.
@@ -345,18 +347,13 @@ void MainGame::CalculateLightingValues()
 	// Update the sun directional light.
 	directional_lights_[0].set_direction(sun_light_dir_);
 	directional_lights_[0].set_diffuse(sun_diffuse_);
+
+	// Update the moon directional light to be shining in the opposite direction as the sun.
+	const glm::quat kMoonLightDirRotation = glm::angleAxis(glm::radians(180.0f), glm::normalize(kSunRotationAxis));
+	directional_lights_[1].set_direction(sun_light_dir_ * kMoonLightDirRotation);
 }
 
 
-
-inline glm::vec3 MainGame::ToDegrees(const glm::vec3& vector)
-{
-	return glm::vec3(glm::degrees(vector.x), glm::degrees(vector.y), glm::degrees(vector.z));
-}
-inline glm::vec3 MainGame::ToRadians(const glm::vec3& vector)
-{
-	return glm::vec3(glm::radians(vector.x), glm::radians(vector.y), glm::radians(vector.z));
-}
 inline void MainGame::LogVec3(const glm::vec3& vector)
 {
 	std::cout << vector.x << "," << vector.y << "," << vector.z << std::endl;

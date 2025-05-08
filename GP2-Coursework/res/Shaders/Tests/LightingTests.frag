@@ -32,7 +32,7 @@ in VERTEX_OUT
 	mat3 TBN;
 } f_in;
 
-uniform DirectionalLight[1] directional_lights;
+uniform DirectionalLight[2] directional_lights;
 uniform PointLight[3] point_lights;
 
 uniform vec3 camera_pos;
