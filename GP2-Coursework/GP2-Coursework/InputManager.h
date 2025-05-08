@@ -12,6 +12,8 @@
 class InputManager
 {
 public:
+	InputManager() : receiving_mouse_input(true) {}
+
 	void ProcessInput(Display* display);
 
 
@@ -32,6 +34,7 @@ private:
 	bool sprint_held_;
 
 
+	bool receiving_mouse_input;
 	bool speedup_time_held_;
 
 

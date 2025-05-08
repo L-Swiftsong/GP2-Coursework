@@ -8,7 +8,6 @@ void InputManager::ProcessInput(Display* display)
 
 	while (SDL_PollEvent(&event)) //get and process events
 	{
-
 		switch (event.type)
 		{
 		case SDL_QUIT:
@@ -42,11 +41,6 @@ void InputManager::ProcessInput(Display* display)
 				case SDLK_q: speedup_time_held_ = true; break;
 			}
 			break;
-		// Mouse Movement.
-		case SDL_MOUSEMOTION:
-			//camera_look_input_.x = event.motion.xrel;
-			//camera_look_input_.y = event.motion.yrel;
-			break;
 		case SDL_KEYUP:
 			switch (event.key.keysym.sym)
 			{
@@ -68,15 +62,26 @@ void InputManager::ProcessInput(Display* display)
 	}
 
 	// Camera look input.
-	int x, y;
-	SDL_GetRelativeMouseState(&x, &y);
-	camera_look_input_ = glm::vec2(x, y);
+	if (receiving_mouse_input)
+	{
+		int x, y;
+		SDL_GetRelativeMouseState(&x, &y);
+		camera_look_input_ = glm::vec2(x, y);
+	}
+	else
+	{
+		camera_look_input_ = glm::vec2(0.0f, 0.0f);
+	}
 
 
 	// Mouse lock toggling.
 	if (toggle_mouse_lock_performed)
 	{
-		SDL_SetRelativeMouseMode(SDL_GetRelativeMouseMode() == SDL_TRUE ? SDL_FALSE : SDL_TRUE);
+		// Update our receiving_mouse_input value.
+		receiving_mouse_input = SDL_GetRelativeMouseMode() != SDL_TRUE;
+
+		// Update our relative mouse mode based on our 'receiving_mouse_input' value.
+		SDL_SetRelativeMouseMode(receiving_mouse_input ? SDL_TRUE : SDL_FALSE);
 	}
 }
 
