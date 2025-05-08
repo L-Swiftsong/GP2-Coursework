@@ -8,8 +8,8 @@ MainGame::MainGame() :
 	main_camera_(new Camera(glm::vec3(0.0f, 3.5f, 0.0f), 70.0f, (float)game_display_.get_screen_width() / game_display_.get_screen_height(), 0.01f, 1000.0f)),
 	depth_buffer_directional_light_shader_(	std::make_shared<Shader>("..\\res\\Shaders\\DepthRendering\\RenderToDepth_DirectionalLight.vert",	"..\\res\\Shaders\\DepthRendering\\RenderToDepth_DirectionalLight.frag")),
 	depth_buffer_point_light_shader_(	std::make_shared<Shader>("..\\res\\Shaders\\DepthRendering\\RenderToDepth_PointLight.vert",	"..\\res\\Shaders\\DepthRendering\\RenderToDepth_PointLight.frag", "..\\res\\Shaders\\DepthRendering\\RenderToDepth_PointLight.gs")),
-	lighting_test_shader_(	std::make_shared<Shader>("..\\res\\Shaders\\Tests\\LightingTests.vert",	"..\\res\\Shaders\\Tests\\LightingTests.frag")),
-	terrain_shader_(		std::make_shared<Shader>("..\\res\\Shaders\\Tests\\TerrainTexture.vert",	"..\\res\\Shaders\\Tests\\TerrainTexture.frag")),
+	lighting_test_shader_(	std::make_shared<Shader>("..\\res\\Shaders\\LightingTests.vert",	"..\\res\\Shaders\\LightingTests.frag")),
+	terrain_shader_(		std::make_shared<Shader>("..\\res\\Shaders\\TerrainTexture.vert",	"..\\res\\Shaders\\TerrainTexture.frag")),
 	default_shader_(		std::make_shared<Shader>("..\\res\\Shaders\\DefaultTexture.vert", "..\\res\\Shaders\\DefaultTexture.frag")),
 	basic_shadows_(			std::make_shared<Shader>("..\\res\\Shaders\\Tests\\BasicShadows.vert", "..\\res\\Shaders\\Tests\\BasicShadows.frag")),
 

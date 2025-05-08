@@ -7,8 +7,8 @@
 #include "Texture.h"
 #include <string>
 
-#define SKYBOX_VERTEX_SHADER_PATH "..\\res\\Shaders\\Tests\\SkyboxTest.vert"
-#define SKYBOX_FRAGMENT_SHADER_PATH "..\\res\\Shaders\\Tests\\SkyboxTest.frag"
+#define SKYBOX_VERTEX_SHADER_PATH "..\\res\\Shaders\\SkyboxTest.vert"
+#define SKYBOX_FRAGMENT_SHADER_PATH "..\\res\\Shaders\\SkyboxTest.frag"
 
 class Skybox
 {

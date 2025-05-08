@@ -130,29 +130,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\res\Shaders\Tests\LightingTests.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\Shaders\Tests\LightingTests.vert">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\Shaders\Tests\SkyboxTest.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\Shaders\Tests\SkyboxTest.vert">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="..\res\Shaders\DefaultTexture.frag">
       <Filter>Resource Files\Debug</Filter>
     </None>
     <None Include="..\res\Shaders\DefaultTexture.vert">
       <Filter>Resource Files\Debug</Filter>
-    </None>
-    <None Include="..\res\Shaders\Tests\TerrainTexture.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\res\Shaders\Tests\TerrainTexture.vert">
-      <Filter>Resource Files</Filter>
     </None>
     <None Include="..\res\Shaders\Tests\rimLighting.vert">
       <Filter>Resource Files\Tests</Filter>
@@ -198,6 +180,24 @@
     </None>
     <None Include="..\res\Shaders\DepthRendering\RenderToDepth_PointLight.vert">
       <Filter>Resource Files\DepthRendering</Filter>
+    </None>
+    <None Include="..\res\Shaders\LightingTests.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\LightingTests.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\SkyboxTest.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\SkyboxTest.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\TerrainTexture.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\res\Shaders\TerrainTexture.vert">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
 </Project>
