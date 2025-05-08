@@ -27,3 +27,16 @@ Shader Notes:
 	- Specular:	texture_specularN
 	- Normal:	texture_normalN
 	- Height:	texture_heightN
+
+
+## Asset Credits
+Bench Model:
+- SIV Assets - "Stylized Wooden Benmch PBR" 'https://assetstore.unity.com/packages/3d/props/stylized-wooden-bench-pbr-267777'
+Terrain Model:
+- Render Knight - "Fantasy Skybox Free" 'https://assetstore.unity.com/packages/2d/textures-materials/sky/fantasy-skybox-free-18353'
+- (Converted to a Mesh using) zwcloud - "Mesh Terrain Editor Free" 'https://assetstore.unity.com/packages/tools/terrain/mesh-terrain-editor-free-67758'
+Low Poly Fir Tree Model:
+- BOXOPHOBIC - "FREE Skybox Extended Shader" 'https://assetstore.unity.com/packages/vfx/shaders/free-skybox-extended-shader-107400'
+
+Skybox Images:
+- (Night & Day) BOXOPHOBIC - "Polyverse Skies | Low Poly Skybox Shaders" 'https://assetstore.unity.com/packages/vfx/shaders/polyverse-skies-low-poly-skybox-shaders-104017'
