@@ -2,6 +2,13 @@
  A repository for the work done on our Games Programming 2 module's Coursework
 
 
+## Controls
+W, A, S, D, LCtrl, Space - Camera Movement
+Mouse Input - Camera Look
+Q - Increase Day Speed
+Esc - Toggle Mouse Input
+
+
 ## Naming Conventions
 C++ Style Link: https://google.github.io/styleguide/cppguide.html
 
