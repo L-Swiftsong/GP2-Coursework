@@ -9,5 +9,5 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 3
-map_Kd E:/University/Year 3/GP2/GP2-Coursework/GP2-Coursework/res/Textures/Lantern_Diffuse.png
-map_refl E:/University/Year 3/GP2/GP2-Coursework/GP2-Coursework/res/Textures/Lantern_Metallic.png
+map_Kd Lantern_Diffuse.png
+map_refl Lantern_Metallic.png

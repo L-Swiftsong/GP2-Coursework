@@ -187,6 +187,8 @@ public:
 		kNumTransforms
 	};
 
+	std::string get_shader_name() { return shader_name_; }
+
 
 protected:
 private:
@@ -203,4 +205,7 @@ private:
 	
 	// Number of uniform variables.
 	GLuint uniforms_[kNumTransforms];
+
+	// Debug.
+	std::string shader_name_;
 };

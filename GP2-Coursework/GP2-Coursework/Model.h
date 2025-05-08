@@ -37,7 +37,7 @@ private:
 
 
 	std::vector<std::shared_ptr<Texture>> PrepareMaterialTextures(const aiMaterial* mat, const aiTextureType type, const TextureType texture_type);
-	void LoadMaterialTextures(const std::string& directory);
+	void LoadMaterialTextures();
 
 
 	std::vector<std::shared_ptr<Texture>> textures_loaded_;

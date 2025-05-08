@@ -6,7 +6,7 @@ Model::Model(const std::string& file_path)
 
     // We're delaying the actual loading of textures from the creation of the meshes as at some point during our mesh creation process we lose access to them through OpenGL.
     // By delaying their initialisation till here, we retain the access.
-    LoadMaterialTextures(this->directory_);
+    LoadMaterialTextures();
 }
 Model::Model(const std::string& file_path, const std::vector<std::shared_ptr<Texture>> texture_overrides)
 {
@@ -20,7 +20,7 @@ Model::Model(const std::string& file_path, const std::vector<std::shared_ptr<Tex
     LoadModel(file_path, true);
 
     // Initialise our Textures.
-    LoadMaterialTextures("..\\res");
+    LoadMaterialTextures();
 }
 Model::~Model()
 {}
@@ -269,7 +269,7 @@ std::vector<std::shared_ptr<Texture>> Model::PrepareMaterialTextures(const aiMat
     return textures;
 }
 
-void Model::LoadMaterialTextures(const std::string& directory)
+void Model::LoadMaterialTextures()
 {
     for (unsigned int i = 0; i < textures_loaded_.size(); ++i)
     {

@@ -21,10 +21,10 @@ public:
 	}
 
 
-	const virtual void UpdateShader(const Shader& shader, const int& light_index) override
+	const virtual void UpdateShader(const Shader* shader, const int& light_index) override
 	{
-		shader.set_vec_3("directional_lights[" + std::to_string(light_index) + "].Direction", get_direction(), true);
-		shader.set_vec_3("directional_lights[" + std::to_string(light_index) + "].Diffuse", diffuse_ * intensity_, true);
+		shader->set_vec_3("directional_lights[" + std::to_string(light_index) + "].Direction", get_direction(), true);
+		shader->set_vec_3("directional_lights[" + std::to_string(light_index) + "].Diffuse", diffuse_ * intensity_, true);
 	}
 
 

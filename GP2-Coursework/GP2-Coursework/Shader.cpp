@@ -1,6 +1,7 @@
 #include "Shader.h"
 
 Shader::Shader(const std::string& vertex_file, const std::string& fragment_file, const char* geometry_file)
+	: shader_name_(vertex_file.substr(0, vertex_file.find_last_of('.')))
 {
 	shader_id_ = glCreateProgram(); // create shader program (openGL saves as ref number)
 	shaders_[0] = CreateShader(LoadShader(vertex_file), GL_VERTEX_SHADER); // create vertex shader

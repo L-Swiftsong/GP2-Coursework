@@ -108,15 +108,15 @@ private:
 
 
 	// Shaders.
-	std::unique_ptr<Shader> active_shader_;
-	Shader lighting_test_shader_;
-	Shader terrain_shader_;
-	Shader default_shader_;
+	std::weak_ptr<Shader> active_shader_;
 
-	Shader depth_buffer_directional_light_shader_;
-	Shader depth_buffer_point_light_shader_;
-	Shader basic_shadows_;
-	//Audio audioDevice;
+	std::shared_ptr<Shader> lighting_test_shader_;
+	std::shared_ptr<Shader> terrain_shader_;
+	std::shared_ptr<Shader> default_shader_;
+
+	std::shared_ptr<Shader> depth_buffer_directional_light_shader_;
+	std::shared_ptr<Shader> depth_buffer_point_light_shader_;
+	std::shared_ptr<Shader> basic_shadows_;
 
 
 	// Lights.

@@ -18,14 +18,14 @@ public:
 		InitialiseShadowMap();
 	}
 
-	const virtual void UpdateShader(const Shader& shader, const int& light_index) override
+	const virtual void UpdateShader(const Shader* shader, const int& light_index) override
 	{
-		shader.set_vec_3("point_lights[" + std::to_string(light_index) + "].Position", transform_->get_pos(), true);
-		shader.set_vec_3("point_lights[" + std::to_string(light_index) + "].Diffuse", diffuse_, true);
+		shader->set_vec_3("point_lights[" + std::to_string(light_index) + "].Position", transform_->get_pos(), true);
+		shader->set_vec_3("point_lights[" + std::to_string(light_index) + "].Diffuse", diffuse_, true);
 
-		shader.set_float("point_lights[" + std::to_string(light_index) + "].Radius", radius_, true);
-		shader.set_float("point_lights[" + std::to_string(light_index) + "].MaxIntensity", max_intensity_, true);
-		shader.set_float("point_lights[" + std::to_string(light_index) + "].Falloff", falloff_, true);
+		shader->set_float("point_lights[" + std::to_string(light_index) + "].Radius", radius_, true);
+		shader->set_float("point_lights[" + std::to_string(light_index) + "].MaxIntensity", max_intensity_, true);
+		shader->set_float("point_lights[" + std::to_string(light_index) + "].Falloff", falloff_, true);
 	}
 
 
